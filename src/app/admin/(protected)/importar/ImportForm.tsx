@@ -92,13 +92,30 @@ function PreviewTable({
   rows: ImportState['preview'] extends infer R ? (R extends undefined ? never : R) : never;
   onConfirm: (deactivateMissing: boolean) => Promise<unknown>;
 }) {
-  const valid = rows!.filter((r) => r.errors.length === 0).length;
+  const validRows = rows!.filter((r) => r.errors.length === 0);
+  const valid = validRows.length;
   const invalid = rows!.length - valid;
+  const willBeActive = validRows.filter((r) => r.active).length;
+  const willBeInactive = valid - willBeActive;
+  const noEmail = validRows.filter((r) => !r.email).length;
   return (
     <div className="space-y-4">
       <Alert variant={invalid > 0 ? 'warning' : 'success'} title="Previsualización">
-        Se han detectado <strong>{valid}</strong> filas válidas
-        {invalid > 0 && <> y <strong>{invalid}</strong> con errores que serán omitidas</>}.
+        <ul className="space-y-0.5 text-sm">
+          <li>· <strong>{valid}</strong> farmacias se importarán</li>
+          <li>· <strong>{willBeActive}</strong> activas (con email, listas para acceder)</li>
+          {willBeInactive > 0 && (
+            <li>· <strong>{willBeInactive}</strong> inactivas (sin email o marcadas como BAJA)</li>
+          )}
+          {noEmail > 0 && (
+            <li className="text-xs text-ink-600 italic mt-1">
+              ↳ {noEmail} sin email. Quedarán inactivas hasta que añadas el email desde la ficha.
+            </li>
+          )}
+          {invalid > 0 && (
+            <li>· <strong>{invalid}</strong> filas con errores que se omitirán (sin CIF o sin nombre)</li>
+          )}
+        </ul>
       </Alert>
 
       <div className="card overflow-hidden">
