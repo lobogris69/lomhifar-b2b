@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
-import { Loader2, Save, RotateCcw } from 'lucide-react';
+import { Loader2, Save, RotateCcw, Move } from 'lucide-react';
 import { Alert } from '@/components/ui/Alert';
-import { BraceletPhoto } from '@/components/shop/BraceletPhoto';
+import { InteractiveBraceletEditor } from './InteractiveBraceletEditor';
 import type { PrintArea } from '@/lib/settings';
 import { saveBraceletAreas, type SaveAreaState } from './actions';
 
@@ -161,24 +161,33 @@ function BraceletAreaPanel({
         </Alert>
       ) : (
         <div className="grid lg:grid-cols-2 gap-6">
-          {/* PREVIEW EN VIVO */}
+          {/* EDITOR VISUAL EN VIVO (arrastrable + redimensionable) */}
           <div>
-            <div className="text-xs uppercase tracking-wider text-ink-500 mb-2">
-              Vista previa (área marcada con guías)
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-xs uppercase tracking-wider text-ink-500">
+                Editor visual del área
+              </div>
+              <span className="inline-flex items-center gap-1 text-[11px] text-brand-700 font-medium">
+                <Move className="h-3 w-3" />
+                Arrastra y redimensiona
+              </span>
             </div>
             <div className="border border-ink-200 rounded-xl overflow-hidden bg-ink-50/40 p-3">
-              <BraceletPhoto
+              <InteractiveBraceletEditor
                 imageUrl={photoUrl}
                 area={area}
+                setArea={setArea}
                 line1={sampleLine1}
                 line2={sampleLine2}
                 line3={sampleLine3}
-                showArea
               />
             </div>
             <p className="mt-2 text-[11px] text-ink-500 leading-relaxed">
-              La caja punteada magenta indica el área dentro de la cual se grabará el
-              texto. Ajusta los valores hasta que coincida con la placa real de la foto.
+              <strong className="text-ink-700">Mueve</strong> la caja arrastrándola con el ratón y
+              <strong className="text-ink-700"> redimensiona</strong> tirando de las
+              4 esquinas. Colócala SOLO sobre el hueco vacío de la placa
+              (a la derecha del símbolo médico) para que el texto no se
+              superponga al símbolo.
             </p>
           </div>
 
