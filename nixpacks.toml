@@ -5,13 +5,14 @@ nixPkgs = ["nodejs_20", "openssl"]
 cmds = ["npm ci"]
 
 [phases.build]
+# IMPORTANTE: durante el BUILD no hay acceso a la red privada de Railway
+# (postgres.railway.internal no es alcanzable). Por eso solo hacemos
+# prisma generate (no requiere BD) y next build. El db push + seeds
+# se ejecutan en el START, cuando la red privada ya está disponible.
 cmds = [
   "npx prisma generate",
-  "npx prisma db push --accept-data-loss",
-  "npm run build",
-  "npx tsx prisma/seed.ts",
-  "npx tsx prisma/seed-demo.ts"
+  "npm run build"
 ]
 
 [start]
-cmd = "npm run start"
+cmd = "npm run start:prod"
