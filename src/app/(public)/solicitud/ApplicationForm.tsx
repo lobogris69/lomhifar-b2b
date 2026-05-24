@@ -7,12 +7,12 @@ import { submitApplication, type ApplyState } from './actions';
 
 const initial: ApplyState = {};
 
-function Submit() {
+function Submit({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
     <button type="submit" className="btn-primary" disabled={pending}>
       {pending && <Loader2 className="h-4 w-4 animate-spin" />}
-      {pending ? 'Enviando…' : 'Enviar solicitud'}
+      {pending ? 'Enviando…' : label}
     </button>
   );
 }
@@ -20,9 +20,11 @@ function Submit() {
 export function ApplicationForm({
   initialCif,
   initialEmail,
+  submitLabel = 'Enviar solicitud',
 }: {
   initialCif?: string;
   initialEmail?: string;
+  submitLabel?: string;
 }) {
   const [state, action] = useFormState(submitApplication, initial);
 
@@ -162,7 +164,7 @@ export function ApplicationForm({
       </div>
 
       <div className="flex items-center justify-end gap-2">
-        <Submit />
+        <Submit label={submitLabel} />
       </div>
     </form>
   );

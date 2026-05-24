@@ -1,4 +1,5 @@
 import { Users, Heart, Activity, Droplet } from 'lucide-react';
+import { getAllSiteTexts } from '@/lib/site-texts';
 
 const STATS = [
   {
@@ -27,7 +28,8 @@ const STATS = [
   },
 ];
 
-export function AwarenessStats() {
+export async function AwarenessStats() {
+  const t = await getAllSiteTexts();
   return (
     <section className="bg-ink-gradient text-white py-20 relative overflow-hidden">
       <div className="absolute inset-0 bg-dots-light opacity-50 pointer-events-none" />
@@ -42,18 +44,17 @@ export function AwarenessStats() {
       <div className="relative mx-auto max-w-6xl px-6">
         <div className="text-center max-w-2xl mx-auto mb-12">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/15 px-3 py-1.5 text-[11px] uppercase tracking-[0.22em] text-brand-100 backdrop-blur">
-            Mercado potencial
+            {t['stats.badge']}
           </span>
           <h2 className="mt-4 text-3xl font-semibold tracking-tight">
-            Hay millones de candidatos
+            {t['stats.titulo_1']}
             <br />
             <span className="bg-gradient-to-r from-brand-300 to-white bg-clip-text text-transparent">
-              a la pulsera Lomhifar
+              {t['stats.titulo_2']}
             </span>
           </h2>
           <p className="mt-3 text-white/70 max-w-xl mx-auto leading-relaxed">
-            Solo en España. Cada uno de estos pacientes que entra en su farmacia es una
-            recomendación natural.
+            {t['stats.descripcion']}
           </p>
         </div>
 
@@ -74,8 +75,7 @@ export function AwarenessStats() {
         </div>
 
         <div className="mt-10 text-center text-xs text-white/40">
-          Fuentes: Federación Española de Diabetes, SEN, Confederación Española de
-          Alzheimer · Datos de referencia 2024
+          {t['stats.fuentes']}
         </div>
       </div>
     </section>

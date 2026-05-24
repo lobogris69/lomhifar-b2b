@@ -1,4 +1,5 @@
 import { BraceletPreview } from '@/components/shop/BraceletPreview';
+import { getAllSiteTexts } from '@/lib/site-texts';
 
 interface Persona {
   emoji: string;
@@ -94,19 +95,15 @@ const PERSONAS: Persona[] = [
   },
 ];
 
-export function PatientPersonas() {
+export async function PatientPersonas() {
+  const t = await getAllSiteTexts();
   return (
     <section className="bg-ink-50/40 py-20">
       <div className="mx-auto max-w-6xl px-6">
         <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="badge-brand">Para todos los pacientes</span>
-          <h2 className="mt-4 section-title text-3xl">
-            Hay un paciente para cada pulsera en su farmacia
-          </h2>
-          <p className="section-subtitle text-base">
-            No es solo para mayores. Niños, adolescentes, embarazadas, deportistas,
-            personas con patologías crónicas o raras. Abrámoles los ojos.
-          </p>
+          <span className="badge-brand">{t['personas.badge']}</span>
+          <h2 className="mt-4 section-title text-3xl">{t['personas.titulo']}</h2>
+          <p className="section-subtitle text-base">{t['personas.descripcion']}</p>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">

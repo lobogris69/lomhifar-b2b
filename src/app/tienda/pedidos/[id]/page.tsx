@@ -9,6 +9,7 @@ import { OrderStatusBadge } from '@/components/shop/OrderStatusBadge';
 import { PosterCalloutLarge } from '@/components/shop/PosterCallout';
 import { colorLabel } from '@/lib/cart';
 import { reorderAction } from './actions';
+import { getAllSiteTexts } from '@/lib/site-texts';
 
 export const metadata = { title: 'Detalle de pedido · Lomhifar' };
 
@@ -20,10 +21,13 @@ export default async function OrderDetailPage({
   searchParams: { nuevo?: string };
 }) {
   const session = await getCustomerSession();
-  const order = await prisma.order.findFirst({
-    where: { id: params.id, customerId: session!.customer.id },
-    include: { items: true },
-  });
+  const [order, t] = await Promise.all([
+    prisma.order.findFirst({
+      where: { id: params.id, customerId: session!.customer.id },
+      include: { items: true },
+    }),
+    getAllSiteTexts(),
+  ]);
   if (!order) notFound();
 
   return (
@@ -34,10 +38,10 @@ export default async function OrderDetailPage({
 
       {searchParams.nuevo && (
         <>
-          <Alert variant="success" title="¡Pedido enviado correctamente!" className="mb-6">
+          <Alert variant="success" title={t['pedido_ok.titulo']} className="mb-6">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-success" />
-              Hemos enviado el pedido a Lomhifar y le hemos remitido una copia por email.
+              {t['pedido_ok.descripcion']}
             </div>
           </Alert>
 

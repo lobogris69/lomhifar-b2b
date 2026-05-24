@@ -10,7 +10,25 @@ export type TextType = 'short' | 'long' | 'select';
 
 export interface TextSlot {
   key: string;                  // p.ej. "acceso.titulo"
-  group: 'acceso' | 'landing' | 'tienda' | 'producto' | 'general';
+  group:
+    | 'general'
+    | 'acceso'
+    | 'codigo'
+    | 'landing'
+    | 'casos'
+    | 'stats'
+    | 'personas'
+    | 'guia'
+    | 'producto'
+    | 'canal'
+    | 'cta_final'
+    | 'tienda'
+    | 'carrito'
+    | 'pedido_ok'
+    | 'mispedidos'
+    | 'solicitud'
+    | 'solicitud_ok'
+    | 'cartel_callout';
   groupLabel: string;
   label: string;                // Título del campo en el admin
   description?: string;         // Ayuda contextual
@@ -378,6 +396,392 @@ export const TEXT_SLOTS: TextSlot[] = [
     defaultValue:
       'Confirmo que el color, las unidades y el texto grabado son correctos. Entiendo que las pulseras se fabricarán exactamente con estos datos.',
     type: 'long', maxLength: 400,
+  },
+
+  // ============ HEADER + FOOTER PÚBLICOS ============
+  {
+    key: 'header.cta_acceder',
+    group: 'general',
+    groupLabel: 'Cabecera y pie públicos',
+    label: 'Cabecera — Botón "Acceder"',
+    defaultValue: 'Acceder',
+    type: 'short', maxLength: 30,
+  },
+  {
+    key: 'header.cta_alta',
+    group: 'general',
+    groupLabel: 'Cabecera y pie públicos',
+    label: 'Cabecera — Botón "Nueva farmacia"',
+    defaultValue: 'Soy una farmacia nueva',
+    type: 'short', maxLength: 40,
+  },
+  {
+    key: 'footer.tagline',
+    group: 'general',
+    groupLabel: 'Cabecera y pie públicos',
+    label: 'Pie — Tagline',
+    defaultValue: 'Canal exclusivo farmacia',
+    type: 'short', maxLength: 60,
+  },
+  {
+    key: 'footer.extra',
+    group: 'general',
+    groupLabel: 'Cabecera y pie públicos',
+    label: 'Pie — Texto adicional',
+    defaultValue: 'Plataforma B2B para farmacias autorizadas. Uso restringido.',
+    type: 'short', maxLength: 120,
+  },
+
+  // ============ /acceso/codigo (introducir código) ============
+  {
+    key: 'codigo.titulo',
+    group: 'codigo',
+    groupLabel: 'Introducir código de acceso',
+    label: 'Título',
+    defaultValue: 'Introduzca su código',
+    type: 'short', maxLength: 80,
+  },
+  {
+    key: 'codigo.descripcion',
+    group: 'codigo',
+    groupLabel: 'Introducir código de acceso',
+    label: 'Texto bajo el título',
+    description: 'Aparece antes del email enmascarado',
+    defaultValue: 'Hemos enviado un código de 6 dígitos a',
+    type: 'short', maxLength: 120,
+  },
+
+  // ============ /solicitud (alta nueva farmacia) ============
+  {
+    key: 'solicitud.titulo',
+    group: 'solicitud',
+    groupLabel: 'Solicitud de alta de farmacia',
+    label: 'Título',
+    defaultValue: 'Solicitud de alta de farmacia',
+    type: 'short', maxLength: 80,
+  },
+  {
+    key: 'solicitud.descripcion',
+    group: 'solicitud',
+    groupLabel: 'Solicitud de alta de farmacia',
+    label: 'Descripción bajo el título',
+    defaultValue:
+      'Complete los datos. Tras la verificación de Lomhifar recibirá un correo confirmando el alta y podrá empezar a realizar pedidos.',
+    type: 'long', maxLength: 300,
+  },
+  {
+    key: 'solicitud.cta',
+    group: 'solicitud',
+    groupLabel: 'Solicitud de alta de farmacia',
+    label: 'Botón de envío',
+    defaultValue: 'Enviar solicitud',
+    type: 'short', maxLength: 40,
+  },
+
+  // ============ /solicitud/enviada (confirmación) ============
+  {
+    key: 'solicitud_ok.titulo',
+    group: 'solicitud_ok',
+    groupLabel: 'Solicitud enviada (confirmación)',
+    label: 'Título',
+    defaultValue: 'Solicitud enviada correctamente',
+    type: 'short', maxLength: 80,
+  },
+  {
+    key: 'solicitud_ok.descripcion',
+    group: 'solicitud_ok',
+    groupLabel: 'Solicitud enviada (confirmación)',
+    label: 'Descripción',
+    defaultValue:
+      'Le hemos enviado un correo de acuse de recibo. El equipo de Lomhifar revisará su solicitud y le contactará para activar el acceso.',
+    type: 'long', maxLength: 300,
+  },
+
+  // ============ CARRITO /tienda/carrito ============
+  {
+    key: 'carrito.titulo',
+    group: 'carrito',
+    groupLabel: 'Carrito',
+    label: 'Título',
+    defaultValue: 'Carrito de pedido',
+    type: 'short', maxLength: 60,
+  },
+  {
+    key: 'carrito.descripcion',
+    group: 'carrito',
+    groupLabel: 'Carrito',
+    label: 'Descripción bajo el título',
+    defaultValue:
+      'Revise cada línea. El pedido se enviará a Lomhifar con copia a su email.',
+    type: 'long', maxLength: 200,
+  },
+  {
+    key: 'carrito.cta',
+    group: 'carrito',
+    groupLabel: 'Carrito',
+    label: 'Botón "Confirmar pedido"',
+    defaultValue: 'Confirmar y enviar pedido',
+    type: 'short', maxLength: 60,
+  },
+  {
+    key: 'carrito.checkbox',
+    group: 'carrito',
+    groupLabel: 'Carrito',
+    label: 'Texto del checkbox de confirmación final',
+    description: 'Legal: el cliente debe marcarlo para enviar el pedido a producción',
+    defaultValue:
+      'Confirmo que las pulseras, colores, unidades y textos grabados son correctos. Lomhifar fabricará el pedido exactamente con estos datos.',
+    type: 'long', maxLength: 400,
+  },
+
+  // ============ /tienda/pedidos/[id]?nuevo=1 (pedido enviado) ============
+  {
+    key: 'pedido_ok.titulo',
+    group: 'pedido_ok',
+    groupLabel: 'Pedido enviado (confirmación)',
+    label: 'Título del banner verde',
+    defaultValue: '¡Pedido enviado correctamente!',
+    type: 'short', maxLength: 60,
+  },
+  {
+    key: 'pedido_ok.descripcion',
+    group: 'pedido_ok',
+    groupLabel: 'Pedido enviado (confirmación)',
+    label: 'Descripción',
+    defaultValue:
+      'Hemos enviado el pedido a Lomhifar y le hemos remitido una copia por email.',
+    type: 'long', maxLength: 200,
+  },
+
+  // ============ /tienda/pedidos (mis pedidos) ============
+  {
+    key: 'mispedidos.titulo',
+    group: 'mispedidos',
+    groupLabel: 'Mis pedidos (área cliente)',
+    label: 'Título',
+    defaultValue: 'Mis pedidos',
+    type: 'short', maxLength: 40,
+  },
+  {
+    key: 'mispedidos.descripcion',
+    group: 'mispedidos',
+    groupLabel: 'Mis pedidos (área cliente)',
+    label: 'Descripción',
+    defaultValue: 'Histórico de pedidos enviados a Lomhifar.',
+    type: 'short', maxLength: 120,
+  },
+
+  // ============ CARTEL CALLOUT (banner descarga cartel) ============
+  {
+    key: 'cartel_callout.badge',
+    group: 'cartel_callout',
+    groupLabel: 'Banner de descarga de cartel',
+    label: 'Etiqueta superior',
+    defaultValue: 'Para su farmacia',
+    type: 'short', maxLength: 40,
+  },
+  {
+    key: 'cartel_callout.titulo',
+    group: 'cartel_callout',
+    groupLabel: 'Banner de descarga de cartel',
+    label: 'Título',
+    defaultValue: 'Descargue el cartel para imprimir en su mostrador',
+    type: 'short', maxLength: 100,
+  },
+  {
+    key: 'cartel_callout.descripcion',
+    group: 'cartel_callout',
+    groupLabel: 'Banner de descarga de cartel',
+    label: 'Descripción',
+    defaultValue:
+      'Comunique a sus clientes que ya ofrece pulseras de identificación sanitaria personalizadas Lomhifar. Cartel listo para imprimir en A4.',
+    type: 'long', maxLength: 300,
+  },
+  {
+    key: 'cartel_callout.cta',
+    group: 'cartel_callout',
+    groupLabel: 'Banner de descarga de cartel',
+    label: 'Botón principal',
+    defaultValue: 'Descargar cartel (PDF A4)',
+    type: 'short', maxLength: 40,
+  },
+
+  // ============ SECCIÓN "CASOS REALES" (landing) ============
+  {
+    key: 'casos.badge',
+    group: 'casos',
+    groupLabel: 'Sección "Casos reales" (landing)',
+    label: 'Etiqueta superior',
+    defaultValue: 'Casos reales',
+    type: 'short', maxLength: 40,
+  },
+  {
+    key: 'casos.titulo',
+    group: 'casos',
+    groupLabel: 'Sección "Casos reales" (landing)',
+    label: 'Título',
+    defaultValue: 'Así llevan la pulsera sus pacientes',
+    type: 'short', maxLength: 80,
+  },
+  {
+    key: 'casos.descripcion',
+    group: 'casos',
+    groupLabel: 'Sección "Casos reales" (landing)',
+    label: 'Descripción',
+    defaultValue:
+      'Niños, adultos, embarazadas, mayores. Discreta, elegante y siempre visible para los servicios de emergencia. Estas son las situaciones donde marca la diferencia.',
+    type: 'long', maxLength: 400,
+  },
+  {
+    key: 'casos.disclaimer',
+    group: 'casos',
+    groupLabel: 'Sección "Casos reales" (landing)',
+    label: 'Disclaimer al pie',
+    defaultValue:
+      'Las situaciones están inspiradas en patrones reales de prescripción y atención farmacéutica en España. Personajes ilustrativos. Para sustituir cualquier ilustración por una foto real, súbela desde el panel admin → Imágenes del sitio.',
+    type: 'long', maxLength: 400,
+  },
+
+  // ============ SECCIÓN "MERCADO POTENCIAL" (landing) ============
+  {
+    key: 'stats.badge',
+    group: 'stats',
+    groupLabel: 'Sección "Mercado potencial" (landing)',
+    label: 'Etiqueta superior',
+    defaultValue: 'Mercado potencial',
+    type: 'short', maxLength: 40,
+  },
+  {
+    key: 'stats.titulo_1',
+    group: 'stats',
+    groupLabel: 'Sección "Mercado potencial" (landing)',
+    label: 'Título — Primera línea',
+    defaultValue: 'Hay millones de candidatos',
+    type: 'short', maxLength: 80,
+  },
+  {
+    key: 'stats.titulo_2',
+    group: 'stats',
+    groupLabel: 'Sección "Mercado potencial" (landing)',
+    label: 'Título — Segunda línea (gradient)',
+    defaultValue: 'a la pulsera Lomhifar',
+    type: 'short', maxLength: 80,
+  },
+  {
+    key: 'stats.descripcion',
+    group: 'stats',
+    groupLabel: 'Sección "Mercado potencial" (landing)',
+    label: 'Descripción',
+    defaultValue:
+      'Solo en España. Cada uno de estos pacientes que entra en su farmacia es una recomendación natural.',
+    type: 'long', maxLength: 300,
+  },
+  {
+    key: 'stats.fuentes',
+    group: 'stats',
+    groupLabel: 'Sección "Mercado potencial" (landing)',
+    label: 'Texto de fuentes',
+    defaultValue:
+      'Fuentes: Federación Española de Diabetes, SEN, Confederación Española de Alzheimer · Datos de referencia 2024',
+    type: 'long', maxLength: 300,
+  },
+
+  // ============ SECCIÓN "PARA TODOS LOS PACIENTES" (landing) ============
+  {
+    key: 'personas.badge',
+    group: 'personas',
+    groupLabel: 'Sección "Para todos los pacientes" (landing)',
+    label: 'Etiqueta superior',
+    defaultValue: 'Para todos los pacientes',
+    type: 'short', maxLength: 40,
+  },
+  {
+    key: 'personas.titulo',
+    group: 'personas',
+    groupLabel: 'Sección "Para todos los pacientes" (landing)',
+    label: 'Título',
+    defaultValue: 'Hay un paciente para cada pulsera en su farmacia',
+    type: 'short', maxLength: 100,
+  },
+  {
+    key: 'personas.descripcion',
+    group: 'personas',
+    groupLabel: 'Sección "Para todos los pacientes" (landing)',
+    label: 'Descripción',
+    defaultValue:
+      'No es solo para mayores. Niños, adolescentes, embarazadas, deportistas, personas con patologías crónicas o raras. Abrámosles los ojos.',
+    type: 'long', maxLength: 400,
+  },
+
+  // ============ SECCIÓN "GUÍA FARMACÉUTICO" (landing) ============
+  {
+    key: 'guia.badge',
+    group: 'guia',
+    groupLabel: 'Sección "Guía farmacéutico" (landing)',
+    label: 'Etiqueta superior',
+    defaultValue: 'Para el farmacéutico',
+    type: 'short', maxLength: 40,
+  },
+  {
+    key: 'guia.titulo',
+    group: 'guia',
+    groupLabel: 'Sección "Guía farmacéutico" (landing)',
+    label: 'Título',
+    defaultValue: '¿Cuándo recomendarla? Una guía rápida',
+    type: 'short', maxLength: 80,
+  },
+  {
+    key: 'guia.descripcion',
+    group: 'guia',
+    groupLabel: 'Sección "Guía farmacéutico" (landing)',
+    label: 'Descripción',
+    defaultValue:
+      'En su día a día atendiendo el mostrador, estas son las señales para sugerir naturalmente la pulsera a su cliente. Aproveche cada conversación.',
+    type: 'long', maxLength: 400,
+  },
+  {
+    key: 'guia.frase_titulo',
+    group: 'guia',
+    groupLabel: 'Sección "Guía farmacéutico" (landing)',
+    label: 'Bloque destacado — Título',
+    defaultValue: 'La frase mágica del mostrador',
+    type: 'short', maxLength: 80,
+  },
+  {
+    key: 'guia.frase_mensaje',
+    group: 'guia',
+    groupLabel: 'Sección "Guía farmacéutico" (landing)',
+    label: 'Bloque destacado — Mensaje principal',
+    defaultValue:
+      '«Por cierto, ¿sabe que tenemos pulseras de identificación sanitaria personalizadas? Si tiene un accidente o un mareo, los sanitarios sabrán al momento que es diabético / alérgico a la penicilina / anticoagulado. Cuesta poco y se la grabamos con sus datos.»',
+    type: 'long', maxLength: 500,
+  },
+  {
+    key: 'guia.frase_consejo',
+    group: 'guia',
+    groupLabel: 'Sección "Guía farmacéutico" (landing)',
+    label: 'Bloque destacado — Consejo al pie',
+    defaultValue:
+      'Sugerirla cuando dispensa la medicación habitual es el momento perfecto.',
+    type: 'long', maxLength: 200,
+  },
+
+  // ============ SECCIÓN "CANAL PROFESIONAL" (landing) ============
+  {
+    key: 'canal.badge',
+    group: 'canal',
+    groupLabel: 'Sección "Canal profesional" (landing)',
+    label: 'Etiqueta superior',
+    defaultValue: 'Canal profesional',
+    type: 'short', maxLength: 40,
+  },
+  {
+    key: 'canal.titulo',
+    group: 'canal',
+    groupLabel: 'Sección "Canal profesional" (landing)',
+    label: 'Título',
+    defaultValue: 'Diseñado por y para la oficina de farmacia',
+    type: 'short', maxLength: 100,
   },
 ];
 

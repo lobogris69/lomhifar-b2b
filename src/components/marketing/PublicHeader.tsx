@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { Logo } from '../brand/Logo';
+import { getAllSiteTexts } from '@/lib/site-texts';
 
 export async function PublicHeader() {
+  const t = await getAllSiteTexts();
   return (
     <header className="border-b border-ink-100 bg-white/85 backdrop-blur sticky top-0 z-30">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
@@ -10,10 +12,10 @@ export async function PublicHeader() {
         </Link>
         <nav className="flex items-center gap-2 text-sm">
           <Link href="/acceso" className="btn-ghost">
-            Acceder
+            {t['header.cta_acceder']}
           </Link>
           <Link href="/solicitud" className="btn-primary">
-            Soy una farmacia nueva
+            {t['header.cta_alta']}
           </Link>
         </nav>
       </div>
@@ -22,6 +24,7 @@ export async function PublicHeader() {
 }
 
 export async function PublicFooter() {
+  const t = await getAllSiteTexts();
   return (
     <footer className="border-t border-ink-100 bg-white">
       <div className="mx-auto max-w-6xl px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -29,9 +32,9 @@ export async function PublicFooter() {
           <Logo size="sm" />
         </div>
         <div className="text-sm text-ink-500 text-center md:text-right">
-          © {new Date().getFullYear()} Lomhifar · Canal exclusivo farmacia
+          © {new Date().getFullYear()} Lomhifar · {t['footer.tagline']}
           <div className="text-xs text-ink-400 mt-0.5">
-            Plataforma B2B para farmacias autorizadas. Uso restringido.
+            {t['footer.extra']}
           </div>
         </div>
       </div>

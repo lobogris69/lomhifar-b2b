@@ -4,21 +4,25 @@ import { getCustomerSession } from '@/lib/auth';
 import { formatDate, formatEuros } from '@/lib/utils';
 import { OrderStatusBadge } from '@/components/shop/OrderStatusBadge';
 import { PosterCalloutLarge } from '@/components/shop/PosterCallout';
+import { getAllSiteTexts } from '@/lib/site-texts';
 
 export const metadata = { title: 'Mis pedidos · Lomhifar' };
 
 export default async function OrdersPage() {
   const session = await getCustomerSession();
-  const orders = await prisma.order.findMany({
-    where: { customerId: session!.customer.id },
-    orderBy: { createdAt: 'desc' },
-    include: { items: true },
-  });
+  const [orders, t] = await Promise.all([
+    prisma.order.findMany({
+      where: { customerId: session!.customer.id },
+      orderBy: { createdAt: 'desc' },
+      include: { items: true },
+    }),
+    getAllSiteTexts(),
+  ]);
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
-      <h1 className="section-title">Mis pedidos</h1>
-      <p className="section-subtitle">Histórico de pedidos enviados a Lomhifar.</p>
+      <h1 className="section-title">{t['mispedidos.titulo']}</h1>
+      <p className="section-subtitle">{t['mispedidos.descripcion']}</p>
 
       <div className="mt-6 mb-8">
         <PosterCalloutLarge />

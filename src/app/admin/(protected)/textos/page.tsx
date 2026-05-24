@@ -17,9 +17,24 @@ export default async function TextsPage() {
 
   // Mapeo de grupo → URL preview
   const previewUrl: Record<string, string> = {
-    acceso: '/acceso',
-    tienda: '/tienda',
     general: '/',
+    acceso: '/acceso',
+    codigo: '/acceso',
+    landing: '/',
+    casos: '/',
+    stats: '/',
+    personas: '/',
+    guia: '/',
+    producto: '/',
+    canal: '/',
+    cta_final: '/',
+    tienda: '/tienda',
+    carrito: '/tienda/carrito',
+    pedido_ok: '/tienda/pedidos',
+    mispedidos: '/tienda/pedidos',
+    solicitud: '/solicitud',
+    solicitud_ok: '/solicitud/enviada',
+    cartel_callout: '/tienda/pedidos',
   };
 
   return (

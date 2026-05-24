@@ -3,6 +3,9 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { CodeForm } from './CodeForm';
+import { getAllSiteTexts } from '@/lib/site-texts';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = { title: 'Verificar código · Lomhifar' };
 
@@ -10,10 +13,13 @@ export default async function CodePage() {
   const customerId = cookies().get('lomhifar_pending_access')?.value;
   if (!customerId) redirect('/acceso');
 
-  const customer = await prisma.customer.findUnique({
-    where: { id: customerId },
-    select: { email: true, pharmacyName: true },
-  });
+  const [customer, t] = await Promise.all([
+    prisma.customer.findUnique({
+      where: { id: customerId },
+      select: { email: true, pharmacyName: true },
+    }),
+    getAllSiteTexts(),
+  ]);
   if (!customer) redirect('/acceso');
 
   // Ofuscar el email para mostrarlo
@@ -27,9 +33,9 @@ export default async function CodePage() {
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-700 mb-3">
             <Mail className="h-6 w-6" />
           </div>
-          <h1 className="text-xl font-semibold text-ink-900">Introduzca su código</h1>
+          <h1 className="text-xl font-semibold text-ink-900">{t['codigo.titulo']}</h1>
           <p className="mt-1 text-sm text-ink-500">
-            Hemos enviado un código de 6 dígitos a <strong>{masked}</strong>
+            {t['codigo.descripcion']} <strong>{masked}</strong>
           </p>
         </div>
         <CodeForm />

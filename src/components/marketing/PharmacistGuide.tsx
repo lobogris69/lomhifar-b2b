@@ -1,4 +1,5 @@
 import { CheckCircle2 } from 'lucide-react';
+import { getAllSiteTexts } from '@/lib/site-texts';
 
 interface Trigger {
   category: string;
@@ -75,19 +76,15 @@ const TRIGGERS: Trigger[] = [
   },
 ];
 
-export function PharmacistGuide() {
+export async function PharmacistGuide() {
+  const txt = await getAllSiteTexts();
   return (
     <section className="bg-white py-20">
       <div className="mx-auto max-w-6xl px-6">
         <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="badge-brand">Para el farmacéutico</span>
-          <h2 className="mt-4 section-title text-3xl">
-            ¿Cuándo recomendarla? Una guía rápida
-          </h2>
-          <p className="section-subtitle text-base">
-            En su día a día atendiendo el mostrador, estas son las señales para sugerir
-            naturalmente la pulsera a su cliente. Aproveche cada conversación.
-          </p>
+          <span className="badge-brand">{txt['guia.badge']}</span>
+          <h2 className="mt-4 section-title text-3xl">{txt['guia.titulo']}</h2>
+          <p className="section-subtitle text-base">{txt['guia.descripcion']}</p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -116,16 +113,13 @@ export function PharmacistGuide() {
           <div className="text-4xl shrink-0" aria-hidden>💡</div>
           <div>
             <h3 className="font-semibold text-ink-900 text-lg">
-              La frase mágica del mostrador
+              {txt['guia.frase_titulo']}
             </h3>
             <p className="mt-2 text-sm text-ink-700 leading-relaxed">
-              <em>«Por cierto, ¿sabe que tenemos pulseras de identificación sanitaria personalizadas?
-              Si tiene un accidente o un mareo, los sanitarios sabrán al momento que es{' '}
-              <strong>diabético / alérgico a la penicilina / anticoagulado</strong>. Cuesta poco
-              y se la grabamos con sus datos.»</em>
+              <em>{txt['guia.frase_mensaje']}</em>
             </p>
             <p className="mt-3 text-xs text-ink-500">
-              Sugerirla cuando dispensa la medicación habitual es el momento perfecto.
+              {txt['guia.frase_consejo']}
             </p>
           </div>
         </div>

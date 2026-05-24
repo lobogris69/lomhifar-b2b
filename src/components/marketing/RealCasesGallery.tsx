@@ -1,6 +1,7 @@
 import { Quote, Pill, Heart, Baby, Footprints, GraduationCap, Activity } from 'lucide-react';
 import { BraceletPreview } from '@/components/shop/BraceletPreview';
 import { getAllSiteImageMeta } from '@/lib/site-images';
+import { getAllSiteTexts } from '@/lib/site-texts';
 
 interface Case {
   slot: string;
@@ -133,22 +134,19 @@ const CASES: Case[] = [
 
 export async function RealCasesGallery() {
   // Consultamos UNA vez todos los slots para saber qué casos tienen foto custom.
-  const metas = await getAllSiteImageMeta();
+  const [metas, t] = await Promise.all([
+    getAllSiteImageMeta(),
+    getAllSiteTexts(),
+  ]);
   const metaBySlot = new Map(metas.map((m) => [m.slot, m]));
 
   return (
     <section className="bg-gradient-to-b from-white via-ink-50/30 to-white py-20">
       <div className="mx-auto max-w-6xl px-6">
         <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="badge-brand">Casos reales</span>
-          <h2 className="mt-4 section-title text-3xl">
-            Así llevan la pulsera sus pacientes
-          </h2>
-          <p className="section-subtitle text-base">
-            Niños, adultos, embarazadas, mayores. Discreta, elegante y siempre visible
-            para los servicios de emergencia. Estas son las situaciones donde marca la
-            diferencia.
-          </p>
+          <span className="badge-brand">{t['casos.badge']}</span>
+          <h2 className="mt-4 section-title text-3xl">{t['casos.titulo']}</h2>
+          <p className="section-subtitle text-base">{t['casos.descripcion']}</p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -269,9 +267,7 @@ export async function RealCasesGallery() {
         </div>
 
         <p className="mt-12 text-center text-xs text-ink-400 italic max-w-2xl mx-auto">
-          Las situaciones están inspiradas en patrones reales de prescripción y atención
-          farmacéutica en España. Personajes ilustrativos. Para sustituir cualquier
-          ilustración por una foto real, súbela desde el panel admin → Imágenes del sitio.
+          {t['casos.disclaimer']}
         </p>
       </div>
     </section>

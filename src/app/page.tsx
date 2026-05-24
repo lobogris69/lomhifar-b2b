@@ -177,9 +177,9 @@ export default async function LandingPage() {
         <section className="bg-white py-20">
           <div className="mx-auto max-w-6xl px-6">
             <div className="text-center max-w-2xl mx-auto mb-12">
-              <span className="badge-brand">Canal profesional</span>
+              <span className="badge-brand">{t['canal.badge']}</span>
               <h2 className="mt-4 section-title text-3xl">
-                Diseñado por y para la oficina de farmacia
+                {t['canal.titulo']}
               </h2>
             </div>
             <div className="grid md:grid-cols-3 gap-6">

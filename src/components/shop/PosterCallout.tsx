@@ -1,25 +1,26 @@
 import Link from 'next/link';
 import { Download, Megaphone, Printer } from 'lucide-react';
+import { getAllSiteTexts } from '@/lib/site-texts';
 
 /**
  * Banner promocional grande para usar al final del pedido (confirmación).
  */
-export function PosterCalloutLarge() {
+export async function PosterCalloutLarge() {
+  const t = await getAllSiteTexts();
   return (
     <div className="rounded-2xl overflow-hidden border border-brand-200 bg-gradient-to-br from-brand-50 to-white shadow-card">
       <div className="grid sm:grid-cols-[1fr,180px]">
         <div className="p-6 sm:p-7">
           <div className="flex items-center gap-2 mb-2">
             <span className="badge-brand">
-              <Megaphone className="h-3 w-3" /> Para su farmacia
+              <Megaphone className="h-3 w-3" /> {t['cartel_callout.badge']}
             </span>
           </div>
           <h3 className="text-xl font-semibold text-ink-900">
-            Descargue el cartel para imprimir en su mostrador
+            {t['cartel_callout.titulo']}
           </h3>
           <p className="mt-2 text-sm text-ink-600 leading-relaxed max-w-prose">
-            Comunique a sus clientes que ya ofrece pulseras de identificación
-            sanitaria personalizadas Lomhifar. Cartel listo para imprimir en A4.
+            {t['cartel_callout.descripcion']}
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <a
@@ -27,7 +28,7 @@ export function PosterCalloutLarge() {
               className="btn-primary"
               download
             >
-              <Download className="h-4 w-4" /> Descargar cartel (PDF A4)
+              <Download className="h-4 w-4" /> {t['cartel_callout.cta']}
             </a>
             <a
               href="/api/cartel?inline=1"

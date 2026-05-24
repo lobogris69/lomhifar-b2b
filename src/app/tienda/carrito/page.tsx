@@ -8,6 +8,7 @@ import { CheckoutForm } from './CheckoutForm';
 import { removeItemAction, updateQtyAction, clearCartAction } from './actions';
 import { BraceletPreview } from '@/components/shop/BraceletPreview';
 import { getSettings, SETTING_KEYS } from '@/lib/settings';
+import { getAllSiteTexts } from '@/lib/site-texts';
 
 export const metadata = { title: 'Carrito · Lomhifar' };
 
@@ -17,8 +18,11 @@ export default async function CartPage({
   searchParams: { added?: string; reordered?: string };
 }) {
   const cart = readCart();
-  const { items, totals } = await priceCart(cart);
-  const settings = await getSettings();
+  const [{ items, totals }, settings, t] = await Promise.all([
+    priceCart(cart),
+    getSettings(),
+    getAllSiteTexts(),
+  ]);
   const deliveryDays = settings[SETTING_KEYS.DELIVERY_DAYS];
 
   if (cart.length === 0) {
@@ -51,10 +55,8 @@ export default async function CartPage({
       )}
 
       <div className="mb-6">
-        <h1 className="section-title">Carrito de pedido</h1>
-        <p className="section-subtitle">
-          Revise cada línea. El pedido se enviará a Lomhifar con copia a su email.
-        </p>
+        <h1 className="section-title">{t['carrito.titulo']}</h1>
+        <p className="section-subtitle">{t['carrito.descripcion']}</p>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
@@ -188,7 +190,11 @@ export default async function CartPage({
               </Alert>
             )}
 
-            <CheckoutForm canSubmit={totals.meetsMinimum} />
+            <CheckoutForm
+              canSubmit={totals.meetsMinimum}
+              ctaLabel={t['carrito.cta']}
+              confirmLabel={t['carrito.checkbox']}
+            />
           </div>
         </aside>
       </div>

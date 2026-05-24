@@ -7,18 +7,28 @@ import { placeOrder, type CheckoutState } from './actions';
 
 const initial: CheckoutState = {};
 
-function Submit({ disabled }: { disabled: boolean }) {
+function Submit({ disabled, label }: { disabled: boolean; label: string }) {
   const { pending } = useFormStatus();
   return (
     <button type="submit" disabled={disabled || pending} className="btn-primary w-full text-base py-3">
       {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
-      {pending ? 'Enviando pedido…' : 'Confirmar y enviar pedido'}
+      {pending ? 'Enviando pedido…' : label}
     </button>
   );
 }
 
-export function CheckoutForm({ canSubmit }: { canSubmit: boolean }) {
+interface Props {
+  canSubmit: boolean;
+  ctaLabel?: string;
+  confirmLabel?: string;
+}
+
+export function CheckoutForm({ canSubmit, ctaLabel, confirmLabel }: Props) {
   const [state, action] = useFormState(placeOrder, initial);
+  const cta = ctaLabel || 'Confirmar y enviar pedido';
+  const confirm =
+    confirmLabel ||
+    'Confirmo que las pulseras, colores, unidades y textos grabados son correctos. Lomhifar fabricará el pedido exactamente con estos datos.';
 
   return (
     <form action={action} className="space-y-4">
@@ -45,16 +55,13 @@ export function CheckoutForm({ canSubmit }: { canSubmit: boolean }) {
           required
           className="mt-1 h-4 w-4 rounded border-ink-300 text-brand-700 focus:ring-brand-500"
         />
-        <span className="text-sm text-ink-800 leading-relaxed">
-          <strong>Confirmo</strong> que las pulseras, colores, unidades y textos grabados son
-          correctos. Lomhifar fabricará el pedido exactamente con estos datos.
-        </span>
+        <span className="text-sm text-ink-800 leading-relaxed">{confirm}</span>
       </label>
       {state.fieldErrors?.confirm && (
         <p className="field-error">{state.fieldErrors.confirm}</p>
       )}
 
-      <Submit disabled={!canSubmit} />
+      <Submit disabled={!canSubmit} label={cta} />
     </form>
   );
 }
