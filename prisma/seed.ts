@@ -27,6 +27,8 @@ async function main() {
   const adminPassword = process.env.ADMIN_PASSWORD ?? 'ChangeMe!2025';
   const passwordHash = await bcrypt.hash(adminPassword, 12);
 
+  // El admin definido en ADMIN_EMAIL siempre se asegura como SUPER_ADMIN y activo.
+  // Este es el "admin de sistema" - el que controla todo desde Railway.
   await prisma.adminUser.upsert({
     where: { email: adminEmail },
     create: {
@@ -36,8 +38,11 @@ async function main() {
       role: 'SUPER_ADMIN',
       active: true,
     },
-    // Solo actualizamos password si ya existe; preservamos rol/nombre
-    update: { passwordHash, active: true },
+    update: {
+      passwordHash,
+      role: 'SUPER_ADMIN',  // forzar SUPER_ADMIN al admin del env
+      active: true,
+    },
   });
   console.log(`✔ Admin: ${adminEmail}`);
 
