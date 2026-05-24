@@ -6,8 +6,8 @@ import { ADMIN_ROLE_LABEL, type AdminRole } from '@/lib/admin-roles';
 import { formatDate } from '@/lib/utils';
 import { Alert } from '@/components/ui/Alert';
 import { CreateUserForm } from './CreateUserForm';
+import { RoleSelect } from './RoleSelect';
 import {
-  changeAdminRole,
   deleteAdminUser,
   resetAdminPassword,
   toggleAdminActive,
@@ -94,20 +94,12 @@ export default async function UsersPage() {
                   </td>
                   <td>{u.name ?? '—'}</td>
                   <td>
-                    <form action={changeAdminRole}>
-                      <input type="hidden" name="id" value={u.id} />
-                      <select
-                        name="role"
-                        defaultValue={u.role}
-                        onChange={(e) => e.currentTarget.form?.requestSubmit()}
-                        disabled={isMe}
-                        className={`text-xs rounded-full px-2 py-0.5 font-medium border-0 ${ROLE_BADGE[u.role as AdminRole] ?? 'bg-ink-100'} ${isMe ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
-                      >
-                        <option value="SUPER_ADMIN">Super-Admin</option>
-                        <option value="ADMIN">Administrador</option>
-                        <option value="ORDER_MANAGER">Gestor pedidos</option>
-                      </select>
-                    </form>
+                    <RoleSelect
+                      userId={u.id}
+                      currentRole={u.role}
+                      isMe={isMe}
+                      badgeClass={ROLE_BADGE[u.role as AdminRole] ?? 'bg-ink-100'}
+                    />
                   </td>
                   <td>
                     {u.active ? (
