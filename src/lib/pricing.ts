@@ -1,8 +1,7 @@
-import { BraceletColor } from './enums';
 import { getSettings, SETTING_KEYS } from './settings';
 
 export interface PricedItem {
-  color: BraceletColor;
+  color: string;            // "BLACK" | "RED"
   quantity: number;
   line1: string;
   line2: string;
@@ -20,7 +19,7 @@ export interface OrderTotals {
 }
 
 export async function priceCart(
-  items: { color: BraceletColor; quantity: number; line1: string; line2: string }[],
+  items: { color: string; quantity: number; line1: string; line2: string }[],
 ): Promise<{ items: PricedItem[]; totals: OrderTotals }> {
   const settings = await getSettings();
   const priceBlack = Number(settings[SETTING_KEYS.PRICE_BLACK_CENTS]);

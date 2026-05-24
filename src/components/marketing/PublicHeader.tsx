@@ -6,7 +6,6 @@ export async function PublicHeader() {
     <header className="border-b border-ink-100 bg-white/85 backdrop-blur sticky top-0 z-30">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
         <Link href="/" aria-label="Lomhifar">
-          {/* @ts-expect-error - Async Server Component */}
           <Logo showTagline size="md" />
         </Link>
         <nav className="flex items-center gap-2 text-sm">
@@ -27,7 +26,6 @@ export async function PublicFooter() {
     <footer className="border-t border-ink-100 bg-white">
       <div className="mx-auto max-w-6xl px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          {/* @ts-expect-error - Async Server Component */}
           <Logo size="sm" />
         </div>
         <div className="text-sm text-ink-500 text-center md:text-right">

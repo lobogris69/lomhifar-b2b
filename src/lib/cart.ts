@@ -1,5 +1,4 @@
 import { cookies } from 'next/headers';
-import { BraceletColor } from './enums';
 import { z } from 'zod';
 
 const CART_COOKIE = 'lomhifar_cart';
@@ -61,6 +60,6 @@ export function removeCartItem(id: string): CartItem[] {
   return cart;
 }
 
-export function colorLabel(color: BraceletColor): string {
-  return color === 'BLACK' ? 'Negra' : 'Roja';
+export function colorLabel(color: string): string {
+  return color === 'BLACK' ? 'Negra' : color === 'RED' ? 'Roja' : color;
 }

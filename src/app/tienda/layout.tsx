@@ -10,7 +10,6 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
   if (!session) redirect('/acceso');
   const cart = readCart();
   const cartCount = cart.reduce((a, b) => a + b.quantity, 0);
-  /* @ts-expect-error - Async Server Component */
   const logo = <Logo />;
 
   return (
@@ -21,7 +20,6 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
         logo={logo}
       />
       <main className="flex-1">{children}</main>
-      {/* @ts-expect-error - Async Server Component */}
       <PublicFooter />
     </div>
   );

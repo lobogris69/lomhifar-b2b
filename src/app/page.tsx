@@ -9,6 +9,9 @@ import {
   CheckCircle2,
   ArrowRight,
 } from 'lucide-react';
+
+// La landing consulta la BD para resolver el logo/imágenes custom → no se puede prerender estática.
+export const dynamic = 'force-dynamic';
 import { PublicHeader, PublicFooter } from '@/components/marketing/PublicHeader';
 import { BraceletPreview } from '@/components/shop/BraceletPreview';
 import { RealCasesGallery } from '@/components/marketing/RealCasesGallery';

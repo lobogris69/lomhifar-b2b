@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { CheckCircle2 } from 'lucide-react';
 
+// El layout público renderiza el Logo (consulta BD) → render dinámico
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: 'Solicitud enviada · Lomhifar' };
 
 export default function SentPage() {

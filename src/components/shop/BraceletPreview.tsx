@@ -1,10 +1,10 @@
 'use client';
 
-import { BraceletColor } from '@/lib/enums';
 import { cn } from '@/lib/utils';
 
 interface Props {
-  color: BraceletColor;
+  /** Color de la pulsera: "BLACK" | "RED" (string compatible con datos de Prisma) */
+  color: string;
   line1: string;
   line2: string;
   className?: string;
@@ -173,7 +173,6 @@ export function BraceletPreview({
           {/* TEXTO GRABADO — antracita (no negro), sin sombra de "tinta" */}
           <foreignObject x="252" y="28" width="180" height="34">
             <div
-              xmlns="http://www.w3.org/1999/xhtml"
               style={{
                 width: '100%',
                 height: '100%',

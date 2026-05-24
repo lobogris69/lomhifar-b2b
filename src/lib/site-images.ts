@@ -161,7 +161,12 @@ export async function getSiteImageBytes(slot: string): Promise<{
   const def = getSlotDefinition(slot);
   if (!def) return null;
 
-  const custom = await prisma.siteImage.findUnique({ where: { slot } });
+  let custom: Awaited<ReturnType<typeof prisma.siteImage.findUnique>> = null;
+  try {
+    custom = await prisma.siteImage.findUnique({ where: { slot } });
+  } catch {
+    custom = null;
+  }
   if (custom) {
     return {
       data: Buffer.from(custom.data),
@@ -201,15 +206,23 @@ export interface SiteImageMeta {
 
 /**
  * Devuelve metadatos sin cargar el binario (rápido).
+ * Es resiliente a fallos de BD (durante build, antes de db push, etc.) —
+ * en ese caso cae al default sin romper el render.
  */
 export async function getSiteImageMeta(slot: string): Promise<SiteImageMeta> {
   const def = getSlotDefinition(slot);
   if (!def) return { slot, isCustom: false, hasImage: false };
 
-  const custom = await prisma.siteImage.findUnique({
-    where: { slot },
-    select: { filename: true, mimeType: true, size: true, updatedAt: true },
-  });
+  let custom: { filename: string; mimeType: string; size: number; updatedAt: Date } | null = null;
+  try {
+    custom = await prisma.siteImage.findUnique({
+      where: { slot },
+      select: { filename: true, mimeType: true, size: true, updatedAt: true },
+    });
+  } catch {
+    // BD no disponible (probable en build time) → usar default
+    custom = null;
+  }
   if (custom) {
     return {
       slot,
@@ -244,11 +257,17 @@ export async function getSiteImageMeta(slot: string): Promise<SiteImageMeta> {
 
 /**
  * Devuelve metadatos de TODOS los slots (para el panel admin).
+ * Resiliente a fallos de BD.
  */
 export async function getAllSiteImageMeta(): Promise<SiteImageMeta[]> {
-  const customRows = await prisma.siteImage.findMany({
-    select: { slot: true, filename: true, mimeType: true, size: true, updatedAt: true },
-  });
+  let customRows: { slot: string; filename: string; mimeType: string; size: number; updatedAt: Date }[] = [];
+  try {
+    customRows = await prisma.siteImage.findMany({
+      select: { slot: true, filename: true, mimeType: true, size: true, updatedAt: true },
+    });
+  } catch {
+    customRows = [];
+  }
   const customMap = new Map(customRows.map((r) => [r.slot, r]));
 
   const results = await Promise.all(

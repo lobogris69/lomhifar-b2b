@@ -13,9 +13,7 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
 
   // Renderizamos el logo en el server (soporta uploads custom desde /admin/imagenes)
   // y lo pasamos como prop a los componentes cliente.
-  /* @ts-expect-error - Async Server Component */
   const sidebarLogo = <Logo variant="light" showTagline />;
-  /* @ts-expect-error - Async Server Component */
   const mobileLogo = <Logo variant="light" size="sm" />;
 
   return (

@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { OrderStatus } from '@/lib/enums';
 import { ClipboardList, Search } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { formatDate, formatEuros } from '@/lib/utils';
@@ -14,7 +13,7 @@ export default async function OrdersPage({
   searchParams: { q?: string; status?: string };
 }) {
   const q = (searchParams.q ?? '').trim();
-  const status = searchParams.status as OrderStatus | '' | undefined;
+  const status = (searchParams.status ?? '').trim();
 
   const where: Record<string, unknown> = {};
   if (q) {

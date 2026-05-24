@@ -17,10 +17,19 @@ const STYLES: Record<OrderStatus, string> = {
   CANCELLED: 'bg-red-100 text-red-800',
 };
 
-export function OrderStatusBadge({ status, className }: { status: OrderStatus; className?: string }) {
+const FALLBACK_STYLE = 'bg-ink-100 text-ink-700';
+
+/**
+ * Acepta `string` para ser compatible con datos directos desde Prisma
+ * (el campo status está modelado como String, no enum).
+ */
+export function OrderStatusBadge({ status, className }: { status: string; className?: string }) {
+  const key = status as OrderStatus;
+  const label = ORDER_STATUS_LABEL[key] ?? status;
+  const style = STYLES[key] ?? FALLBACK_STYLE;
   return (
-    <span className={cn('inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium', STYLES[status], className)}>
-      {ORDER_STATUS_LABEL[status]}
+    <span className={cn('inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium', style, className)}>
+      {label}
     </span>
   );
 }
