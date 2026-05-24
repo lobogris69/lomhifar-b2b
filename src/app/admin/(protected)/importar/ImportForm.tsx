@@ -181,13 +181,17 @@ function PreviewTable({
 }
 
 function ResultSummary({ summary }: { summary: NonNullable<ImportState['summary']> }) {
+  const seconds = (summary.elapsedMs / 1000).toFixed(1);
   return (
     <div className="space-y-4">
-      <Alert variant="success" title="Importación completada">
-        Creados: <strong>{summary.created}</strong> · Actualizados:{' '}
-        <strong>{summary.updated}</strong>
-        {summary.deactivated > 0 && <> · Desactivados: <strong>{summary.deactivated}</strong></>}
-        {summary.skipped > 0 && <> · Omitidos: <strong>{summary.skipped}</strong></>}
+      <Alert variant="success" title={`Importación completada en ${seconds}s`}>
+        <div className="grid sm:grid-cols-4 gap-2 mt-1 text-sm">
+          <Stat label="Total leídos" value={summary.total} />
+          <Stat label="Creados" value={summary.created} highlight />
+          <Stat label="Actualizados" value={summary.updated} highlight />
+          {summary.deactivated > 0 && <Stat label="Desactivados" value={summary.deactivated} />}
+          {summary.skipped > 0 && <Stat label="Omitidos" value={summary.skipped} warning />}
+        </div>
       </Alert>
       {summary.errors.length > 0 && (
         <div className="card p-5">
@@ -207,6 +211,15 @@ function ResultSummary({ summary }: { summary: NonNullable<ImportState['summary'
         <a href="/admin/clientes" className="btn-primary">Ver clientes</a>
         <a href="/admin/importar" className="btn-secondary">Importar otro archivo</a>
       </div>
+    </div>
+  );
+}
+
+function Stat({ label, value, highlight, warning }: { label: string; value: number; highlight?: boolean; warning?: boolean }) {
+  return (
+    <div className={`rounded p-2 ${highlight ? 'bg-brand-50' : warning ? 'bg-amber-50' : 'bg-white/60'}`}>
+      <div className="text-[10px] uppercase tracking-wider text-ink-500">{label}</div>
+      <div className={`text-lg font-semibold ${highlight ? 'text-brand-800' : warning ? 'text-amber-800' : 'text-ink-900'}`}>{value}</div>
     </div>
   );
 }
