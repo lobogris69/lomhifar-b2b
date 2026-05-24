@@ -5,10 +5,6 @@ import { prisma } from '@/lib/prisma';
 import { getAdminSession } from '@/lib/auth';
 import { parseCustomersExcel, type ParsedCustomerRow } from '@/lib/excel';
 
-// Tope superior del tiempo de ejecución de esta server action (Vercel/Railway).
-// 5 min debe sobrar incluso para 5000 filas.
-export const maxDuration = 300;
-
 export interface ImportState {
   headerErrors?: string[];
   preview?: ParsedCustomerRow[];

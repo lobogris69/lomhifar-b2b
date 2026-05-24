@@ -2,6 +2,9 @@ import { FileSpreadsheet } from 'lucide-react';
 import { ImportForm } from './ImportForm';
 
 export const metadata = { title: 'Importar Excel · Admin Lomhifar' };
+// Tope superior del tiempo de ejecución de las server actions en esta página.
+// 5 min basta para importar 5000+ filas.
+export const maxDuration = 300;
 
 export default function ImportPage() {
   return (
