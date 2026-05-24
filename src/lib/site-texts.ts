@@ -10,7 +10,7 @@ export type TextType = 'short' | 'long' | 'select';
 
 export interface TextSlot {
   key: string;                  // p.ej. "acceso.titulo"
-  group: 'acceso' | 'tienda' | 'general';
+  group: 'acceso' | 'landing' | 'tienda' | 'producto' | 'general';
   groupLabel: string;
   label: string;                // Título del campo en el admin
   description?: string;         // Ayuda contextual
@@ -166,6 +166,218 @@ export const TEXT_SLOTS: TextSlot[] = [
     defaultValue: 'TFNO 666 123 456',
     type: 'short',
     maxLength: 14,
+  },
+
+  // ============ LANDING PRINCIPAL (/) ============
+  {
+    key: 'landing.hero_badge',
+    group: 'landing',
+    groupLabel: 'Landing principal · Hero',
+    label: 'Etiqueta superior del hero',
+    defaultValue: 'Plataforma privada · Acceso solo farmacias',
+    type: 'short', maxLength: 80,
+  },
+  {
+    key: 'landing.hero_titulo_1',
+    group: 'landing',
+    groupLabel: 'Landing principal · Hero',
+    label: 'Título — Primera línea',
+    defaultValue: 'Pulseras sanitarias',
+    type: 'short', maxLength: 60,
+  },
+  {
+    key: 'landing.hero_titulo_destacado',
+    group: 'landing',
+    groupLabel: 'Landing principal · Hero',
+    label: 'Título — Línea destacada (gradient)',
+    defaultValue: 'personalizadas',
+    type: 'short', maxLength: 60,
+  },
+  {
+    key: 'landing.hero_titulo_2',
+    group: 'landing',
+    groupLabel: 'Landing principal · Hero',
+    label: 'Título — Tercera línea',
+    defaultValue: 'para su farmacia.',
+    type: 'short', maxLength: 60,
+  },
+  {
+    key: 'landing.hero_descripcion',
+    group: 'landing',
+    groupLabel: 'Landing principal · Hero',
+    label: 'Descripción del hero',
+    defaultValue:
+      'Lomhifar pone a disposición del canal farmacia un sistema profesional para pedir pulseras de identificación médica con grabado láser, listas para entregar al paciente. Negras o rojas, dos líneas de grabado a láser sobre placa de aluminio de 4 × 1 cm.',
+    type: 'long', maxLength: 500,
+  },
+  {
+    key: 'landing.hero_cta_principal',
+    group: 'landing',
+    groupLabel: 'Landing principal · Hero',
+    label: 'Botón principal',
+    defaultValue: 'Acceder con CIF y email',
+    type: 'short', maxLength: 40,
+  },
+  {
+    key: 'landing.hero_cta_secundario',
+    group: 'landing',
+    groupLabel: 'Landing principal · Hero',
+    label: 'Botón secundario',
+    defaultValue: 'Solicitar alta de farmacia',
+    type: 'short', maxLength: 40,
+  },
+  {
+    key: 'landing.hero_stat1_valor',
+    group: 'landing',
+    groupLabel: 'Landing principal · Hero',
+    label: 'KPI 1 — Valor',
+    defaultValue: '22 × 1',
+    type: 'short', maxLength: 20,
+  },
+  {
+    key: 'landing.hero_stat1_label',
+    group: 'landing',
+    groupLabel: 'Landing principal · Hero',
+    label: 'KPI 1 — Texto',
+    defaultValue: 'cm pulsera',
+    type: 'short', maxLength: 30,
+  },
+  {
+    key: 'landing.hero_stat2_valor',
+    group: 'landing',
+    groupLabel: 'Landing principal · Hero',
+    label: 'KPI 2 — Valor',
+    defaultValue: '4 × 1',
+    type: 'short', maxLength: 20,
+  },
+  {
+    key: 'landing.hero_stat2_label',
+    group: 'landing',
+    groupLabel: 'Landing principal · Hero',
+    label: 'KPI 2 — Texto',
+    defaultValue: 'cm placa aluminio',
+    type: 'short', maxLength: 30,
+  },
+  {
+    key: 'landing.hero_stat3_valor',
+    group: 'landing',
+    groupLabel: 'Landing principal · Hero',
+    label: 'KPI 3 — Valor',
+    defaultValue: '7 días',
+    type: 'short', maxLength: 20,
+  },
+  {
+    key: 'landing.hero_stat3_label',
+    group: 'landing',
+    groupLabel: 'Landing principal · Hero',
+    label: 'KPI 3 — Texto',
+    defaultValue: 'plazo entrega',
+    type: 'short', maxLength: 30,
+  },
+  {
+    key: 'landing.cta_final_titulo',
+    group: 'landing',
+    groupLabel: 'Landing principal · CTA final',
+    label: 'CTA final — Título',
+    defaultValue: '¿Su farmacia trabaja ya con Lomhifar?',
+    type: 'short', maxLength: 100,
+  },
+  {
+    key: 'landing.cta_final_descripcion',
+    group: 'landing',
+    groupLabel: 'Landing principal · CTA final',
+    label: 'CTA final — Descripción',
+    defaultValue:
+      'Acceda con su CIF y el email registrado. Si aún no es cliente, solicite el alta y nuestro equipo validará su farmacia en horas hábiles.',
+    type: 'long', maxLength: 300,
+  },
+
+  // ============ SECCIÓN "EL PRODUCTO" ============
+  {
+    key: 'producto.titulo',
+    group: 'producto',
+    groupLabel: 'Sección "El producto" (landing)',
+    label: 'Título',
+    defaultValue: 'Pulsera de silicona médica con placa de aluminio grabada a láser',
+    type: 'short', maxLength: 120,
+  },
+  {
+    key: 'producto.descripcion',
+    group: 'producto',
+    groupLabel: 'Sección "El producto" (landing)',
+    label: 'Descripción',
+    defaultValue:
+      'Silicona hipoalergénica de grado médico, cierre regulable, placa central de aluminio con grabado láser permanente en tono antracita.',
+    type: 'long', maxLength: 400,
+  },
+
+  // ============ CONFIGURADOR (/tienda) ============
+  {
+    key: 'tienda.badge',
+    group: 'tienda',
+    groupLabel: 'Configurador de pulseras',
+    label: 'Etiqueta superior',
+    defaultValue: 'Configurador de pulseras',
+    type: 'short', maxLength: 60,
+  },
+  {
+    key: 'tienda.titulo',
+    group: 'tienda',
+    groupLabel: 'Configurador de pulseras',
+    label: 'Título principal',
+    defaultValue: 'Diseñe su pulsera y añádala al carrito',
+    type: 'short', maxLength: 100,
+  },
+  {
+    key: 'tienda.descripcion',
+    group: 'tienda',
+    groupLabel: 'Configurador de pulseras',
+    label: 'Descripción',
+    defaultValue:
+      'Vea el grabado en tiempo real sobre la pulsera y confirme expresamente antes de continuar.',
+    type: 'long', maxLength: 300,
+  },
+  {
+    key: 'tienda.paso1_titulo',
+    group: 'tienda',
+    groupLabel: 'Configurador de pulseras',
+    label: 'Paso 1 — Título',
+    defaultValue: '1. Color de la pulsera',
+    type: 'short', maxLength: 60,
+  },
+  {
+    key: 'tienda.paso2_titulo',
+    group: 'tienda',
+    groupLabel: 'Configurador de pulseras',
+    label: 'Paso 2 — Título',
+    defaultValue: '2. Unidades',
+    type: 'short', maxLength: 60,
+  },
+  {
+    key: 'tienda.paso3_titulo',
+    group: 'tienda',
+    groupLabel: 'Configurador de pulseras',
+    label: 'Paso 3 — Título',
+    defaultValue: '3. Texto grabado',
+    type: 'short', maxLength: 60,
+  },
+  {
+    key: 'tienda.paso4_titulo',
+    group: 'tienda',
+    groupLabel: 'Configurador de pulseras',
+    label: 'Paso 4 — Título',
+    defaultValue: '4. Confirmación',
+    type: 'short', maxLength: 60,
+  },
+  {
+    key: 'tienda.confirmacion_texto',
+    group: 'tienda',
+    groupLabel: 'Configurador de pulseras',
+    label: 'Texto del checkbox de confirmación',
+    description: 'Importante: este texto el cliente DEBE marcarlo expresamente antes de añadir al carrito',
+    defaultValue:
+      'Confirmo que el color, las unidades y el texto grabado son correctos. Entiendo que las pulseras se fabricarán exactamente con estos datos.',
+    type: 'long', maxLength: 400,
   },
 ];
 

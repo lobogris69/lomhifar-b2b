@@ -18,8 +18,10 @@ import { RealCasesGallery } from '@/components/marketing/RealCasesGallery';
 import { PatientPersonas } from '@/components/marketing/PatientPersonas';
 import { AwarenessStats } from '@/components/marketing/AwarenessStats';
 import { PharmacistGuide } from '@/components/marketing/PharmacistGuide';
+import { getAllSiteTexts } from '@/lib/site-texts';
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const t = await getAllSiteTexts();
   return (
     <div className="flex min-h-screen flex-col">
       <PublicHeader />
@@ -39,44 +41,41 @@ export default function LandingPage() {
             <div>
               <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.22em] text-brand-100 backdrop-blur border border-white/10">
                 <ShieldCheck className="h-3.5 w-3.5" />
-                Plataforma privada · Acceso solo farmacias
+                {t['landing.hero_badge']}
               </span>
               <h1 className="mt-6 text-4xl lg:text-[3.4rem] font-semibold tracking-tight leading-[1.05]">
-                Pulseras sanitarias
+                {t['landing.hero_titulo_1']}
                 <br />
                 <span className="bg-gradient-to-r from-brand-300 via-brand-200 to-white bg-clip-text text-transparent">
-                  personalizadas
+                  {t['landing.hero_titulo_destacado']}
                 </span>
                 <br />
-                para su farmacia.
+                {t['landing.hero_titulo_2']}
               </h1>
               <p className="mt-6 text-lg text-white/80 max-w-xl leading-relaxed">
-                Lomhifar pone a disposición del canal farmacia un sistema profesional
-                para pedir pulseras de identificación médica con grabado láser, listas
-                para entregar al paciente. Negras o rojas, dos líneas de grabado a láser
-                sobre placa de aluminio de 4 × 1 cm.
+                {t['landing.hero_descripcion']}
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <Link
                   href="/acceso"
                   className="btn-primary bg-white text-ink-900 hover:bg-brand-50 hover:text-brand-800 px-6 py-3 text-base shadow-glow"
                 >
-                  Acceder con CIF y email <ArrowRight className="h-4 w-4" />
+                  {t['landing.hero_cta_principal']} <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   href="/solicitud"
                   className="btn-secondary bg-transparent text-white border-white/30 hover:bg-white/10 px-6 py-3 text-base"
                 >
-                  Solicitar alta de farmacia
+                  {t['landing.hero_cta_secundario']}
                 </Link>
               </div>
               <div className="mt-8 grid grid-cols-3 gap-4 max-w-md">
                 {[
-                  { v: '22 × 1', l: 'cm pulsera' },
-                  { v: '4 × 1', l: 'cm placa aluminio' },
-                  { v: '7 días', l: 'plazo entrega' },
-                ].map((s) => (
-                  <div key={s.l} className="border-l-2 border-brand-500 pl-3">
+                  { v: t['landing.hero_stat1_valor'], l: t['landing.hero_stat1_label'] },
+                  { v: t['landing.hero_stat2_valor'], l: t['landing.hero_stat2_label'] },
+                  { v: t['landing.hero_stat3_valor'], l: t['landing.hero_stat3_label'] },
+                ].map((s, i) => (
+                  <div key={i} className="border-l-2 border-brand-500 pl-3">
                     <div className="text-xl font-semibold">{s.v}</div>
                     <div className="text-xs text-white/60">{s.l}</div>
                   </div>
@@ -125,11 +124,10 @@ export default function LandingPage() {
             <div>
               <span className="badge-brand">El producto</span>
               <h2 className="mt-4 section-title text-3xl">
-                Pulsera de silicona médica con placa de aluminio grabada a láser
+                {t['producto.titulo']}
               </h2>
               <p className="section-subtitle text-base mb-6">
-                Silicona hipoalergénica de grado médico, cierre regulable, placa central
-                de aluminio con grabado láser permanente en tono antracita.
+                {t['producto.descripcion']}
               </p>
               <ul className="space-y-3">
                 {[
@@ -235,11 +233,10 @@ export default function LandingPage() {
           <div className="relative mx-auto max-w-6xl px-6 py-16 flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
               <h2 className="text-2xl md:text-3xl font-semibold">
-                ¿Su farmacia trabaja ya con Lomhifar?
+                {t['landing.cta_final_titulo']}
               </h2>
               <p className="mt-2 text-white/85 text-sm md:text-base max-w-xl">
-                Acceda con su CIF y el email registrado. Si aún no es cliente, solicite
-                el alta y nuestro equipo validará su farmacia en horas hábiles.
+                {t['landing.cta_final_descripcion']}
               </p>
             </div>
             <div className="flex gap-3 shrink-0">

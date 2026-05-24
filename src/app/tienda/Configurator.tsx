@@ -13,6 +13,13 @@ interface Props {
   priceRedCents: number;
   maxCharsPerLine: number;
   deliveryDays: number;
+  texts: {
+    paso1: string;
+    paso2: string;
+    paso3: string;
+    paso4: string;
+    confirmacion: string;
+  };
 }
 
 const initial: AddState = {};
@@ -31,7 +38,7 @@ function SubmitBtn({ disabled }: { disabled: boolean }) {
   );
 }
 
-export function Configurator({ priceBlackCents, priceRedCents, maxCharsPerLine, deliveryDays }: Props) {
+export function Configurator({ priceBlackCents, priceRedCents, maxCharsPerLine, deliveryDays, texts }: Props) {
   const [color, setColor] = useState<'BLACK' | 'RED'>('BLACK');
   const [quantity, setQuantity] = useState<number>(10);
   const [line1, setLine1] = useState('');
@@ -98,7 +105,7 @@ export function Configurator({ priceBlackCents, priceRedCents, maxCharsPerLine, 
 
         {/* Color */}
         <section className="card p-6">
-          <h3 className="text-sm font-semibold text-ink-900 mb-3">1. Color de la pulsera</h3>
+          <h3 className="text-sm font-semibold text-ink-900 mb-3">{texts.paso1}</h3>
           <div className="grid grid-cols-2 gap-3">
             <ColorOption
               label="Negra"
@@ -118,7 +125,7 @@ export function Configurator({ priceBlackCents, priceRedCents, maxCharsPerLine, 
 
         {/* Unidades */}
         <section className="card p-6">
-          <h3 className="text-sm font-semibold text-ink-900 mb-3">2. Unidades</h3>
+          <h3 className="text-sm font-semibold text-ink-900 mb-3">{texts.paso2}</h3>
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -162,7 +169,7 @@ export function Configurator({ priceBlackCents, priceRedCents, maxCharsPerLine, 
 
         {/* Grabado */}
         <section className="card p-6">
-          <h3 className="text-sm font-semibold text-ink-900 mb-3">3. Texto grabado</h3>
+          <h3 className="text-sm font-semibold text-ink-900 mb-3">{texts.paso3}</h3>
           <div className="space-y-4">
             <div>
               <label className="label flex items-center justify-between" htmlFor="line1">
@@ -236,7 +243,7 @@ export function Configurator({ priceBlackCents, priceRedCents, maxCharsPerLine, 
 
         {/* Confirmación */}
         <section className="card p-6 border-brand-200 bg-brand-50/40">
-          <h3 className="text-sm font-semibold text-ink-900 mb-3">4. Confirmación</h3>
+          <h3 className="text-sm font-semibold text-ink-900 mb-3">{texts.paso4}</h3>
           <div className="rounded-lg bg-white border border-ink-100 p-4 mb-4">
             <div className="grid grid-cols-3 gap-3 text-sm">
               <Summary label="Color" value={color === 'BLACK' ? 'Negra' : 'Roja'} />
@@ -256,8 +263,7 @@ export function Configurator({ priceBlackCents, priceRedCents, maxCharsPerLine, 
               required
             />
             <span className="text-sm text-ink-800 leading-relaxed">
-              <strong>Confirmo</strong> que el color, las unidades y el texto grabado son
-              correctos. Entiendo que las pulseras se fabricarán exactamente con estos datos.
+              {texts.confirmacion}
             </span>
           </label>
           {state.fieldErrors?.confirmed && (
