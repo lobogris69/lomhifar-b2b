@@ -11,6 +11,7 @@ const addSchema = z.object({
   quantity: z.coerce.number().int().min(1).max(9999),
   line1: z.string().min(1, 'La línea 1 es obligatoria').max(40),
   line2: z.string().max(40),
+  line3: z.string().max(40),
   confirmed: z.literal('on', {
     errorMap: () => ({ message: 'Debe confirmar que los datos son correctos' }),
   }),
@@ -34,6 +35,7 @@ export async function addBraceletToCart(
     quantity: String(formData.get('quantity') ?? '1'),
     line1: String(formData.get('line1') ?? '').trim(),
     line2: String(formData.get('line2') ?? '').trim(),
+    line3: String(formData.get('line3') ?? '').trim(),
     confirmed: String(formData.get('confirmed') ?? ''),
   };
 
@@ -49,6 +51,7 @@ export async function addBraceletToCart(
     quantity: parsed.data.quantity,
     line1: parsed.data.line1,
     line2: parsed.data.line2,
+    line3: parsed.data.line3,
   });
 
   revalidatePath('/tienda');

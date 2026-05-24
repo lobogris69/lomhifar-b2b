@@ -111,23 +111,28 @@ export default async function OrderDetailPage({
               <tr>
                 <th>Color</th>
                 <th className="text-center">Uds</th>
-                <th>Línea 1</th>
-                <th>Línea 2</th>
+                <th>Texto grabado</th>
                 <th className="text-right">Precio ud.</th>
                 <th className="text-right">Subtotal</th>
               </tr>
             </thead>
             <tbody>
-              {order.items.map((it) => (
-                <tr key={it.id}>
-                  <td>{colorLabel(it.color)}</td>
-                  <td className="text-center">{it.quantity}</td>
-                  <td className="font-mono">{it.line1}</td>
-                  <td className="font-mono">{it.line2 || '—'}</td>
-                  <td className="text-right">{formatEuros(it.unitPriceCents)}</td>
-                  <td className="text-right font-medium">{formatEuros(it.lineTotalCents)}</td>
-                </tr>
-              ))}
+              {order.items.map((it) => {
+                const lines = [it.line1, it.line2, it.line3].filter((l) => l && l.trim().length > 0);
+                return (
+                  <tr key={it.id}>
+                    <td>{colorLabel(it.color)}</td>
+                    <td className="text-center">{it.quantity}</td>
+                    <td className="font-mono leading-snug">
+                      {lines.map((l, i) => (
+                        <div key={i}>{l}</div>
+                      ))}
+                    </td>
+                    <td className="text-right">{formatEuros(it.unitPriceCents)}</td>
+                    <td className="text-right font-medium">{formatEuros(it.lineTotalCents)}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

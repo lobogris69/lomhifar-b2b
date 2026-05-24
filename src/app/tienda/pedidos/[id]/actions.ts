@@ -27,6 +27,7 @@ export async function reorderAction(formData: FormData) {
       quantity: it.quantity,
       line1: it.line1,
       line2: it.line2,
+      line3: it.line3 ?? '',
     });
   }
 

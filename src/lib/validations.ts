@@ -83,6 +83,7 @@ export const cartItemSchema = z.object({
   quantity: z.number().int().min(1).max(9999),
   line1: z.string().min(1, 'La línea 1 es obligatoria').max(40),
   line2: z.string().max(40),
+  line3: z.string().max(40),
   confirmed: z.literal(true, {
     errorMap: () => ({ message: 'Debes confirmar que los datos son correctos' }),
   }),

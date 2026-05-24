@@ -105,6 +105,7 @@ export async function placeOrder(
           quantity: it.quantity,
           line1: it.line1,
           line2: it.line2,
+          line3: it.line3 ?? '',
           unitPriceCents: it.unitPriceCents,
           lineTotalCents: it.lineTotalCents,
         })),
@@ -163,8 +164,7 @@ export async function placeOrder(
           <tr style="background:#f0faf5;">
             <th align="left" style="padding:8px;border:1px solid #b7e6cf;">Color</th>
             <th align="center" style="padding:8px;border:1px solid #b7e6cf;width:70px;">Uds</th>
-            <th align="left" style="padding:8px;border:1px solid #b7e6cf;">Línea 1</th>
-            <th align="left" style="padding:8px;border:1px solid #b7e6cf;">Línea 2</th>
+            <th align="left" style="padding:8px;border:1px solid #b7e6cf;">Texto grabado</th>
             <th align="right" style="padding:8px;border:1px solid #b7e6cf;width:90px;">Total</th>
           </tr>
         </thead>
@@ -195,8 +195,7 @@ export async function placeOrder(
           <tr style="background:#fce7f4;">
             <th align="left" style="padding:8px;border:1px solid #f8a8d4;">Color</th>
             <th align="center" style="padding:8px;border:1px solid #f8a8d4;width:70px;">Uds</th>
-            <th align="left" style="padding:8px;border:1px solid #f8a8d4;">Línea 1</th>
-            <th align="left" style="padding:8px;border:1px solid #f8a8d4;">Línea 2</th>
+            <th align="left" style="padding:8px;border:1px solid #f8a8d4;">Texto grabado</th>
             <th align="right" style="padding:8px;border:1px solid #f8a8d4;width:90px;">Total</th>
           </tr>
         </thead>
@@ -236,15 +235,19 @@ function orderRowHtml(it: {
   quantity: number;
   line1: string;
   line2: string;
+  line3?: string;
   unitPriceCents: number;
   lineTotalCents: number;
 }): string {
   const color = it.color === 'BLACK' ? 'Negra' : 'Roja';
+  const engraving = [it.line1, it.line2, it.line3 ?? '']
+    .filter((l): l is string => Boolean(l && l.trim().length > 0))
+    .map((l) => esc(l))
+    .join('<br/>');
   return `<tr>
     <td style="padding:8px;border:1px solid #ebeef0;">${color}</td>
     <td style="padding:8px;border:1px solid #ebeef0;text-align:center;">${it.quantity}</td>
-    <td style="padding:8px;border:1px solid #ebeef0;font-family:monospace;">${esc(it.line1)}</td>
-    <td style="padding:8px;border:1px solid #ebeef0;font-family:monospace;">${esc(it.line2 || '—')}</td>
+    <td style="padding:8px;border:1px solid #ebeef0;font-family:monospace;line-height:1.5;">${engraving}</td>
     <td style="padding:8px;border:1px solid #ebeef0;text-align:right;">${formatEuros(it.lineTotalCents)}</td>
   </tr>`;
 }

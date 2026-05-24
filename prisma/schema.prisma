@@ -207,6 +207,7 @@ model OrderItem {
   quantity      Int
   line1         String
   line2         String
+  line3         String   @default("")
 
   unitPriceCents Int
   lineTotalCents Int

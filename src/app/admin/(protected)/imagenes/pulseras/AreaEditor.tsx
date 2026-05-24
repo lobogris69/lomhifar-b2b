@@ -37,6 +37,7 @@ export function AreaEditor({ initialBlack, initialRed, photoBlackUrl, photoRedUr
   const [red, setRed] = useState<PrintArea>(initialRed);
   const [sampleLine1, setSampleLine1] = useState('DIABETES TIPO 1');
   const [sampleLine2, setSampleLine2] = useState('TFNO 666 123 456');
+  const [sampleLine3, setSampleLine3] = useState('');
 
   return (
     <form action={action} className="space-y-8">
@@ -53,7 +54,7 @@ export function AreaEditor({ initialBlack, initialRed, photoBlackUrl, photoRedUr
           Usa cualquier texto para ver cómo queda. Lo que escriban tus clientes en el
           configurador se renderiza igual.
         </p>
-        <div className="grid sm:grid-cols-2 gap-3">
+        <div className="grid sm:grid-cols-3 gap-3">
           <div>
             <label className="label" htmlFor="sl1">Línea 1</label>
             <input
@@ -74,7 +75,22 @@ export function AreaEditor({ initialBlack, initialRed, photoBlackUrl, photoRedUr
               className="input"
             />
           </div>
+          <div>
+            <label className="label" htmlFor="sl3">Línea 3</label>
+            <input
+              id="sl3"
+              type="text"
+              value={sampleLine3}
+              onChange={(e) => setSampleLine3(e.target.value.slice(0, 20))}
+              className="input"
+              placeholder="(opcional)"
+            />
+          </div>
         </div>
+        <p className="text-[11px] text-ink-500 mt-2">
+          El cliente puede grabar 1, 2 o 3 líneas. Prueba aquí cómo se vería cada caso para
+          asegurar que el texto cabe en el área.
+        </p>
       </div>
 
       <BraceletAreaPanel
@@ -85,6 +101,7 @@ export function AreaEditor({ initialBlack, initialRed, photoBlackUrl, photoRedUr
         setArea={setBlack}
         sampleLine1={sampleLine1}
         sampleLine2={sampleLine2}
+        sampleLine3={sampleLine3}
       />
 
       <BraceletAreaPanel
@@ -95,6 +112,7 @@ export function AreaEditor({ initialBlack, initialRed, photoBlackUrl, photoRedUr
         setArea={setRed}
         sampleLine1={sampleLine1}
         sampleLine2={sampleLine2}
+        sampleLine3={sampleLine3}
       />
 
       <div className="flex justify-end">
@@ -112,6 +130,7 @@ function BraceletAreaPanel({
   setArea,
   sampleLine1,
   sampleLine2,
+  sampleLine3,
 }: {
   title: string;
   photoUrl: string | null;
@@ -120,6 +139,7 @@ function BraceletAreaPanel({
   setArea: (a: PrintArea) => void;
   sampleLine1: string;
   sampleLine2: string;
+  sampleLine3: string;
 }) {
   function update(k: keyof PrintArea, v: number | string) {
     setArea({ ...area, [k]: v });
@@ -152,6 +172,7 @@ function BraceletAreaPanel({
                 area={area}
                 line1={sampleLine1}
                 line2={sampleLine2}
+                line3={sampleLine3}
                 showArea
               />
             </div>

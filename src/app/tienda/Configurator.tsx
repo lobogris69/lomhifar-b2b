@@ -2,7 +2,7 @@
 
 import { useFormState, useFormStatus } from 'react-dom';
 import { useMemo, useState } from 'react';
-import { Check, ShoppingCart, Loader2 } from 'lucide-react';
+import { Check, ShoppingCart, Loader2, Plus, X } from 'lucide-react';
 import { BraceletPreview } from '@/components/shop/BraceletPreview';
 import { BraceletPhoto } from '@/components/shop/BraceletPhoto';
 import { Alert } from '@/components/ui/Alert';
@@ -13,6 +13,7 @@ import type { PrintArea } from '@/lib/settings';
 interface Props {
   priceBlackCents: number;
   priceRedCents: number;
+  /** PVPR conservado por compatibilidad; ya no se renderiza el bloque de margen */
   pvprCents: number;
   maxCharsPerLine: number;
   deliveryDays: number;
@@ -51,7 +52,6 @@ function SubmitBtn({ disabled }: { disabled: boolean }) {
 export function Configurator({
   priceBlackCents,
   priceRedCents,
-  pvprCents,
   maxCharsPerLine,
   deliveryDays,
   photoBlackUrl,
@@ -64,13 +64,14 @@ export function Configurator({
   const [quantity, setQuantity] = useState<number>(10);
   const [line1, setLine1] = useState('');
   const [line2, setLine2] = useState('');
+  const [line3, setLine3] = useState('');
+  const [showLine2, setShowLine2] = useState(false);
+  const [showLine3, setShowLine3] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [state, action] = useFormState(addBraceletToCart, initial);
 
   const unitPrice = color === 'BLACK' ? priceBlackCents : priceRedCents;
   const lineTotal = unitPrice * quantity;
-  const marginPerUnit = Math.max(0, pvprCents - unitPrice);
-  const marginTotal = marginPerUnit * quantity;
 
   const currentPhotoUrl = color === 'BLACK' ? photoBlackUrl : photoRedUrl;
   const currentArea = color === 'BLACK' ? areaBlack : areaRed;
@@ -81,11 +82,37 @@ export function Configurator({
   );
 
   function handleLineChange(setter: (s: string) => void, value: string) {
-    // Normalizar: solo caracteres permitidos para grabado (sin saltos de línea), recortar
     const cleaned = value.replace(/\s+/g, ' ').slice(0, maxCharsPerLine);
     setter(cleaned);
     if (confirmed) setConfirmed(false);
   }
+
+  function addLine2() {
+    setShowLine2(true);
+  }
+  function removeLine2() {
+    setShowLine2(false);
+    setLine2('');
+    // Si quitamos la 2, también quitamos la 3 porque no tendría sentido
+    if (showLine3) {
+      setShowLine3(false);
+      setLine3('');
+    }
+  }
+  function addLine3() {
+    setShowLine3(true);
+  }
+  function removeLine3() {
+    setShowLine3(false);
+    setLine3('');
+  }
+
+  // El usuario ve la línea 2 si la ha activado, y la 3 sólo si la 2 está activa
+  const line2Visible = showLine2 || line2.length > 0;
+  const line3Visible = (showLine3 || line3.length > 0) && line2Visible;
+  // Texto que se renderiza en la pulsera (solo las líneas activas)
+  const previewLine2 = line2Visible ? line2 : '';
+  const previewLine3 = line3Visible ? line3 : '';
 
   return (
     <div className="grid lg:grid-cols-5 gap-8 relative">
@@ -98,12 +125,13 @@ export function Configurator({
                 imageUrl={currentPhotoUrl}
                 area={currentArea}
                 line1={line1}
-                line2={line2}
+                line2={previewLine2}
+                line3={previewLine3}
                 alt={`Pulsera ${color === 'BLACK' ? 'negra' : 'roja'} Lomhifar`}
               />
             </div>
           ) : (
-            <BraceletPreview color={color} line1={line1.toUpperCase()} line2={line2.toUpperCase()} size="sm" />
+            <BraceletPreview color={color} line1={line1.toUpperCase()} line2={previewLine2.toUpperCase()} size="sm" />
           )}
           <div className="mt-2 flex items-center justify-between text-xs">
             <span className="text-ink-500">
@@ -111,14 +139,6 @@ export function Configurator({
             </span>
             <span className="text-base font-semibold text-brand-800">
               {formatEuros(lineTotal)}
-            </span>
-          </div>
-          <div className="mt-2 pt-2 border-t border-ink-100 flex items-center justify-between text-[11px]">
-            <span className="text-emerald-700 font-semibold">
-              {texts.pvprEtiqueta}: {formatEuros(pvprCents)}
-            </span>
-            <span className="text-emerald-800">
-              margen +{formatEuros(marginPerUnit)}/ud
             </span>
           </div>
         </div>
@@ -132,11 +152,12 @@ export function Configurator({
               imageUrl={currentPhotoUrl}
               area={currentArea}
               line1={line1}
-              line2={line2}
+              line2={previewLine2}
+              line3={previewLine3}
               alt={`Pulsera ${color === 'BLACK' ? 'negra' : 'roja'} Lomhifar`}
             />
           ) : (
-            <BraceletPreview color={color} line1={line1.toUpperCase()} line2={line2.toUpperCase()} />
+            <BraceletPreview color={color} line1={line1.toUpperCase()} line2={previewLine2.toUpperCase()} />
           )}
           <div className="card p-4">
             <div className="flex items-center justify-between text-sm">
@@ -151,32 +172,6 @@ export function Configurator({
               <span className="text-ink-500 text-sm">Total de esta línea</span>
               <span className="text-lg font-semibold text-brand-800">{formatEuros(lineTotal)}</span>
             </div>
-          </div>
-
-          {/* PVPR + margen */}
-          <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] uppercase tracking-wider font-semibold text-emerald-700">
-                {texts.pvprEtiqueta}
-              </span>
-              <span className="text-lg font-semibold text-emerald-800">
-                {formatEuros(pvprCents)}
-              </span>
-            </div>
-            <div className="text-[11px] text-emerald-700/80 mb-3 leading-snug">
-              Precio sugerido al paciente final (igual negra o roja).
-            </div>
-            <div className="border-t border-emerald-200 pt-2 flex items-center justify-between">
-              <span className="text-xs text-emerald-800">{texts.pvprMargenTexto}</span>
-              <span className="text-sm font-semibold text-emerald-900">
-                +{formatEuros(marginPerUnit)}
-              </span>
-            </div>
-            {quantity > 1 && marginPerUnit > 0 && (
-              <div className="mt-1 text-[11px] text-emerald-700/80 text-right">
-                × {quantity} ud · margen línea {formatEuros(marginTotal)}
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -249,10 +244,16 @@ export function Configurator({
           {state.fieldErrors?.quantity && <p className="field-error">{state.fieldErrors.quantity}</p>}
         </section>
 
-        {/* Grabado */}
+        {/* Grabado: 1, 2 o 3 líneas a elección del cliente */}
         <section className="card p-6">
-          <h3 className="text-sm font-semibold text-ink-900 mb-3">{texts.paso3}</h3>
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <h3 className="text-sm font-semibold text-ink-900">{texts.paso3}</h3>
+            <span className="text-[11px] text-ink-500">
+              Puede grabar hasta <strong>3 líneas</strong> sobre la placa
+            </span>
+          </div>
           <div className="space-y-4">
+            {/* Línea 1 (obligatoria) */}
             <div>
               <label className="label flex items-center justify-between" htmlFor="line1">
                 <span>Línea 1 <span className="text-danger">*</span></span>
@@ -274,29 +275,99 @@ export function Configurator({
               />
               {state.fieldErrors?.line1 && <p className="field-error">{state.fieldErrors.line1}</p>}
             </div>
-            <div>
-              <label className="label flex items-center justify-between" htmlFor="line2">
-                <span>Línea 2 (opcional)</span>
-                <span className="text-xs font-normal text-ink-400">
-                  {line2.length}/{maxCharsPerLine}
-                </span>
-              </label>
-              <input
-                id="line2"
-                name="line2"
-                type="text"
-                maxLength={maxCharsPerLine}
-                value={line2}
-                onChange={(e) => handleLineChange(setLine2, e.target.value)}
-                placeholder="Ej: TFNO 666 123 456"
-                className="input uppercase tracking-wide"
-                autoComplete="off"
-              />
-              {state.fieldErrors?.line2 && <p className="field-error">{state.fieldErrors.line2}</p>}
-            </div>
+
+            {/* Línea 2 (opcional) — se muestra al pulsar + Añadir línea 2 */}
+            {!line2Visible ? (
+              <button
+                type="button"
+                onClick={addLine2}
+                className="btn-secondary text-sm w-full justify-center"
+              >
+                <Plus className="h-4 w-4" /> Añadir línea 2 (opcional)
+              </button>
+            ) : (
+              <div>
+                <label className="label flex items-center justify-between" htmlFor="line2">
+                  <span>Línea 2</span>
+                  <span className="flex items-center gap-2">
+                    <span className="text-xs font-normal text-ink-400">
+                      {line2.length}/{maxCharsPerLine}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={removeLine2}
+                      className="text-[11px] text-ink-400 hover:text-danger inline-flex items-center gap-0.5"
+                      title="Quitar esta línea"
+                    >
+                      <X className="h-3 w-3" /> quitar
+                    </button>
+                  </span>
+                </label>
+                <input
+                  id="line2"
+                  name="line2"
+                  type="text"
+                  maxLength={maxCharsPerLine}
+                  value={line2}
+                  onChange={(e) => handleLineChange(setLine2, e.target.value)}
+                  placeholder="Ej: TFNO 666 123 456"
+                  className="input uppercase tracking-wide"
+                  autoComplete="off"
+                />
+                {state.fieldErrors?.line2 && <p className="field-error">{state.fieldErrors.line2}</p>}
+              </div>
+            )}
+
+            {/* Línea 3 (opcional) — solo si hay línea 2 */}
+            {line2Visible && !line3Visible && (
+              <button
+                type="button"
+                onClick={addLine3}
+                className="btn-secondary text-sm w-full justify-center"
+              >
+                <Plus className="h-4 w-4" /> Añadir línea 3 (opcional)
+              </button>
+            )}
+            {line3Visible && (
+              <div>
+                <label className="label flex items-center justify-between" htmlFor="line3">
+                  <span>Línea 3</span>
+                  <span className="flex items-center gap-2">
+                    <span className="text-xs font-normal text-ink-400">
+                      {line3.length}/{maxCharsPerLine}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={removeLine3}
+                      className="text-[11px] text-ink-400 hover:text-danger inline-flex items-center gap-0.5"
+                      title="Quitar esta línea"
+                    >
+                      <X className="h-3 w-3" /> quitar
+                    </button>
+                  </span>
+                </label>
+                <input
+                  id="line3"
+                  name="line3"
+                  type="text"
+                  maxLength={maxCharsPerLine}
+                  value={line3}
+                  onChange={(e) => handleLineChange(setLine3, e.target.value)}
+                  placeholder="Ej: ICE +34 666 123 456"
+                  className="input uppercase tracking-wide"
+                  autoComplete="off"
+                />
+                {state.fieldErrors?.line3 && <p className="field-error">{state.fieldErrors.line3}</p>}
+              </div>
+            )}
+
+            {/* Inputs ocultos para que el server reciba siempre line2/line3 */}
+            {!line2Visible && <input type="hidden" name="line2" value="" />}
+            {!line3Visible && <input type="hidden" name="line3" value="" />}
+
             <p className="text-xs text-ink-500">
               La placa real mide <strong>4 × 1 cm</strong>. Máximo {maxCharsPerLine} caracteres
-              por línea para garantizar legibilidad del grabado.
+              por línea. Cuantas más líneas, menor el tamaño de letra (siempre centrado).
             </p>
             <div className="mt-2 flex flex-wrap gap-1.5">
               <span className="text-xs text-ink-400 mr-1">Ejemplos:</span>
@@ -332,7 +403,12 @@ export function Configurator({
               <Summary label="Unidades" value={String(quantity)} />
               <Summary label="Total línea" value={formatEuros(lineTotal)} />
               <Summary label="Línea 1" value={line1.toUpperCase() || '—'} className="col-span-3" />
-              <Summary label="Línea 2" value={line2.toUpperCase() || '—'} className="col-span-3" />
+              {line2Visible && (
+                <Summary label="Línea 2" value={line2.toUpperCase() || '—'} className="col-span-3" />
+              )}
+              {line3Visible && (
+                <Summary label="Línea 3" value={line3.toUpperCase() || '—'} className="col-span-3" />
+              )}
             </div>
           </div>
           <label className="flex items-start gap-3 cursor-pointer select-none">

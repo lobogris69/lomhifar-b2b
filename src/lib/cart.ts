@@ -10,6 +10,7 @@ export const cartItemSchema = z.object({
   quantity: z.number().int().min(1).max(9999),
   line1: z.string().max(40),
   line2: z.string().max(40),
+  line3: z.string().max(40).default(''),
 });
 
 export type CartItem = z.infer<typeof cartItemSchema>;

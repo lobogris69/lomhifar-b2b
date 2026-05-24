@@ -7,6 +7,7 @@ interface Props {
   area: PrintArea;
   line1: string;
   line2: string;
+  line3?: string;
   /** Si true, muestra un borde punteado sobre el área (modo edición admin) */
   showArea?: boolean;
   /** Texto alternativo de la imagen */
@@ -16,34 +17,46 @@ interface Props {
 
 /**
  * Renderiza una FOTO REAL de la pulsera (subida desde el admin) y
- * superpone el texto del grabado sobre la placa, según el área de impresión
- * configurada en `area` (porcentajes relativos a la imagen).
+ * superpone el texto del grabado sobre la placa, respetando el área de
+ * impresión configurada (porcentajes relativos a la imagen).
  *
- * El cliente del configurador ve cómo quedará SU pulsera sobre la foto real,
- * no sobre un dibujo SVG.
+ * El texto:
+ *  - Siempre queda CENTRADO horizontal y verticalmente dentro del área.
+ *  - Auto-ajusta el tamaño según el número de líneas usadas (1, 2 o 3)
+ *    y la longitud de cada línea, sin salirse del rectángulo.
+ *  - Usa container queries (cqh / cqw) para escalar con la imagen.
  */
 export function BraceletPhoto({
   imageUrl,
   area,
   line1,
   line2,
+  line3,
   showArea = false,
   alt = 'Pulsera Lomhifar',
   className = '',
 }: Props) {
-  const l1 = (line1 || '').toUpperCase();
-  const l2 = (line2 || '').toUpperCase();
-  const hasL1 = l1.trim().length > 0;
-  const hasL2 = l2.trim().length > 0;
+  const lines = [line1, line2, line3 ?? '']
+    .map((l) => (l ?? '').toUpperCase().trim())
+    .filter((l) => l.length > 0);
 
-  // Tamaño de fuente auto-ajustado al ancho del área:
-  // - El área es widthPct% del ancho de la imagen → en CSS lo expresamos con cqi (container query inline)
-  //   para que escale con el tamaño real renderizado de la imagen.
-  // - El número base se calibra empíricamente: ~30% del alto del área por línea cuando hay 2 líneas,
-  //   ~55% cuando solo hay 1.
-  const linesShown = hasL2 ? 2 : 1;
-  // Tamaño relativo al alto del overlay: cqh = % del container query block
-  const fontSize = linesShown === 2 ? '30cqh' : '52cqh';
+  const lineCount = Math.max(1, Math.min(3, lines.length));
+
+  // Tamaño base de letra según número de líneas (en % del ALTO del área).
+  // Se deja margen para que entre el padding y el tracking.
+  const heightFontByCount: Record<number, number> = { 1: 62, 2: 42, 3: 28 };
+  const heightCq = heightFontByCount[lineCount];
+
+  // Tamaño máximo según ancho disponible (en % del ANCHO del área).
+  // Asumimos ratio medio carácter ≈ 0.55em para fuente bold sans.
+  // Por tanto, para encajar N chars: fontSize_px ≤ areaWidth / (N · 0.55)
+  // En unidades cqw: fontSize_cqw = 100 / (N · 0.55) ≈ 180 / N
+  // Como queremos margen lateral pequeño, restamos un poco.
+  const maxLen = Math.max(...lines.map((l) => l.length), 1);
+  const widthCq = Math.max(8, 170 / Math.max(maxLen, 4));
+
+  // Usamos CSS min() para tomar el más pequeño de los dos límites.
+  const fontSize = `min(${heightCq}cqh, ${widthCq.toFixed(2)}cqw)`;
 
   return (
     <div
@@ -68,25 +81,33 @@ export function BraceletPhoto({
           height: `${area.heightPct}%`,
           transform: `rotate(${area.rotationDeg}deg)`,
           transformOrigin: 'center center',
-          // habilita unidades cqh/cqi dentro del overlay
           containerType: 'size',
         }}
       >
         {showArea && (
-          <div className="absolute inset-0 border-2 border-dashed border-brand-500/80 rounded" />
+          <div className="absolute inset-0 border-2 border-dashed border-brand-500/80 rounded pointer-events-none" />
         )}
 
+        {/* Texto: contenedor flex que centra todas las líneas como bloque */}
         <div
-          className="absolute inset-0 flex flex-col items-center justify-center text-center font-bold tracking-wider leading-[1.05] whitespace-nowrap overflow-hidden"
-          style={{
-            color: area.textColor,
-            fontFamily: '"Helvetica Neue", Arial, sans-serif',
-            fontSize,
-            textShadow: '0 0 1px rgba(0,0,0,0.15)',
-          }}
+          className="absolute inset-0 flex flex-col items-center justify-center text-center overflow-hidden"
+          style={{ padding: '2% 4%' }}
         >
-          {hasL1 ? <span className="block px-1">{l1}</span> : null}
-          {hasL2 ? <span className="block px-1">{l2}</span> : null}
+          {lines.map((line, i) => (
+            <span
+              key={i}
+              className="block whitespace-nowrap font-bold tracking-wider"
+              style={{
+                color: area.textColor,
+                fontFamily: '"Helvetica Neue", Arial, sans-serif',
+                fontSize,
+                lineHeight: '1.05',
+                letterSpacing: '0.02em',
+              }}
+            >
+              {line}
+            </span>
+          ))}
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ export interface PricedItem {
   quantity: number;
   line1: string;
   line2: string;
+  line3: string;
   unitPriceCents: number;
   lineTotalCents: number;
 }
@@ -19,7 +20,7 @@ export interface OrderTotals {
 }
 
 export async function priceCart(
-  items: { color: string; quantity: number; line1: string; line2: string }[],
+  items: { color: string; quantity: number; line1: string; line2: string; line3?: string }[],
 ): Promise<{ items: PricedItem[]; totals: OrderTotals }> {
   const settings = await getSettings();
   const priceBlack = Number(settings[SETTING_KEYS.PRICE_BLACK_CENTS]);
@@ -31,7 +32,11 @@ export async function priceCart(
   const priced: PricedItem[] = items.map((it) => {
     const unit = it.color === 'BLACK' ? priceBlack : priceRed;
     return {
-      ...it,
+      color: it.color,
+      quantity: it.quantity,
+      line1: it.line1,
+      line2: it.line2,
+      line3: it.line3 ?? '',
       unitPriceCents: unit,
       lineTotalCents: unit * it.quantity,
     };

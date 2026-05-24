@@ -24,10 +24,6 @@ export default async function CartPage({
     getAllSiteTexts(),
   ]);
   const deliveryDays = settings[SETTING_KEYS.DELIVERY_DAYS];
-  const pvprCents = Number(settings[SETTING_KEYS.PVPR_CENTS]);
-  const totalUnits = items.reduce((sum, it) => sum + it.quantity, 0);
-  const pvprTotal = pvprCents * totalUnits;
-  const marginTotal = Math.max(0, pvprTotal - totals.subtotalCents);
 
   if (cart.length === 0) {
     return (
@@ -99,19 +95,29 @@ export default async function CartPage({
                       </form>
                     </div>
 
-                    <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                    <dl className="mt-3 space-y-2 text-sm">
                       <div>
                         <dt className="text-[11px] uppercase tracking-wider text-ink-400">Línea 1</dt>
                         <dd className="font-mono font-medium text-ink-900 break-words">
                           {it.line1.toUpperCase()}
                         </dd>
                       </div>
-                      <div>
-                        <dt className="text-[11px] uppercase tracking-wider text-ink-400">Línea 2</dt>
-                        <dd className="font-mono font-medium text-ink-900 break-words">
-                          {it.line2 ? it.line2.toUpperCase() : <span className="text-ink-400">—</span>}
-                        </dd>
-                      </div>
+                      {it.line2 && (
+                        <div>
+                          <dt className="text-[11px] uppercase tracking-wider text-ink-400">Línea 2</dt>
+                          <dd className="font-mono font-medium text-ink-900 break-words">
+                            {it.line2.toUpperCase()}
+                          </dd>
+                        </div>
+                      )}
+                      {it.line3 && (
+                        <div>
+                          <dt className="text-[11px] uppercase tracking-wider text-ink-400">Línea 3</dt>
+                          <dd className="font-mono font-medium text-ink-900 break-words">
+                            {it.line3.toUpperCase()}
+                          </dd>
+                        </div>
+                      )}
                     </dl>
 
                     <div className="mt-auto pt-4 flex items-end justify-between gap-3">
@@ -187,31 +193,6 @@ export default async function CartPage({
             </dl>
 
             <div className="text-xs text-ink-500">Plazo estimado: {deliveryDays} días laborables</div>
-
-            {/* Margen estimado de reventa */}
-            {marginTotal > 0 && (
-              <div className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-emerald-700 font-semibold uppercase tracking-wider">
-                    {t['pvpr.etiqueta']}
-                  </span>
-                  <span className="text-emerald-800 font-semibold">
-                    {formatEuros(pvprCents)} / ud
-                  </span>
-                </div>
-                <div className="mt-2 pt-2 border-t border-emerald-200 flex items-center justify-between">
-                  <span className="text-xs text-emerald-700">
-                    {t['pvpr.margen_texto']} ({totalUnits} ud)
-                  </span>
-                  <span className="text-base font-semibold text-emerald-800">
-                    +{formatEuros(marginTotal)}
-                  </span>
-                </div>
-                <div className="mt-1 text-[10px] text-emerald-700/70 leading-relaxed">
-                  Ingresos brutos estimados: {formatEuros(pvprTotal)} · coste pedido {formatEuros(totals.subtotalCents)}
-                </div>
-              </div>
-            )}
 
             {!totals.meetsMinimum && (
               <Alert variant="warning">
