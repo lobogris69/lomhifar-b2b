@@ -6,6 +6,7 @@ import { getCustomerSession } from '@/lib/auth';
 import { BrandLockup } from '@/components/brand/BrandMark';
 import { BraceletPreview } from '@/components/shop/BraceletPreview';
 import { getAllSiteTexts } from '@/lib/site-texts';
+import { getSiteImageMeta } from '@/lib/site-images';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Acceso farmacia · Lomhifar' };
@@ -15,8 +16,12 @@ export default async function AccessPage() {
   if (session) redirect('/tienda');
 
   // Textos editables desde /admin/textos
-  const t = await getAllSiteTexts();
+  const [t, bracelectImg] = await Promise.all([
+    getAllSiteTexts(),
+    getSiteImageMeta('acceso-bracelet'),
+  ]);
   const demoColor = (t['acceso.demo_color'] === 'RED' ? 'RED' : 'BLACK') as 'BLACK' | 'RED';
+  const hasCustomBracelet = bracelectImg.isCustom && bracelectImg.hasImage;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-brand-50/50 flex flex-col">
@@ -61,12 +66,21 @@ export default async function AccessPage() {
                 </div>
                 <span className="badge-brand text-[10px]">Grabado láser</span>
               </div>
-              <BraceletPreview
-                color={demoColor}
-                line1={t['acceso.demo_linea1']}
-                line2={t['acceso.demo_linea2']}
-                size="md"
-              />
+              {hasCustomBracelet ? (
+                /* Foto real subida desde /admin/imagenes (slot: acceso-bracelet) */
+                <img
+                  src="/api/images/acceso-bracelet"
+                  alt="Pulsera Lomhifar — grabado láser"
+                  className="w-full h-auto rounded-lg"
+                />
+              ) : (
+                <BraceletPreview
+                  color={demoColor}
+                  line1={t['acceso.demo_linea1']}
+                  line2={t['acceso.demo_linea2']}
+                  size="md"
+                />
+              )}
             </div>
 
             {/* 3 features compactas */}

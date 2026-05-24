@@ -65,6 +65,17 @@ export const SLOTS: SlotDefinition[] = [
     accept: ['image/jpeg', 'image/png'],
     aspect: '4/3',
   },
+  {
+    slot: 'acceso-bracelet',
+    group: 'producto',
+    label: 'Pulsera en página de acceso (foto real)',
+    description:
+      'Si subes una foto, sustituirá el dibujo SVG de la pulsera que aparece en la página de login de farmacias (/acceso). Si lo dejas vacío, se sigue mostrando el dibujo generado con los textos editables (color, línea 1 y línea 2).',
+    recommended: 'JPG/PNG · ratio panorámico 4:1 (ej. 1600 × 400 px) · fondo neutro',
+    hasComponentFallback: true,
+    accept: ['image/jpeg', 'image/png', 'image/webp'],
+    aspect: '4/1',
+  },
 
   // ============ CASOS REALES ============
   {
