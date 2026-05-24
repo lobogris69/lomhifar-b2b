@@ -39,12 +39,16 @@ export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
   [SETTING_KEYS.COMPANY_PHONE]: '',
   [SETTING_KEYS.COMPANY_EMAIL]: 'pedidos@lomhifar.com',
   // Área de impresión en % (left, top, width, height) + rotación grados + color del láser
-  // Defaults pensados para foto frontal centrada con placa en el medio
+  // Default pensado para placa típica con SÍMBOLO médico a la izquierda y
+  // hueco de grabado a la derecha (formato más común de las pulseras médicas).
+  // En la mayoría de fotos centradas, esto evita que el texto se superponga al
+  // símbolo. El admin siempre puede ajustar arrastrando la caja en
+  // /admin/imagenes/pulseras.
   [SETTING_KEYS.CONFIGURATOR_AREA_BLACK]: JSON.stringify({
-    leftPct: 38, topPct: 44, widthPct: 24, heightPct: 10, rotationDeg: 0, textColor: '#3a3a3e',
+    leftPct: 50, topPct: 42, widthPct: 22, heightPct: 14, rotationDeg: 0, textColor: '#2a2a30',
   }),
   [SETTING_KEYS.CONFIGURATOR_AREA_RED]: JSON.stringify({
-    leftPct: 38, topPct: 44, widthPct: 24, heightPct: 10, rotationDeg: 0, textColor: '#3a3a3e',
+    leftPct: 50, topPct: 42, widthPct: 22, heightPct: 14, rotationDeg: 0, textColor: '#2a2a30',
   }),
 };
 
@@ -58,7 +62,7 @@ export interface PrintArea {
 }
 
 export const DEFAULT_PRINT_AREA: PrintArea = {
-  leftPct: 38, topPct: 44, widthPct: 24, heightPct: 10, rotationDeg: 0, textColor: '#3a3a3e',
+  leftPct: 50, topPct: 42, widthPct: 22, heightPct: 14, rotationDeg: 0, textColor: '#2a2a30',
 };
 
 export function parsePrintArea(raw: string | undefined): PrintArea {

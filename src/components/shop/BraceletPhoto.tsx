@@ -91,18 +91,23 @@ export function BraceletPhoto({
         {/* Texto: contenedor flex que centra todas las líneas como bloque */}
         <div
           className="absolute inset-0 flex flex-col items-center justify-center text-center overflow-hidden"
-          style={{ padding: '2% 4%' }}
+          style={{ padding: '1% 3%' }}
         >
           {lines.map((line, i) => (
             <span
               key={i}
-              className="block whitespace-nowrap font-bold tracking-wider"
+              className="block whitespace-nowrap font-bold"
               style={{
                 color: area.textColor,
                 fontFamily: '"Helvetica Neue", Arial, sans-serif',
                 fontSize,
-                lineHeight: '1.05',
-                letterSpacing: '0.02em',
+                lineHeight: '1.02',
+                letterSpacing: '0.04em',
+                // Efecto sutil de grabado láser: ligera sombra inferior clara
+                // (simula el rebaje sobre el aluminio) + leve sombra interior oscura
+                textShadow:
+                  '0 1px 0 rgba(255,255,255,0.35), 0 -0.5px 0 rgba(0,0,0,0.4)',
+                WebkitFontSmoothing: 'antialiased',
               }}
             >
               {line}

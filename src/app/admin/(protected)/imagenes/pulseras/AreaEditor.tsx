@@ -18,7 +18,7 @@ interface Props {
 }
 
 const DEFAULT_AREA: PrintArea = {
-  leftPct: 38, topPct: 44, widthPct: 24, heightPct: 10, rotationDeg: 0, textColor: '#3a3a3e',
+  leftPct: 50, topPct: 42, widthPct: 22, heightPct: 14, rotationDeg: 0, textColor: '#2a2a30',
 };
 
 function Submit() {
