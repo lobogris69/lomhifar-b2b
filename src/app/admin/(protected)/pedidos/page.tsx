@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ClipboardList, Search } from 'lucide-react';
+import { ClipboardList, Search, Download } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { formatDate, formatEuros } from '@/lib/utils';
 import { OrderStatusBadge, ORDER_STATUS_LABEL } from '@/components/shop/OrderStatusBadge';
@@ -34,13 +34,24 @@ export default async function OrdersPage({
     include: { items: true },
   });
 
+  // URL para descargar el CSV con los mismos filtros aplicados
+  const exportParams = new URLSearchParams();
+  if (q) exportParams.set('q', q);
+  if (status) exportParams.set('status', status);
+  const exportUrl = `/api/admin/pedidos/export${exportParams.toString() ? '?' + exportParams.toString() : ''}`;
+
   return (
     <div className="p-6 lg:p-10">
-      <div className="mb-6">
-        <h1 className="section-title flex items-center gap-2">
-          <ClipboardList className="h-6 w-6 text-brand-700" /> Pedidos
-        </h1>
-        <p className="section-subtitle">Histórico completo de pedidos B2B.</p>
+      <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="section-title flex items-center gap-2">
+            <ClipboardList className="h-6 w-6 text-brand-700" /> Pedidos
+          </h1>
+          <p className="section-subtitle">Histórico completo de pedidos B2B.</p>
+        </div>
+        <a href={exportUrl} className="btn-secondary" download>
+          <Download className="h-4 w-4" /> Exportar a Excel (CSV)
+        </a>
       </div>
 
       <form className="card p-4 mb-4 flex flex-wrap items-end gap-3">

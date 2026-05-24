@@ -29,8 +29,15 @@ async function main() {
 
   await prisma.adminUser.upsert({
     where: { email: adminEmail },
-    create: { email: adminEmail, passwordHash, name: 'Administrador Lomhifar' },
-    update: { passwordHash },
+    create: {
+      email: adminEmail,
+      passwordHash,
+      name: 'Administrador Lomhifar',
+      role: 'SUPER_ADMIN',
+      active: true,
+    },
+    // Solo actualizamos password si ya existe; preservamos rol/nombre
+    update: { passwordHash, active: true },
   });
   console.log(`✔ Admin: ${adminEmail}`);
 

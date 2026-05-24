@@ -25,6 +25,7 @@ export interface AdminSessionData {
   id: string;
   email: string;
   name?: string;
+  role: string;  // SUPER_ADMIN | ADMIN | ORDER_MANAGER
   iat: number;
 }
 
@@ -32,11 +33,13 @@ export async function createAdminSession(admin: {
   id: string;
   email: string;
   name?: string | null;
+  role: string;
 }) {
   const payload: AdminSessionData = {
     id: admin.id,
     email: admin.email,
     name: admin.name ?? undefined,
+    role: admin.role,
     iat: Date.now(),
   };
   const sealed = await sealData(payload, {

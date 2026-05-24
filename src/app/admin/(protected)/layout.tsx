@@ -18,7 +18,12 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
 
   return (
     <div className="min-h-screen flex bg-ink-50/30">
-      <AdminSidebar adminEmail={session.email} logo={sidebarLogo} mobileLogo={mobileLogo} />
+      <AdminSidebar
+        adminEmail={session.email}
+        adminRole={session.role ?? 'ADMIN'}
+        logo={sidebarLogo}
+        mobileLogo={mobileLogo}
+      />
       <div className="flex-1 flex flex-col min-w-0">
         <AdminMobileTopbar adminEmail={session.email} mobileLogo={mobileLogo} />
         <main className="flex-1 min-w-0">{children}</main>

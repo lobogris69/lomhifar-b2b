@@ -1,26 +1,47 @@
 import Link from 'next/link';
-import { Users, ClipboardList, Building2, FileSpreadsheet, ArrowRight } from 'lucide-react';
+import {
+  Users, ClipboardList, Building2, FileSpreadsheet, ArrowRight, TrendingUp, Trophy,
+} from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { formatDate, formatEuros } from '@/lib/utils';
 import { OrderStatusBadge } from '@/components/shop/OrderStatusBadge';
+import { MonthlyChart } from '@/components/admin/MonthlyChart';
+import { getMonthlyOrderStats, getTopCustomers } from '@/lib/stats';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
-  const [customers, pendingApps, recentOrders, totalOrders, revenueAgg] = await Promise.all([
+  const [
+    customers,
+    pendingApps,
+    recentOrders,
+    totalOrders,
+    revenueAgg,
+    monthly,
+    topCustomers,
+    monthlyOrdersCurrent,
+  ] = await Promise.all([
     prisma.customer.count({ where: { active: true } }),
     prisma.pharmacyApplication.count({ where: { status: 'PENDING' } }),
     prisma.order.findMany({
-      take: 5,
-      orderBy: { createdAt: 'desc' },
-      include: { items: true },
+      take: 5, orderBy: { createdAt: 'desc' }, include: { items: true },
     }),
     prisma.order.count(),
     prisma.order.aggregate({
       _sum: { totalCents: true },
       where: { status: { not: 'CANCELLED' } },
     }),
+    getMonthlyOrderStats(6),
+    getTopCustomers(5),
+    prisma.order.count({
+      where: {
+        createdAt: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) },
+        status: { not: 'CANCELLED' },
+      },
+    }),
   ]);
+
+  const currentMonthRevenue = monthly[monthly.length - 1]?.totalCents ?? 0;
 
   return (
     <div className="p-6 lg:p-10 space-y-8">
@@ -36,9 +57,64 @@ export default async function AdminDashboardPage() {
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Stat label="Clientes activos" value={customers.toString()} icon={Users} href="/admin/clientes" />
-        <Stat label="Solicitudes pendientes" value={pendingApps.toString()} icon={Building2} href="/admin/solicitudes" highlight={pendingApps > 0} />
-        <Stat label="Pedidos totales" value={totalOrders.toString()} icon={ClipboardList} href="/admin/pedidos" />
-        <Stat label="Facturado" value={formatEuros(revenueAgg._sum.totalCents ?? 0)} icon={ClipboardList} href="/admin/pedidos" />
+        <Stat
+          label="Solicitudes pendientes"
+          value={pendingApps.toString()}
+          icon={Building2}
+          href="/admin/solicitudes"
+          highlight={pendingApps > 0}
+        />
+        <Stat
+          label="Pedidos este mes"
+          value={monthlyOrdersCurrent.toString()}
+          sub={`${formatEuros(currentMonthRevenue)} facturado`}
+          icon={TrendingUp}
+          href="/admin/pedidos"
+        />
+        <Stat
+          label="Pedidos totales"
+          value={totalOrders.toString()}
+          sub={formatEuros(revenueAgg._sum.totalCents ?? 0)}
+          icon={ClipboardList}
+          href="/admin/pedidos"
+        />
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <MonthlyChart data={monthly} />
+        </div>
+
+        <div className="card p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Trophy className="h-4 w-4 text-brand-700" />
+            <h3 className="text-base font-semibold text-ink-900">Top 5 farmacias</h3>
+          </div>
+          {topCustomers.length === 0 ? (
+            <p className="text-sm text-ink-500">Aún no hay pedidos.</p>
+          ) : (
+            <ol className="space-y-3">
+              {topCustomers.map((c, i) => (
+                <li key={c.customerId} className="flex items-start gap-3 text-sm">
+                  <span className="shrink-0 inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-gradient text-white text-[11px] font-semibold">
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <Link
+                      href={`/admin/clientes/${c.customerId}`}
+                      className="font-medium text-ink-900 hover:text-brand-700 truncate block"
+                    >
+                      {c.pharmacyName}
+                    </Link>
+                    <div className="text-xs text-ink-500">
+                      {c.orderCount} pedidos · {formatEuros(c.totalCents)}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
       </div>
 
       <div className="card overflow-hidden">
@@ -54,12 +130,7 @@ export default async function AdminDashboardPage() {
           <table className="table-pro">
             <thead>
               <tr>
-                <th>Pedido</th>
-                <th>Farmacia</th>
-                <th>Fecha</th>
-                <th>Uds.</th>
-                <th>Estado</th>
-                <th className="text-right">Total</th>
+                <th>Pedido</th><th>Farmacia</th><th>Fecha</th><th>Uds.</th><th>Estado</th><th className="text-right">Total</th>
               </tr>
             </thead>
             <tbody>
@@ -85,17 +156,10 @@ export default async function AdminDashboardPage() {
 }
 
 function Stat({
-  label,
-  value,
-  icon: Icon,
-  href,
-  highlight,
+  label, value, icon: Icon, href, highlight, sub,
 }: {
-  label: string;
-  value: string;
-  icon: React.ElementType;
-  href: string;
-  highlight?: boolean;
+  label: string; value: string; icon: React.ElementType; href: string;
+  highlight?: boolean; sub?: string;
 }) {
   return (
     <Link
@@ -107,6 +171,7 @@ function Stat({
         <Icon className="h-4 w-4 text-ink-400" />
       </div>
       <div className="mt-3 text-2xl font-semibold text-ink-900">{value}</div>
+      {sub && <div className="mt-0.5 text-xs text-ink-500">{sub}</div>}
     </Link>
   );
 }

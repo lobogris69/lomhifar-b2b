@@ -25,6 +25,9 @@ export async function adminLogin(
   }
   const user = await prisma.adminUser.findUnique({ where: { email: parsed.data.email } });
   if (!user) return { error: 'Credenciales incorrectas', email: raw.email };
+  if (!user.active) {
+    return { error: 'Esta cuenta está desactivada. Contacta con el administrador.', email: raw.email };
+  }
   const ok = await bcrypt.compare(parsed.data.password, user.passwordHash);
   if (!ok) return { error: 'Credenciales incorrectas', email: raw.email };
 

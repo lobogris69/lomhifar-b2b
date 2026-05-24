@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { formatDate, formatEuros } from '@/lib/utils';
 import { colorLabel } from '@/lib/cart';
 import { OrderStatusBadge, ORDER_STATUS_LABEL } from '@/components/shop/OrderStatusBadge';
+import { PrintButton } from '@/components/admin/PrintButton';
 import { saveAdminNotes, updateOrderStatus } from '../actions';
 
 export const dynamic = 'force-dynamic';
@@ -19,7 +20,7 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
 
   return (
     <div className="p-6 lg:p-10 max-w-5xl">
-      <Link href="/admin/pedidos" className="inline-flex items-center text-sm text-ink-500 hover:text-ink-800 mb-4">
+      <Link href="/admin/pedidos" className="inline-flex items-center text-sm text-ink-500 hover:text-ink-800 mb-4 no-print">
         <ArrowLeft className="h-4 w-4 mr-1" /> Volver a pedidos
       </Link>
 
@@ -30,7 +31,10 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
             {formatDate(order.createdAt)} · {order.pharmacyName}
           </p>
         </div>
-        <OrderStatusBadge status={order.status} className="text-sm" />
+        <div className="flex items-center gap-3 no-print">
+          <PrintButton />
+          <OrderStatusBadge status={order.status} className="text-sm" />
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -84,7 +88,7 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
             </div>
           )}
 
-          <form action={saveAdminNotes} className="card p-6 space-y-3">
+          <form action={saveAdminNotes} className="card p-6 space-y-3 no-print">
             <input type="hidden" name="id" value={order.id} />
             <label className="label" htmlFor="adminNotes">Notas internas</label>
             <textarea
@@ -101,7 +105,7 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
           </form>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-6 no-print">
           <div className="card p-6">
             <h3 className="text-sm font-semibold text-ink-900 mb-3">Cambiar estado</h3>
             <form action={updateOrderStatus} className="space-y-3">

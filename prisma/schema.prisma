@@ -27,8 +27,31 @@ model AdminUser {
   email         String   @unique
   passwordHash  String
   name          String?
+  // Valores: SUPER_ADMIN | ADMIN | ORDER_MANAGER
+  //   SUPER_ADMIN:   acceso total + gestionar usuarios
+  //   ADMIN:         acceso total excepto gestionar usuarios
+  //   ORDER_MANAGER: solo ver/cambiar estado de pedidos
+  role          String   @default("ADMIN")
+  active        Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  passwordResets AdminPasswordReset[]
+}
+
+// Tokens de recuperación de contraseña admin (TTL 1h)
+model AdminPasswordReset {
+  id          String   @id @default(cuid())
+  adminId     String
+  admin       AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  token       String   @unique
+  expiresAt   DateTime
+  usedAt      DateTime?
+  ip          String?
+  createdAt   DateTime @default(now())
+
+  @@index([token])
+  @@index([adminId])
 }
 
 // ------------------------------------------------------------

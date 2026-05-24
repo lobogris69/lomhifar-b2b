@@ -1,7 +1,9 @@
 'use client';
 
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useFormState, useFormStatus } from 'react-dom';
-import { Loader2, Mail, Lock, ArrowRight } from 'lucide-react';
+import { Loader2, Mail, Lock, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Alert } from '@/components/ui/Alert';
 import { adminLogin, type AdminLoginState } from './actions';
 
@@ -20,8 +22,18 @@ function Submit() {
 
 export function LoginForm() {
   const [state, action] = useFormState(adminLogin, initial);
+  const params = useSearchParams();
+  const justReset = params.get('reset') === 'ok';
+
   return (
     <form action={action} className="space-y-4">
+      {justReset && (
+        <Alert variant="success" title="Contraseña actualizada">
+          <span className="inline-flex items-center gap-1.5">
+            <CheckCircle2 className="h-3.5 w-3.5" /> Ya puedes entrar con tu nueva contraseña.
+          </span>
+        </Alert>
+      )}
       {state.error && <Alert variant="danger">{state.error}</Alert>}
 
       <div>
