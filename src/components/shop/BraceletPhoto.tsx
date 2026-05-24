@@ -88,25 +88,42 @@ export function BraceletPhoto({
           <div className="absolute inset-0 border-2 border-dashed border-brand-500/80 rounded pointer-events-none" />
         )}
 
-        {/* Texto: contenedor flex que centra todas las líneas como bloque */}
+        {/*
+          Texto del grabado láser.
+          Para que NO parezca "pintado" sobre la placa sino realmente grabado:
+          - mix-blend-mode: multiply hace que el color del texto se "multiplique"
+            con la textura metálica de debajo, igual que un grabado físico que
+            simplemente oscurece la superficie sin añadir pigmento opaco.
+          - Color: gris frostado (#7d7d80 default) similar al símbolo médico
+            ya estampado, NO negro. El láser sobre aluminio sin pintar produce
+            ese tono mate gris/plateado.
+          - Peso de fuente 600 (no 700/bold full): un grabado tiene grosor pero
+            no es tan denso como una tipografía bold.
+          - letter-spacing un pelín mayor (los grabados láser sobre placa
+            pequeña suelen llevar separación para legibilidad).
+          - text-shadow MUY sutil para suavizar bordes (el haz láser tiene un
+            tamaño físico, no es matemáticamente perfecto).
+        */}
         <div
           className="absolute inset-0 flex flex-col items-center justify-center text-center overflow-hidden"
-          style={{ padding: '1% 3%' }}
+          style={{
+            padding: '1% 3%',
+            mixBlendMode: 'multiply',
+          }}
         >
           {lines.map((line, i) => (
             <span
               key={i}
-              className="block whitespace-nowrap font-bold"
+              className="block whitespace-nowrap"
               style={{
                 color: area.textColor,
                 fontFamily: '"Helvetica Neue", Arial, sans-serif',
+                fontWeight: 600,
                 fontSize,
                 lineHeight: '1.02',
-                letterSpacing: '0.04em',
-                // Efecto sutil de grabado láser: ligera sombra inferior clara
-                // (simula el rebaje sobre el aluminio) + leve sombra interior oscura
-                textShadow:
-                  '0 1px 0 rgba(255,255,255,0.35), 0 -0.5px 0 rgba(0,0,0,0.4)',
+                letterSpacing: '0.05em',
+                textShadow: '0 0 0.4px rgba(0,0,0,0.25)',
+                opacity: 0.95,
                 WebkitFontSmoothing: 'antialiased',
               }}
             >

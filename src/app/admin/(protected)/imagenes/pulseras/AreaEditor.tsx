@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
-import { Loader2, Save, RotateCcw, Move } from 'lucide-react';
+import { Loader2, Save, RotateCcw, Move, Sparkles } from 'lucide-react';
 import { Alert } from '@/components/ui/Alert';
 import { InteractiveBraceletEditor } from './InteractiveBraceletEditor';
-import type { PrintArea } from '@/lib/settings';
+import { ENGRAVING_PRESETS, type PrintArea } from '@/lib/settings';
 import { saveBraceletAreas, type SaveAreaState } from './actions';
 
 const initial: SaveAreaState = {};
@@ -245,9 +245,37 @@ function BraceletAreaPanel({
             />
 
             <div>
-              <label className="label" htmlFor={`${prefix}_textColor`}>
-                Color del grabado (láser)
+              <label className="label flex items-center gap-1.5" htmlFor={`${prefix}_textColor`}>
+                <Sparkles className="h-3.5 w-3.5 text-brand-600" />
+                Color del grabado láser
               </label>
+
+              {/* Presets: tonos típicos de grabado láser sobre aluminio sin pintar */}
+              <div className="flex flex-wrap gap-2 mb-2">
+                {ENGRAVING_PRESETS.map((preset) => {
+                  const active = area.textColor.toLowerCase() === preset.value.toLowerCase();
+                  return (
+                    <button
+                      key={preset.value}
+                      type="button"
+                      onClick={() => update('textColor', preset.value)}
+                      className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs transition-all ${
+                        active
+                          ? 'border-brand-600 bg-brand-50 ring-2 ring-brand-500/20'
+                          : 'border-ink-200 hover:border-ink-300 bg-white'
+                      }`}
+                      title={preset.description}
+                    >
+                      <span
+                        className="inline-block h-4 w-4 rounded border border-ink-300 shadow-inner"
+                        style={{ backgroundColor: preset.value }}
+                      />
+                      <span className="text-ink-800 font-medium">{preset.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
               <div className="flex items-center gap-2">
                 <input
                   id={`${prefix}_textColor`}
@@ -261,11 +289,12 @@ function BraceletAreaPanel({
                   type="text"
                   value={area.textColor}
                   onChange={(e) => update('textColor', e.target.value)}
-                  className="input font-mono w-32"
+                  className="input font-mono w-28 text-sm"
                   pattern="^#[0-9a-fA-F]{6}$"
                 />
-                <span className="text-xs text-ink-500">
-                  Sugerencia: antracita <code>#3a3a3e</code> para láser sobre aluminio.
+                <span className="text-[11px] text-ink-500 leading-tight">
+                  El láser ablaciona el aluminio: no produce negro,
+                  sino un gris frostado similar al símbolo médico ya estampado.
                 </span>
               </div>
             </div>

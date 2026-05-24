@@ -41,14 +41,13 @@ export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
   // Área de impresión en % (left, top, width, height) + rotación grados + color del láser
   // Default pensado para placa típica con SÍMBOLO médico a la izquierda y
   // hueco de grabado a la derecha (formato más común de las pulseras médicas).
-  // En la mayoría de fotos centradas, esto evita que el texto se superponga al
-  // símbolo. El admin siempre puede ajustar arrastrando la caja en
-  // /admin/imagenes/pulseras.
+  // textColor = tono típico del grabado láser sobre aluminio pulido sin pintar:
+  // un gris frostado similar al de la propia "Estrella de la Vida" estampada.
   [SETTING_KEYS.CONFIGURATOR_AREA_BLACK]: JSON.stringify({
-    leftPct: 50, topPct: 42, widthPct: 22, heightPct: 14, rotationDeg: 0, textColor: '#2a2a30',
+    leftPct: 50, topPct: 42, widthPct: 22, heightPct: 14, rotationDeg: 0, textColor: '#7d7d80',
   }),
   [SETTING_KEYS.CONFIGURATOR_AREA_RED]: JSON.stringify({
-    leftPct: 50, topPct: 42, widthPct: 22, heightPct: 14, rotationDeg: 0, textColor: '#2a2a30',
+    leftPct: 50, topPct: 42, widthPct: 22, heightPct: 14, rotationDeg: 0, textColor: '#7d7d80',
   }),
 };
 
@@ -62,8 +61,21 @@ export interface PrintArea {
 }
 
 export const DEFAULT_PRINT_AREA: PrintArea = {
-  leftPct: 50, topPct: 42, widthPct: 22, heightPct: 14, rotationDeg: 0, textColor: '#2a2a30',
+  leftPct: 50, topPct: 42, widthPct: 22, heightPct: 14, rotationDeg: 0, textColor: '#7d7d80',
 };
+
+/**
+ * Colores típicos de grabado láser sobre aluminio sin pintura (presets admin).
+ * El láser ablaciona la superficie del aluminio creando una textura mate
+ * más oscura que el pulido circundante. El tono real depende del acabado
+ * del aluminio (pulido, cepillado) y de la intensidad del láser.
+ */
+export const ENGRAVING_PRESETS = [
+  { label: 'Aluminio pulido (suave)', value: '#8a8a8c', description: 'Tono claro tipo "Estrella de la Vida"' },
+  { label: 'Aluminio pulido (medio)', value: '#7d7d80', description: 'Default: grabado láser estándar' },
+  { label: 'Aluminio cepillado', value: '#6d6d72', description: 'Algo más oscuro, contrastado' },
+  { label: 'Grabado profundo', value: '#5e5e62', description: 'Para placas con más pase de láser' },
+] as const;
 
 export function parsePrintArea(raw: string | undefined): PrintArea {
   if (!raw) return DEFAULT_PRINT_AREA;

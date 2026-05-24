@@ -194,21 +194,28 @@ export function InteractiveBraceletEditor({
         {/* Borde de la caja */}
         <div className="absolute inset-0 border-2 border-dashed border-brand-600 bg-brand-500/10 rounded pointer-events-none" />
 
-        {/* Texto centrado */}
+        {/* Texto centrado — mismo render que la web pública (mix-blend-mode multiply) */}
         <div
           className="absolute inset-0 flex flex-col items-center justify-center text-center overflow-hidden pointer-events-none"
-          style={{ padding: '2% 4%' }}
+          style={{
+            padding: '1% 3%',
+            mixBlendMode: 'multiply',
+          }}
         >
           {lines.map((line, i) => (
             <span
               key={i}
-              className="block whitespace-nowrap font-bold tracking-wider"
+              className="block whitespace-nowrap"
               style={{
                 color: area.textColor,
                 fontFamily: '"Helvetica Neue", Arial, sans-serif',
+                fontWeight: 600,
                 fontSize,
-                lineHeight: '1.05',
-                letterSpacing: '0.02em',
+                lineHeight: '1.02',
+                letterSpacing: '0.05em',
+                textShadow: '0 0 0.4px rgba(0,0,0,0.25)',
+                opacity: 0.95,
+                WebkitFontSmoothing: 'antialiased',
               }}
             >
               {line}
