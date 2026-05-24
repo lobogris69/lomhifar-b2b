@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { getCustomerSession } from '@/lib/auth';
 import { BrandLockup } from '@/components/brand/BrandMark';
 import { BraceletPreview } from '@/components/shop/BraceletPreview';
+import { getAllSiteTexts } from '@/lib/site-texts';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Acceso farmacia · Lomhifar' };
@@ -12,6 +13,10 @@ export const metadata = { title: 'Acceso farmacia · Lomhifar' };
 export default async function AccessPage() {
   const session = await getCustomerSession();
   if (session) redirect('/tienda');
+
+  // Textos editables desde /admin/textos
+  const t = await getAllSiteTexts();
+  const demoColor = (t['acceso.demo_color'] === 'RED' ? 'RED' : 'BLACK') as 'BLACK' | 'RED';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-brand-50/50 flex flex-col">
@@ -34,19 +39,17 @@ export default async function AccessPage() {
             <div>
               <span className="inline-flex items-center gap-2 rounded-full bg-brand-100 border border-brand-200 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-800">
                 <Building2 className="h-3 w-3" />
-                Plataforma B2B · Canal farmacia
+                {t['acceso.badge']}
               </span>
               <h1 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight leading-[1.1] text-ink-900">
-                Pulseras sanitarias
+                {t['acceso.titulo_principal']}
                 <br />
                 <span className="bg-gradient-to-r from-brand-700 to-brand-500 bg-clip-text text-transparent">
-                  personalizadas
+                  {t['acceso.titulo_destacado']}
                 </span>
               </h1>
               <p className="mt-4 text-base text-ink-600 leading-relaxed max-w-lg">
-                Acceda al portal exclusivo de <strong className="text-ink-900">Lomhifar</strong> para
-                pedir pulseras de identificación médica con grabado láser,
-                listas para entregar a sus pacientes.
+                {t['acceso.descripcion']}
               </p>
             </div>
 
@@ -58,17 +61,22 @@ export default async function AccessPage() {
                 </div>
                 <span className="badge-brand text-[10px]">Grabado láser</span>
               </div>
-              <BraceletPreview color="BLACK" line1="DIABETES TIPO 1" line2="TFNO 666 123 456" size="md" />
+              <BraceletPreview
+                color={demoColor}
+                line1={t['acceso.demo_linea1']}
+                line2={t['acceso.demo_linea2']}
+                size="md"
+              />
             </div>
 
             {/* 3 features compactas */}
             <ul className="grid sm:grid-cols-3 gap-3">
               {[
-                { icon: Sparkles, t: 'Diseño en vivo', d: 'Vea el grabado al escribir' },
-                { icon: HeartPulse, t: 'Para cualquier paciente', d: 'Niños, adultos, mayores' },
-                { icon: ShieldCheck, t: 'Acceso solo farmacias', d: 'Verificación por CIF + email' },
-              ].map((f) => (
-                <li key={f.t} className="flex items-start gap-2.5 p-3 rounded-lg bg-white/60 border border-ink-100">
+                { icon: Sparkles, t: t['acceso.feature_1_titulo'], d: t['acceso.feature_1_desc'] },
+                { icon: HeartPulse, t: t['acceso.feature_2_titulo'], d: t['acceso.feature_2_desc'] },
+                { icon: ShieldCheck, t: t['acceso.feature_3_titulo'], d: t['acceso.feature_3_desc'] },
+              ].map((f, i) => (
+                <li key={i} className="flex items-start gap-2.5 p-3 rounded-lg bg-white/60 border border-ink-100">
                   <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 text-brand-700 shrink-0">
                     <f.icon className="h-4 w-4" />
                   </span>
@@ -89,9 +97,9 @@ export default async function AccessPage() {
                 <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 backdrop-blur mb-2">
                   <Building2 className="h-5 w-5" />
                 </div>
-                <h2 className="text-xl font-semibold">Acceso farmacias</h2>
+                <h2 className="text-xl font-semibold">{t['acceso.form_titulo']}</h2>
                 <p className="mt-1 text-xs text-white/85">
-                  Identifíquese con su CIF y email
+                  {t['acceso.form_subtitulo']}
                 </p>
               </div>
 

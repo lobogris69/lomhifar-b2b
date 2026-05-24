@@ -18,6 +18,7 @@ import {
   Menu,
   X,
   Package,
+  Type,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ADMIN_ROLE_LABEL, type AdminRole, canAccessPath } from '@/lib/admin-roles';
@@ -31,6 +32,7 @@ const NAV = [
   { href: '/admin/importar', label: 'Importar Excel', icon: FileSpreadsheet },
   { href: '/admin/cartel', label: 'Cartel promocional', icon: Megaphone },
   { href: '/admin/imagenes', label: 'Imágenes del sitio', icon: Images },
+  { href: '/admin/textos', label: 'Textos del sitio', icon: Type },
   { href: '/admin/configuracion', label: 'Configuración', icon: Settings },
   { href: '/admin/usuarios', label: 'Usuarios admin', icon: Users2 },
 ];
