@@ -4,9 +4,11 @@ import { useFormState, useFormStatus } from 'react-dom';
 import { useMemo, useState } from 'react';
 import { Check, ShoppingCart, Loader2 } from 'lucide-react';
 import { BraceletPreview } from '@/components/shop/BraceletPreview';
+import { BraceletPhoto } from '@/components/shop/BraceletPhoto';
 import { Alert } from '@/components/ui/Alert';
 import { addBraceletToCart, type AddState } from './actions';
 import { cn, formatEuros } from '@/lib/utils';
+import type { PrintArea } from '@/lib/settings';
 
 interface Props {
   priceBlackCents: number;
@@ -14,6 +16,11 @@ interface Props {
   pvprCents: number;
   maxCharsPerLine: number;
   deliveryDays: number;
+  /** URLs (o null) de las fotos reales y sus áreas de impresión */
+  photoBlackUrl: string | null;
+  photoRedUrl: string | null;
+  areaBlack: PrintArea;
+  areaRed: PrintArea;
   texts: {
     paso1: string;
     paso2: string;
@@ -41,7 +48,18 @@ function SubmitBtn({ disabled }: { disabled: boolean }) {
   );
 }
 
-export function Configurator({ priceBlackCents, priceRedCents, pvprCents, maxCharsPerLine, deliveryDays, texts }: Props) {
+export function Configurator({
+  priceBlackCents,
+  priceRedCents,
+  pvprCents,
+  maxCharsPerLine,
+  deliveryDays,
+  photoBlackUrl,
+  photoRedUrl,
+  areaBlack,
+  areaRed,
+  texts,
+}: Props) {
   const [color, setColor] = useState<'BLACK' | 'RED'>('BLACK');
   const [quantity, setQuantity] = useState<number>(10);
   const [line1, setLine1] = useState('');
@@ -53,6 +71,9 @@ export function Configurator({ priceBlackCents, priceRedCents, pvprCents, maxCha
   const lineTotal = unitPrice * quantity;
   const marginPerUnit = Math.max(0, pvprCents - unitPrice);
   const marginTotal = marginPerUnit * quantity;
+
+  const currentPhotoUrl = color === 'BLACK' ? photoBlackUrl : photoRedUrl;
+  const currentArea = color === 'BLACK' ? areaBlack : areaRed;
 
   const canSubmit = useMemo(
     () => confirmed && line1.trim().length > 0 && quantity >= 1,
@@ -71,7 +92,19 @@ export function Configurator({ priceBlackCents, priceRedCents, pvprCents, maxCha
       {/* MÓVIL: preview sticky en la parte superior siempre visible mientras se escribe */}
       <div className="lg:hidden sticky top-[88px] z-20 -mx-4 sm:-mx-6 mb-2">
         <div className="bg-white border-y border-ink-100 shadow-card px-4 py-3">
-          <BraceletPreview color={color} line1={line1.toUpperCase()} line2={line2.toUpperCase()} size="sm" />
+          {currentPhotoUrl ? (
+            <div className="max-w-[280px] mx-auto">
+              <BraceletPhoto
+                imageUrl={currentPhotoUrl}
+                area={currentArea}
+                line1={line1}
+                line2={line2}
+                alt={`Pulsera ${color === 'BLACK' ? 'negra' : 'roja'} Lomhifar`}
+              />
+            </div>
+          ) : (
+            <BraceletPreview color={color} line1={line1.toUpperCase()} line2={line2.toUpperCase()} size="sm" />
+          )}
           <div className="mt-2 flex items-center justify-between text-xs">
             <span className="text-ink-500">
               {formatEuros(unitPrice)} × {quantity} ud
@@ -94,7 +127,17 @@ export function Configurator({ priceBlackCents, priceRedCents, pvprCents, maxCha
       {/* DESKTOP: preview lateral sticky */}
       <div className="hidden lg:block lg:col-span-2">
         <div className="sticky top-32 space-y-4">
-          <BraceletPreview color={color} line1={line1.toUpperCase()} line2={line2.toUpperCase()} />
+          {currentPhotoUrl ? (
+            <BraceletPhoto
+              imageUrl={currentPhotoUrl}
+              area={currentArea}
+              line1={line1}
+              line2={line2}
+              alt={`Pulsera ${color === 'BLACK' ? 'negra' : 'roja'} Lomhifar`}
+            />
+          ) : (
+            <BraceletPreview color={color} line1={line1.toUpperCase()} line2={line2.toUpperCase()} />
+          )}
           <div className="card p-4">
             <div className="flex items-center justify-between text-sm">
               <span className="text-ink-500">Precio unitario</span>

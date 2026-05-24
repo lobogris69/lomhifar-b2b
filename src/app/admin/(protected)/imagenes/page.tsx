@@ -1,4 +1,5 @@
-import { Images } from 'lucide-react';
+import Link from 'next/link';
+import { Images, Crosshair, ArrowRight } from 'lucide-react';
 import { getAllSiteImageMeta, GROUP_LABELS, SLOTS } from '@/lib/site-images';
 import { Alert } from '@/components/ui/Alert';
 import { SlotCard } from './SlotCard';
@@ -32,11 +33,30 @@ export default async function ImagesPage() {
         </div>
       </div>
 
-      <Alert variant="info" className="mb-8">
+      <Alert variant="info" className="mb-4">
         Las imágenes se almacenan en la base de datos (no en el sistema de archivos),
         por lo que son persistentes incluso en despliegues efímeros como Railway.
         Tamaño máximo por imagen: 6 MB.
       </Alert>
+
+      <Link
+        href="/admin/imagenes/pulseras"
+        className="card p-4 mb-8 flex items-center gap-4 hover:shadow-card transition-shadow border-brand-200 bg-brand-50/40"
+      >
+        <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-100 text-brand-700 shrink-0">
+          <Crosshair className="h-5 w-5" />
+        </span>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-semibold text-ink-900">
+            Configurar área de grabado del configurador
+          </div>
+          <div className="text-xs text-ink-600">
+            Tras subir las fotos &laquo;Pulsera NEGRA&raquo; y &laquo;Pulsera ROJA&raquo;,
+            define en qué zona de cada foto se superpondrá el texto que escriba el cliente.
+          </div>
+        </div>
+        <ArrowRight className="h-4 w-4 text-brand-700 shrink-0" />
+      </Link>
 
       <div className="space-y-12">
         {Object.entries(byGroup).map(([groupKey, slots]) => (

@@ -17,6 +17,8 @@ export const SETTING_KEYS = {
   COMPANY_NAME: 'company.name',
   COMPANY_PHONE: 'company.phone',
   COMPANY_EMAIL: 'company.email',
+  CONFIGURATOR_AREA_BLACK: 'configurator.bracelet_black.area_json',
+  CONFIGURATOR_AREA_RED: 'configurator.bracelet_red.area_json',
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
@@ -36,7 +38,53 @@ export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
   [SETTING_KEYS.COMPANY_NAME]: 'Lomhifar',
   [SETTING_KEYS.COMPANY_PHONE]: '',
   [SETTING_KEYS.COMPANY_EMAIL]: 'pedidos@lomhifar.com',
+  // Área de impresión en % (left, top, width, height) + rotación grados + color del láser
+  // Defaults pensados para foto frontal centrada con placa en el medio
+  [SETTING_KEYS.CONFIGURATOR_AREA_BLACK]: JSON.stringify({
+    leftPct: 38, topPct: 44, widthPct: 24, heightPct: 10, rotationDeg: 0, textColor: '#3a3a3e',
+  }),
+  [SETTING_KEYS.CONFIGURATOR_AREA_RED]: JSON.stringify({
+    leftPct: 38, topPct: 44, widthPct: 24, heightPct: 10, rotationDeg: 0, textColor: '#3a3a3e',
+  }),
 };
+
+export interface PrintArea {
+  leftPct: number;
+  topPct: number;
+  widthPct: number;
+  heightPct: number;
+  rotationDeg: number;
+  textColor: string;
+}
+
+export const DEFAULT_PRINT_AREA: PrintArea = {
+  leftPct: 38, topPct: 44, widthPct: 24, heightPct: 10, rotationDeg: 0, textColor: '#3a3a3e',
+};
+
+export function parsePrintArea(raw: string | undefined): PrintArea {
+  if (!raw) return DEFAULT_PRINT_AREA;
+  try {
+    const obj = JSON.parse(raw);
+    return {
+      leftPct: clampNum(obj.leftPct, 0, 100, DEFAULT_PRINT_AREA.leftPct),
+      topPct: clampNum(obj.topPct, 0, 100, DEFAULT_PRINT_AREA.topPct),
+      widthPct: clampNum(obj.widthPct, 1, 100, DEFAULT_PRINT_AREA.widthPct),
+      heightPct: clampNum(obj.heightPct, 1, 100, DEFAULT_PRINT_AREA.heightPct),
+      rotationDeg: clampNum(obj.rotationDeg, -180, 180, DEFAULT_PRINT_AREA.rotationDeg),
+      textColor: typeof obj.textColor === 'string' && /^#[0-9a-fA-F]{6}$/.test(obj.textColor)
+        ? obj.textColor
+        : DEFAULT_PRINT_AREA.textColor,
+    };
+  } catch {
+    return DEFAULT_PRINT_AREA;
+  }
+}
+
+function clampNum(v: unknown, min: number, max: number, fallback: number): number {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(max, Math.max(min, n));
+}
 
 export async function getSetting(key: SettingKey): Promise<string> {
   const row = await prisma.setting.findUnique({ where: { key } });

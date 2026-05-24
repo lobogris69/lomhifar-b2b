@@ -76,6 +76,28 @@ export const SLOTS: SlotDefinition[] = [
     accept: ['image/jpeg', 'image/png', 'image/webp'],
     aspect: '4/1',
   },
+  {
+    slot: 'configurator-bracelet-black',
+    group: 'producto',
+    label: 'Pulsera NEGRA (foto real configurador)',
+    description:
+      'Foto real de la pulsera negra mostrada en el configurador. El texto que escriba el cliente se superpondrá automáticamente sobre la placa según el área que configures en "Pulseras del configurador". Recomendado: foto sobre fondo blanco/neutro, pulsera centrada, placa bien visible.',
+    recommended: 'JPG/PNG · ratio 4:3 · 1600 × 1200 px aprox · fondo neutro',
+    hasComponentFallback: true,
+    accept: ['image/jpeg', 'image/png', 'image/webp'],
+    aspect: '4/3',
+  },
+  {
+    slot: 'configurator-bracelet-red',
+    group: 'producto',
+    label: 'Pulsera ROJA (foto real configurador)',
+    description:
+      'Foto real de la pulsera roja mostrada en el configurador. Igual que la negra, el texto se superpone sobre la placa según el área que configures.',
+    recommended: 'JPG/PNG · ratio 4:3 · 1600 × 1200 px aprox · fondo neutro',
+    hasComponentFallback: true,
+    accept: ['image/jpeg', 'image/png', 'image/webp'],
+    aspect: '4/3',
+  },
 
   // ============ CASOS REALES ============
   {

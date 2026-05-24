@@ -1,6 +1,7 @@
-import { getSettings, SETTING_KEYS } from '@/lib/settings';
+import { getSettings, SETTING_KEYS, parsePrintArea } from '@/lib/settings';
 import { getStockSummary } from '@/lib/stock';
 import { getAllSiteTexts } from '@/lib/site-texts';
+import { getSiteImageMeta } from '@/lib/site-images';
 import { Configurator } from './Configurator';
 import { Sparkles, AlertTriangle } from 'lucide-react';
 
@@ -8,11 +9,24 @@ export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Configurador · Lomhifar' };
 
 export default async function ShopPage() {
-  const [settings, stocks, t] = await Promise.all([
+  const [settings, stocks, t, photoBlackMeta, photoRedMeta] = await Promise.all([
     getSettings(),
     getStockSummary(),
     getAllSiteTexts(),
+    getSiteImageMeta('configurator-bracelet-black'),
+    getSiteImageMeta('configurator-bracelet-red'),
   ]);
+
+  // Solo usamos foto si el admin ha subido una custom (no la default que no existe)
+  const photoBlackUrl = photoBlackMeta.isCustom && photoBlackMeta.hasImage
+    ? `/api/images/configurator-bracelet-black?v=${photoBlackMeta.updatedAt?.getTime() ?? 0}`
+    : null;
+  const photoRedUrl = photoRedMeta.isCustom && photoRedMeta.hasImage
+    ? `/api/images/configurator-bracelet-red?v=${photoRedMeta.updatedAt?.getTime() ?? 0}`
+    : null;
+
+  const areaBlack = parsePrintArea(settings[SETTING_KEYS.CONFIGURATOR_AREA_BLACK]);
+  const areaRed = parsePrintArea(settings[SETTING_KEYS.CONFIGURATOR_AREA_RED]);
 
   const lowOrEmpty = stocks.filter((s) => s.isLow || s.isEmpty);
 
@@ -66,6 +80,10 @@ export default async function ShopPage() {
         pvprCents={Number(settings[SETTING_KEYS.PVPR_CENTS])}
         maxCharsPerLine={Number(settings[SETTING_KEYS.MAX_CHARS_PER_LINE])}
         deliveryDays={Number(settings[SETTING_KEYS.DELIVERY_DAYS])}
+        photoBlackUrl={photoBlackUrl}
+        photoRedUrl={photoRedUrl}
+        areaBlack={areaBlack}
+        areaRed={areaRed}
         texts={{
           paso1: t['tienda.paso1_titulo'],
           paso2: t['tienda.paso2_titulo'],
