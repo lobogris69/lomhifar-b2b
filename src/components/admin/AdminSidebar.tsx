@@ -17,6 +17,7 @@ import {
   Users2,
   Menu,
   X,
+  Package,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ADMIN_ROLE_LABEL, type AdminRole, canAccessPath } from '@/lib/admin-roles';
@@ -26,6 +27,7 @@ const NAV = [
   { href: '/admin/clientes', label: 'Clientes', icon: Users },
   { href: '/admin/solicitudes', label: 'Solicitudes', icon: Building2, badgeKey: 'pendingApplications' as const },
   { href: '/admin/pedidos', label: 'Pedidos', icon: ClipboardList },
+  { href: '/admin/stock', label: 'Stock', icon: Package, badgeKey: 'lowStock' as const },
   { href: '/admin/importar', label: 'Importar Excel', icon: FileSpreadsheet },
   { href: '/admin/cartel', label: 'Cartel promocional', icon: Megaphone },
   { href: '/admin/imagenes', label: 'Imágenes del sitio', icon: Images },
@@ -35,6 +37,7 @@ const NAV = [
 
 export interface SidebarBadges {
   pendingApplications?: number;
+  lowStock?: number;  // nº de colores en stock bajo
 }
 
 interface SidebarProps {

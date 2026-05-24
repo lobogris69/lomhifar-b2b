@@ -28,6 +28,68 @@ export async function deleteCustomer(formData: FormData) {
   revalidatePath('/admin/clientes');
 }
 
+/**
+ * Eliminación masiva por IDs. Recibe FormData con ids[] múltiples.
+ * Borra solo los que no tengan pedidos vinculados (los demás solo desactiva).
+ */
+export interface BulkDeleteState {
+  ok?: boolean;
+  deleted?: number;
+  deactivatedInstead?: number;
+  error?: string;
+}
+
+export async function bulkDeleteCustomers(
+  _prev: BulkDeleteState,
+  formData: FormData,
+): Promise<BulkDeleteState> {
+  await ensureAdmin();
+  const ids = formData.getAll('ids').map(String).filter(Boolean);
+  if (ids.length === 0) return { error: 'No has seleccionado ningún cliente' };
+
+  // Separar los que tienen pedidos (no se pueden borrar, solo desactivar)
+  const withOrders = await prisma.order.findMany({
+    where: { customerId: { in: ids } },
+    select: { customerId: true },
+    distinct: ['customerId'],
+  });
+  const protectedIds = new Set(withOrders.map((o) => o.customerId));
+  const toDelete = ids.filter((id) => !protectedIds.has(id));
+  const toDeactivate = ids.filter((id) => protectedIds.has(id));
+
+  let deleted = 0;
+  if (toDelete.length > 0) {
+    const r = await prisma.customer.deleteMany({ where: { id: { in: toDelete } } });
+    deleted = r.count;
+  }
+  let deactivatedInstead = 0;
+  if (toDeactivate.length > 0) {
+    const r = await prisma.customer.updateMany({
+      where: { id: { in: toDeactivate } },
+      data: { active: false },
+    });
+    deactivatedInstead = r.count;
+  }
+
+  revalidatePath('/admin/clientes');
+  return { ok: true, deleted, deactivatedInstead };
+}
+
+export async function bulkDeactivateCustomers(
+  _prev: BulkDeleteState,
+  formData: FormData,
+): Promise<BulkDeleteState> {
+  await ensureAdmin();
+  const ids = formData.getAll('ids').map(String).filter(Boolean);
+  if (ids.length === 0) return { error: 'No has seleccionado ningún cliente' };
+  const r = await prisma.customer.updateMany({
+    where: { id: { in: ids } },
+    data: { active: false },
+  });
+  revalidatePath('/admin/clientes');
+  return { ok: true, deleted: 0, deactivatedInstead: r.count };
+}
+
 export interface SaveCustomerState {
   error?: string;
   fieldErrors?: Record<string, string>;

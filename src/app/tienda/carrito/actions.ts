@@ -10,6 +10,7 @@ import { priceCart } from '@/lib/pricing';
 import { getSetting, getSettings, parseRecipients, SETTING_KEYS } from '@/lib/settings';
 import { emailLayout, sendEmail } from '@/lib/email';
 import { formatEuros } from '@/lib/utils';
+import { decrementStockForOrder } from '@/lib/stock';
 
 export async function removeItemAction(formData: FormData) {
   const id = String(formData.get('id') ?? '');
@@ -78,6 +79,9 @@ export async function placeOrder(
   });
   const nextNumber = (last?.number ?? 1000) + 1;
 
+  // Decrementa stock antes del email para que cualquier alerta llegue
+  // como parte de la transacción del pedido.
+
   const order = await prisma.order.create({
     data: {
       number: nextNumber,
@@ -108,6 +112,12 @@ export async function placeOrder(
     },
     include: { items: true },
   });
+
+  // Decrementar stock + posible email de alerta al admin
+  await decrementStockForOrder(
+    order.id,
+    order.items.map((it) => ({ color: it.color, quantity: it.quantity })),
+  ).catch(() => null);
 
   const recipients = parseRecipients(await getSetting(SETTING_KEYS.ORDERS_RECIPIENT_EMAILS));
   const settings = await getSettings();

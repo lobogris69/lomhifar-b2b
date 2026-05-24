@@ -1,8 +1,7 @@
 import Link from 'next/link';
-import { Plus, Search, Users, Edit, Power, Trash2, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Search, Users, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
-import { formatDate } from '@/lib/utils';
-import { toggleCustomerActive, deleteCustomer } from './actions';
+import { BulkSelectTable } from './BulkSelectTable';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Clientes · Admin Lomhifar' };
@@ -119,68 +118,7 @@ export default async function CustomersPage({
           <div className="p-12 text-center text-ink-500">No hay clientes con esos filtros.</div>
         ) : (
           <>
-            <div className="overflow-x-auto">
-              <table className="table-pro">
-                <thead>
-                  <tr>
-                    <th>Farmacia</th>
-                    <th>CIF</th>
-                    <th>Email</th>
-                    <th>Localidad</th>
-                    <th>Origen</th>
-                    <th>Estado</th>
-                    <th>Alta</th>
-                    <th className="text-right">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {customers.map((c) => (
-                    <tr key={c.id}>
-                      <td className="font-medium">{c.pharmacyName}</td>
-                      <td className="font-mono">{c.cif}</td>
-                      <td>{c.email || <span className="text-ink-400 italic">sin email</span>}</td>
-                      <td>{[c.city, c.province].filter(Boolean).join(', ') || '—'}</td>
-                      <td>
-                        <span className="badge-muted text-[10px]">
-                          {c.source === 'EXCEL' ? 'Excel' : c.source === 'APPLICATION' ? 'Alta web' : 'Manual'}
-                        </span>
-                      </td>
-                      <td>
-                        {c.active ? (
-                          <span className="badge-success">Activo</span>
-                        ) : (
-                          <span className="badge-danger">Inactivo</span>
-                        )}
-                      </td>
-                      <td className="text-ink-500 text-xs">{formatDate(c.createdAt)}</td>
-                      <td>
-                        <div className="flex justify-end gap-1">
-                          <Link href={`/admin/clientes/${c.id}`} className="btn-ghost" title="Editar">
-                            <Edit className="h-3.5 w-3.5" />
-                          </Link>
-                          <form action={toggleCustomerActive}>
-                            <input type="hidden" name="id" value={c.id} />
-                            <button type="submit" className="btn-ghost" title={c.active ? 'Desactivar' : 'Activar'}>
-                              <Power className="h-3.5 w-3.5" />
-                            </button>
-                          </form>
-                          <form action={deleteCustomer}>
-                            <input type="hidden" name="id" value={c.id} />
-                            <button
-                              type="submit"
-                              className="btn-ghost text-danger"
-                              title="Eliminar"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </form>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <BulkSelectTable customers={customers} />
 
             {/* Paginación */}
             {totalPages > 1 && (

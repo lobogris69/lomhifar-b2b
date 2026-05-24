@@ -7,7 +7,9 @@ import { colorLabel } from '@/lib/cart';
 import { OrderStatusBadge, ORDER_STATUS_LABEL } from '@/components/shop/OrderStatusBadge';
 import { BraceletPreview } from '@/components/shop/BraceletPreview';
 import { PrintButton } from '@/components/admin/PrintButton';
-import { saveAdminNotes, updateOrderStatus } from '../actions';
+import { CARRIERS } from '@/lib/shipping';
+import { saveAdminNotes, saveTracking, updateOrderStatus } from '../actions';
+import { Truck, ExternalLink } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Pedido · Admin Lomhifar' };
@@ -141,6 +143,73 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
                 Notificar al cliente por email
               </label>
               <button type="submit" className="btn-primary w-full">Actualizar estado</button>
+            </form>
+          </div>
+
+          <div className="card p-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Truck className="h-4 w-4 text-brand-700" />
+              <h3 className="text-sm font-semibold text-ink-900">Tracking del envío</h3>
+            </div>
+            {order.trackingNumber ? (
+              <div className="mb-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-sm">
+                <div className="text-emerald-900 font-semibold">
+                  Nº de seguimiento: <span className="font-mono">{order.trackingNumber}</span>
+                </div>
+                {order.shippedAt && (
+                  <div className="text-emerald-800 text-xs mt-1">
+                    Enviado el {formatDate(order.shippedAt)}
+                  </div>
+                )}
+                {order.trackingUrl && (
+                  <a
+                    href={order.trackingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex items-center gap-1 text-xs text-emerald-700 hover:underline"
+                  >
+                    Ver tracking <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+              </div>
+            ) : null}
+
+            <form action={saveTracking} className="space-y-3">
+              <input type="hidden" name="id" value={order.id} />
+              <div>
+                <label className="label text-xs" htmlFor="carrier">Transportista</label>
+                <select id="carrier" name="carrier" defaultValue="inpost" className="input">
+                  {CARRIERS.map((c) => (
+                    <option key={c.key} value={c.key}>{c.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="label text-xs" htmlFor="trackingNumber">Nº de seguimiento</label>
+                <input
+                  id="trackingNumber"
+                  name="trackingNumber"
+                  defaultValue={order.trackingNumber ?? ''}
+                  placeholder="ej. 6090123456789"
+                  className="input font-mono"
+                />
+              </div>
+              <details className="text-xs">
+                <summary className="cursor-pointer text-ink-500">Si elegiste &laquo;Otro&raquo;: URL completa</summary>
+                <input
+                  name="customUrl"
+                  type="url"
+                  placeholder="https://..."
+                  className="input mt-2 text-xs"
+                />
+              </details>
+              <label className="flex items-center gap-2 text-xs">
+                <input type="checkbox" name="notify" defaultChecked className="h-4 w-4" />
+                Enviar email al cliente con el tracking
+              </label>
+              <button type="submit" className="btn-primary w-full">
+                Guardar tracking {!order.trackingNumber ? 'y marcar enviado' : ''}
+              </button>
             </form>
           </div>
 

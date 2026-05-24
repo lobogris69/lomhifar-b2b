@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, CheckCircle2, Repeat2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Repeat2, Truck, ExternalLink } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { getCustomerSession } from '@/lib/auth';
 import { formatDate, formatEuros } from '@/lib/utils';
@@ -68,6 +68,35 @@ export default async function OrderDetailPage({
             </form>
           </div>
         </div>
+
+        {order.trackingNumber && (
+          <div className="mt-4 p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 border border-emerald-200 flex items-center gap-3 flex-wrap">
+            <Truck className="h-5 w-5 text-emerald-700 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="text-xs uppercase tracking-wider text-emerald-700 font-semibold">
+                Pedido en camino
+              </div>
+              <div className="text-sm font-mono text-ink-900 break-all">
+                {order.trackingNumber}
+              </div>
+              {order.shippedAt && (
+                <div className="text-[11px] text-emerald-700">
+                  Enviado el {formatDate(order.shippedAt)}
+                </div>
+              )}
+            </div>
+            {order.trackingUrl && (
+              <a
+                href={order.trackingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary text-xs whitespace-nowrap"
+              >
+                Seguir envío <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="card p-6 mb-6">

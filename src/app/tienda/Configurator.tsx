@@ -55,9 +55,24 @@ export function Configurator({ priceBlackCents, priceRedCents, maxCharsPerLine, 
   }
 
   return (
-    <div className="grid lg:grid-cols-5 gap-8">
-      {/* Vista previa */}
-      <div className="lg:col-span-2">
+    <div className="grid lg:grid-cols-5 gap-8 relative">
+      {/* MÓVIL: preview sticky en la parte superior siempre visible mientras se escribe */}
+      <div className="lg:hidden sticky top-[88px] z-20 -mx-4 sm:-mx-6 mb-2">
+        <div className="bg-white border-y border-ink-100 shadow-card px-4 py-3">
+          <BraceletPreview color={color} line1={line1.toUpperCase()} line2={line2.toUpperCase()} size="sm" />
+          <div className="mt-2 flex items-center justify-between text-xs">
+            <span className="text-ink-500">
+              {formatEuros(unitPrice)} × {quantity} ud
+            </span>
+            <span className="text-base font-semibold text-brand-800">
+              {formatEuros(lineTotal)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* DESKTOP: preview lateral sticky */}
+      <div className="hidden lg:block lg:col-span-2">
         <div className="sticky top-32">
           <BraceletPreview color={color} line1={line1.toUpperCase()} line2={line2.toUpperCase()} />
           <div className="mt-4 card p-4">

@@ -27,12 +27,19 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
 
   // Contadores para badges del menú (resiliente ante BD no lista)
   let pendingApplications = 0;
+  let lowStock = 0;
   try {
     pendingApplications = await prisma.pharmacyApplication.count({ where: { status: 'PENDING' } });
   } catch {
     pendingApplications = 0;
   }
-  const badges = { pendingApplications };
+  try {
+    const stocks = await prisma.stock.findMany();
+    lowStock = stocks.filter((s) => s.quantity <= s.minAlertLevel).length;
+  } catch {
+    lowStock = 0;
+  }
+  const badges = { pendingApplications, lowStock };
   const adminRole = session.role ?? 'ADMIN';
 
   return (

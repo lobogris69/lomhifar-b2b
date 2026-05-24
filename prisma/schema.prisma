@@ -183,6 +183,11 @@ model Order {
   adminNotes      String?
   customerNote    String?
 
+  // Tracking de envío (InPost u otros)
+  trackingNumber  String?
+  trackingUrl     String?
+  shippedAt       DateTime?
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -218,6 +223,40 @@ model Setting {
   key          String   @id
   value        String
   updatedAt    DateTime @updatedAt
+}
+
+// ------------------------------------------------------------
+// Stock de pulseras por color
+// ------------------------------------------------------------
+model Stock {
+  id              String   @id @default(cuid())
+  // Valores: "BLACK" | "RED"
+  color           String   @unique
+  quantity        Int      @default(0)
+  minAlertLevel   Int      @default(50)  // si baja de aquí, email al admin
+  lastAlertedAt   DateTime?
+  updatedAt       DateTime @updatedAt
+
+  movements       StockMovement[]
+}
+
+// ------------------------------------------------------------
+// Movimientos de stock (entrada manual / salida por pedido)
+// ------------------------------------------------------------
+model StockMovement {
+  id          String   @id @default(cuid())
+  stockId     String
+  stock       Stock    @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  // Positivo = entrada (compra/devolución), negativo = salida (pedido)
+  delta       Int
+  reason      String   // "PEDIDO", "AJUSTE", "COMPRA", "DEVOLUCION", etc.
+  orderId     String?  // referencia opcional al pedido si es salida
+  note        String?
+  createdBy   String?  // email del admin que lo registró
+  createdAt   DateTime @default(now())
+
+  @@index([stockId])
+  @@index([createdAt])
 }
 
 // ------------------------------------------------------------
