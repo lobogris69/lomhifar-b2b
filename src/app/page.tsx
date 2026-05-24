@@ -138,7 +138,7 @@ export default async function LandingPage() {
                   ['Ancho de la correa', '1 cm'],
                   ['Placa de grabado', '4 × 1 cm aluminio'],
                   ['Técnica de marcado', 'Láser permanente · tono antracita'],
-                  ['Líneas de grabado', '2 (máx. 14 caracteres por línea)'],
+                  ['Líneas de grabado', 'Hasta 3 líneas · máx. 19 caracteres por línea'],
                   ['Símbolo médico', 'Estrella de la Vida incluida'],
                   ['Resistencia', 'Apta para uso diario, agua y deporte'],
                 ].map(([k, v]) => (

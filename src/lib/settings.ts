@@ -34,7 +34,7 @@ export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
   [SETTING_KEYS.DELIVERY_DAYS]: '7',
   [SETTING_KEYS.ORDERS_RECIPIENT_EMAILS]:
     process.env.ORDERS_RECIPIENT_EMAILS ?? 'pedidos@lomhifar.com',
-  [SETTING_KEYS.MAX_CHARS_PER_LINE]: '14',
+  [SETTING_KEYS.MAX_CHARS_PER_LINE]: '19',
   [SETTING_KEYS.COMPANY_NAME]: 'Lomhifar',
   [SETTING_KEYS.COMPANY_PHONE]: '',
   [SETTING_KEYS.COMPANY_EMAIL]: 'pedidos@lomhifar.com',

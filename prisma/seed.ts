@@ -15,7 +15,7 @@ const DEFAULT_SETTINGS: { key: string; value: string }[] = [
     key: 'emails.orders_recipients',
     value: process.env.ORDERS_RECIPIENT_EMAILS ?? 'pedidos@lomhifar.com',
   },
-  { key: 'engraving.max_chars', value: '14' },
+  { key: 'engraving.max_chars', value: '19' },
   { key: 'company.name', value: 'Lomhifar' },
   { key: 'company.phone', value: '' },
   { key: 'company.email', value: 'pedidos@lomhifar.com' },
