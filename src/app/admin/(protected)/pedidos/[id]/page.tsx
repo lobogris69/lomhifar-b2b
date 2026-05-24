@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { formatDate, formatEuros } from '@/lib/utils';
 import { colorLabel } from '@/lib/cart';
 import { OrderStatusBadge, ORDER_STATUS_LABEL } from '@/components/shop/OrderStatusBadge';
+import { BraceletPreview } from '@/components/shop/BraceletPreview';
 import { PrintButton } from '@/components/admin/PrintButton';
 import { saveAdminNotes, updateOrderStatus } from '../actions';
 
@@ -40,7 +41,27 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <div className="card p-6">
-            <h2 className="text-sm font-semibold text-ink-900 mb-3">Pulseras</h2>
+            <h2 className="text-sm font-semibold text-ink-900 mb-4">Pulseras a fabricar</h2>
+
+            {/* Vista previa visual — crítica para producción */}
+            <div className="space-y-5 mb-6">
+              {order.items.map((it, idx) => (
+                <div key={it.id} className="border border-ink-100 rounded-xl p-4 bg-ink-50/40">
+                  <div className="flex items-baseline justify-between mb-3 flex-wrap gap-2">
+                    <div className="text-sm font-semibold text-ink-900">
+                      Línea {idx + 1}: <span className="text-brand-700">{colorLabel(it.color)}</span>{' '}
+                      × <span className="text-brand-700">{it.quantity}</span> uds
+                    </div>
+                    <div className="text-sm font-semibold text-brand-800">
+                      {formatEuros(it.lineTotalCents)}
+                    </div>
+                  </div>
+                  <BraceletPreview color={it.color} line1={it.line1} line2={it.line2} size="md" />
+                </div>
+              ))}
+            </div>
+
+            {/* Tabla resumen para impresión */}
             <div className="overflow-x-auto">
               <table className="table-pro">
                 <thead>

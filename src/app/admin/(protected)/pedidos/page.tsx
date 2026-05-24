@@ -10,10 +10,12 @@ export const metadata = { title: 'Pedidos · Admin Lomhifar' };
 export default async function OrdersPage({
   searchParams,
 }: {
-  searchParams: { q?: string; status?: string };
+  searchParams: { q?: string; status?: string; from?: string; to?: string };
 }) {
   const q = (searchParams.q ?? '').trim();
   const status = (searchParams.status ?? '').trim();
+  const from = (searchParams.from ?? '').trim();
+  const to = (searchParams.to ?? '').trim();
 
   const where: Record<string, unknown> = {};
   if (q) {
@@ -27,6 +29,15 @@ export default async function OrdersPage({
   }
   if (status) where.status = status;
 
+  const dateFilter: Record<string, Date> = {};
+  if (from) dateFilter.gte = new Date(from);
+  if (to) {
+    const d = new Date(to);
+    d.setHours(23, 59, 59, 999);
+    dateFilter.lte = d;
+  }
+  if (Object.keys(dateFilter).length) where.createdAt = dateFilter;
+
   const orders = await prisma.order.findMany({
     where,
     orderBy: { createdAt: 'desc' },
@@ -38,6 +49,8 @@ export default async function OrdersPage({
   const exportParams = new URLSearchParams();
   if (q) exportParams.set('q', q);
   if (status) exportParams.set('status', status);
+  if (from) exportParams.set('from', from);
+  if (to) exportParams.set('to', to);
   const exportUrl = `/api/admin/pedidos/export${exportParams.toString() ? '?' + exportParams.toString() : ''}`;
 
   return (
@@ -71,7 +84,18 @@ export default async function OrdersPage({
             ))}
           </select>
         </div>
+        <div>
+          <label className="label" htmlFor="from">Desde</label>
+          <input id="from" name="from" type="date" defaultValue={from} className="input" />
+        </div>
+        <div>
+          <label className="label" htmlFor="to">Hasta</label>
+          <input id="to" name="to" type="date" defaultValue={to} className="input" />
+        </div>
         <button type="submit" className="btn-primary">Filtrar</button>
+        {(q || status || from || to) && (
+          <Link href="/admin/pedidos" className="btn-ghost text-xs">Limpiar</Link>
+        )}
       </form>
 
       <div className="card overflow-hidden">

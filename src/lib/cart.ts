@@ -6,7 +6,7 @@ const MAX_ITEMS = 50;
 
 export const cartItemSchema = z.object({
   id: z.string(),
-  color: z.enum(['BLACK', 'RED']),
+  color: z.string(),  // BLACK | RED — laxo para acomodar datos de Prisma
   quantity: z.number().int().min(1).max(9999),
   line1: z.string().max(40),
   line2: z.string().max(40),

@@ -26,6 +26,7 @@ export interface AdminSessionData {
   email: string;
   name?: string;
   role: string;  // SUPER_ADMIN | ADMIN | ORDER_MANAGER
+  mustChangePassword?: boolean;
   iat: number;
 }
 
@@ -34,12 +35,14 @@ export async function createAdminSession(admin: {
   email: string;
   name?: string | null;
   role: string;
+  mustChangePassword?: boolean;
 }) {
   const payload: AdminSessionData = {
     id: admin.id,
     email: admin.email,
     name: admin.name ?? undefined,
     role: admin.role,
+    mustChangePassword: admin.mustChangePassword ?? false,
     iat: Date.now(),
   };
   const sealed = await sealData(payload, {

@@ -33,6 +33,8 @@ model AdminUser {
   //   ORDER_MANAGER: solo ver/cambiar estado de pedidos
   role          String   @default("ADMIN")
   active        Boolean  @default(true)
+  // Si true, la primera vez que entra se le obliga a cambiar la password
+  mustChangePassword Boolean @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

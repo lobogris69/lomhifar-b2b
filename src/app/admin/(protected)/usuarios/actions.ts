@@ -57,6 +57,7 @@ export async function createAdminUser(
       passwordHash: await bcrypt.hash(parsed.data.password, 12),
       role: parsed.data.role,
       active: true,
+      mustChangePassword: true,  // al primer login se le obliga a cambiarla
     },
   });
 
@@ -102,7 +103,10 @@ export async function resetAdminPassword(formData: FormData) {
   if (newPassword.length < 8) return;
   await prisma.adminUser.update({
     where: { id },
-    data: { passwordHash: await bcrypt.hash(newPassword, 12) },
+    data: {
+      passwordHash: await bcrypt.hash(newPassword, 12),
+      mustChangePassword: true,  // al próximo login se le obliga a cambiarla
+    },
   });
   revalidatePath('/admin/usuarios');
 }

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Repeat2 } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { getCustomerSession } from '@/lib/auth';
 import { formatDate, formatEuros } from '@/lib/utils';
@@ -8,6 +8,7 @@ import { Alert } from '@/components/ui/Alert';
 import { OrderStatusBadge } from '@/components/shop/OrderStatusBadge';
 import { PosterCalloutLarge } from '@/components/shop/PosterCallout';
 import { colorLabel } from '@/lib/cart';
+import { reorderAction } from './actions';
 
 export const metadata = { title: 'Detalle de pedido · Lomhifar' };
 
@@ -53,7 +54,19 @@ export default async function OrderDetailPage({
             <div className="text-2xl font-semibold text-ink-900">#{order.number}</div>
             <div className="text-sm text-ink-500 mt-1">{formatDate(order.createdAt)}</div>
           </div>
-          <OrderStatusBadge status={order.status} className="text-sm" />
+          <div className="flex items-center gap-3 flex-wrap">
+            <OrderStatusBadge status={order.status} className="text-sm" />
+            <form action={reorderAction}>
+              <input type="hidden" name="orderId" value={order.id} />
+              <button
+                type="submit"
+                className="btn-secondary"
+                title="Añadir todas las pulseras de este pedido al carrito"
+              >
+                <Repeat2 className="h-4 w-4" /> Volver a pedir
+              </button>
+            </form>
+          </div>
         </div>
       </div>
 

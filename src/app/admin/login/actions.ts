@@ -32,5 +32,9 @@ export async function adminLogin(
   if (!ok) return { error: 'Credenciales incorrectas', email: raw.email };
 
   await createAdminSession(user);
+  // Si tiene que cambiar password, lo mandamos directo a su perfil
+  if (user.mustChangePassword) {
+    redirect('/admin/perfil?mustChange=1');
+  }
   redirect('/admin');
 }

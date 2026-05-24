@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Plus, Search, Users, Edit, Power, Trash2 } from 'lucide-react';
+import { Plus, Search, Users, Edit, Power, Trash2, Download } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { formatDate } from '@/lib/utils';
 import { toggleCustomerActive, deleteCustomer } from './actions';
@@ -33,6 +33,11 @@ export default async function CustomersPage({
     take: 200,
   });
 
+  const exportParams = new URLSearchParams();
+  if (q) exportParams.set('q', q);
+  if (status) exportParams.set('status', status);
+  const exportUrl = `/api/admin/clientes/export${exportParams.toString() ? '?' + exportParams.toString() : ''}`;
+
   return (
     <div className="p-6 lg:p-10">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
@@ -43,9 +48,14 @@ export default async function CustomersPage({
           </h1>
           <p className="section-subtitle">Base de farmacias activas e inactivas.</p>
         </div>
-        <Link href="/admin/clientes/nuevo" className="btn-primary">
-          <Plus className="h-4 w-4" /> Añadir cliente
-        </Link>
+        <div className="flex gap-2 flex-wrap">
+          <a href={exportUrl} className="btn-secondary" download>
+            <Download className="h-4 w-4" /> Exportar Excel
+          </a>
+          <Link href="/admin/clientes/nuevo" className="btn-primary">
+            <Plus className="h-4 w-4" /> Añadir cliente
+          </Link>
+        </div>
       </div>
 
       <form className="card p-4 mb-4 flex flex-wrap items-end gap-3">

@@ -92,6 +92,35 @@ export async function getOrdersByStatus(): Promise<StatusBreakdown[]> {
   return grouped.map((g) => ({ status: g.status, count: g._count._all }));
 }
 
+export interface ColorBreakdown {
+  color: string;       // BLACK | RED
+  units: number;       // unidades totales
+  lines: number;       // líneas de pedido
+}
+
+/**
+ * Distribución de unidades por color (no pedidos, sino unidades fabricadas).
+ * Excluye pedidos cancelados.
+ */
+export async function getUnitsByColor(): Promise<ColorBreakdown[]> {
+  const items = await prisma.orderItem.findMany({
+    where: { order: { status: { not: 'CANCELLED' } } },
+    select: { color: true, quantity: true },
+  });
+  const map = new Map<string, { units: number; lines: number }>();
+  for (const it of items) {
+    const entry = map.get(it.color) ?? { units: 0, lines: 0 };
+    entry.units += it.quantity;
+    entry.lines += 1;
+    map.set(it.color, entry);
+  }
+  return Array.from(map.entries()).map(([color, v]) => ({
+    color,
+    units: v.units,
+    lines: v.lines,
+  }));
+}
+
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }

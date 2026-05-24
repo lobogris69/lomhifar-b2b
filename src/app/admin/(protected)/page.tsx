@@ -6,7 +6,8 @@ import { prisma } from '@/lib/prisma';
 import { formatDate, formatEuros } from '@/lib/utils';
 import { OrderStatusBadge } from '@/components/shop/OrderStatusBadge';
 import { MonthlyChart } from '@/components/admin/MonthlyChart';
-import { getMonthlyOrderStats, getTopCustomers } from '@/lib/stats';
+import { ColorBreakdownCard } from '@/components/admin/ColorBreakdownCard';
+import { getMonthlyOrderStats, getTopCustomers, getUnitsByColor } from '@/lib/stats';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,7 @@ export default async function AdminDashboardPage() {
     monthly,
     topCustomers,
     monthlyOrdersCurrent,
+    colorBreakdown,
   ] = await Promise.all([
     prisma.customer.count({ where: { active: true } }),
     prisma.pharmacyApplication.count({ where: { status: 'PENDING' } }),
@@ -39,6 +41,7 @@ export default async function AdminDashboardPage() {
         status: { not: 'CANCELLED' },
       },
     }),
+    getUnitsByColor(),
   ]);
 
   const currentMonthRevenue = monthly[monthly.length - 1]?.totalCents ?? 0;
@@ -81,8 +84,9 @@ export default async function AdminDashboardPage() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
           <MonthlyChart data={monthly} />
+          <ColorBreakdownCard data={colorBreakdown} />
         </div>
 
         <div className="card p-6">
