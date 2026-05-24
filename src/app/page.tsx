@@ -19,9 +19,12 @@ import { PatientPersonas } from '@/components/marketing/PatientPersonas';
 import { AwarenessStats } from '@/components/marketing/AwarenessStats';
 import { PharmacistGuide } from '@/components/marketing/PharmacistGuide';
 import { getAllSiteTexts } from '@/lib/site-texts';
+import { getSettings, SETTING_KEYS } from '@/lib/settings';
+import { formatEuros } from '@/lib/utils';
 
 export default async function LandingPage() {
-  const t = await getAllSiteTexts();
+  const [t, settings] = await Promise.all([getAllSiteTexts(), getSettings()]);
+  const pvprCents = Number(settings[SETTING_KEYS.PVPR_CENTS]);
   return (
     <div className="flex min-h-screen flex-col">
       <PublicHeader />
@@ -148,6 +151,29 @@ export default async function LandingPage() {
                   </li>
                 ))}
               </ul>
+
+              {/* PVP recomendado al paciente */}
+              <div className="mt-6 rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-soft">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <div className="flex-1 min-w-0">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
+                      {t['pvpr.etiqueta']}
+                    </span>
+                    <div className="mt-2 text-sm font-semibold text-ink-900">
+                      {t['pvpr.titulo']}
+                    </div>
+                    <p className="mt-1 text-xs text-ink-600 leading-relaxed">
+                      {t['pvpr.descripcion']}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="text-4xl font-semibold text-emerald-700 tracking-tight">
+                      {formatEuros(pvprCents)}
+                    </div>
+                    <div className="text-[11px] text-emerald-700/80">IVA incl. · por pulsera</div>
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="space-y-4">
               <div className="rounded-2xl overflow-hidden bg-white shadow-card">

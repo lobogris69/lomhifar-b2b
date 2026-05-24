@@ -63,6 +63,7 @@ export default async function ShopPage() {
       <Configurator
         priceBlackCents={Number(settings[SETTING_KEYS.PRICE_BLACK_CENTS])}
         priceRedCents={Number(settings[SETTING_KEYS.PRICE_RED_CENTS])}
+        pvprCents={Number(settings[SETTING_KEYS.PVPR_CENTS])}
         maxCharsPerLine={Number(settings[SETTING_KEYS.MAX_CHARS_PER_LINE])}
         deliveryDays={Number(settings[SETTING_KEYS.DELIVERY_DAYS])}
         texts={{
@@ -71,6 +72,8 @@ export default async function ShopPage() {
           paso3: t['tienda.paso3_titulo'],
           paso4: t['tienda.paso4_titulo'],
           confirmacion: t['tienda.confirmacion_texto'],
+          pvprEtiqueta: t['pvpr.etiqueta'],
+          pvprMargenTexto: t['pvpr.margen_texto'],
         }}
       />
     </div>

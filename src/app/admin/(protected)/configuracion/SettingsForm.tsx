@@ -21,6 +21,7 @@ interface Props {
   initialValues: {
     priceBlackEuros: string;
     priceRedEuros: string;
+    pvprEuros: string;
     shippingEuros: string;
     freeShippingThresholdEuros: string;
     minOrderEuros: string;
@@ -41,11 +42,25 @@ export function SettingsForm({ initialValues }: Props) {
     <form action={action} className="space-y-8">
       {state.ok && <Alert variant="success">Configuración guardada correctamente.</Alert>}
 
-      <Section title="Precios de pulseras">
+      <Section title="Precios de pulseras (coste para la farmacia)">
         <div className="grid sm:grid-cols-2 gap-4">
           <Money label="Precio pulsera negra" name="priceBlackEuros" defaultValue={initialValues.priceBlackEuros} error={state.fieldErrors?.priceBlackCents} />
           <Money label="Precio pulsera roja" name="priceRedEuros" defaultValue={initialValues.priceRedEuros} error={state.fieldErrors?.priceRedCents} />
         </div>
+      </Section>
+
+      <Section title="PVP recomendado al paciente">
+        <p className="text-xs text-ink-500 -mt-2 mb-3">
+          Precio sugerido al que la farmacia revende cada pulsera a su cliente final.
+          Se muestra en la web pública y en el configurador para que la farmacia conozca su margen.
+          Mismo precio para negra y roja.
+        </p>
+        <Money
+          label="PVPR (precio venta al público recomendado)"
+          name="pvprEuros"
+          defaultValue={initialValues.pvprEuros}
+          error={state.fieldErrors?.pvprCents}
+        />
       </Section>
 
       <Section title="Portes y pedido mínimo">

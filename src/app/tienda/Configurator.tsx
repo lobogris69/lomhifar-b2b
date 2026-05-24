@@ -11,6 +11,7 @@ import { cn, formatEuros } from '@/lib/utils';
 interface Props {
   priceBlackCents: number;
   priceRedCents: number;
+  pvprCents: number;
   maxCharsPerLine: number;
   deliveryDays: number;
   texts: {
@@ -19,6 +20,8 @@ interface Props {
     paso3: string;
     paso4: string;
     confirmacion: string;
+    pvprEtiqueta: string;
+    pvprMargenTexto: string;
   };
 }
 
@@ -38,7 +41,7 @@ function SubmitBtn({ disabled }: { disabled: boolean }) {
   );
 }
 
-export function Configurator({ priceBlackCents, priceRedCents, maxCharsPerLine, deliveryDays, texts }: Props) {
+export function Configurator({ priceBlackCents, priceRedCents, pvprCents, maxCharsPerLine, deliveryDays, texts }: Props) {
   const [color, setColor] = useState<'BLACK' | 'RED'>('BLACK');
   const [quantity, setQuantity] = useState<number>(10);
   const [line1, setLine1] = useState('');
@@ -48,6 +51,8 @@ export function Configurator({ priceBlackCents, priceRedCents, maxCharsPerLine, 
 
   const unitPrice = color === 'BLACK' ? priceBlackCents : priceRedCents;
   const lineTotal = unitPrice * quantity;
+  const marginPerUnit = Math.max(0, pvprCents - unitPrice);
+  const marginTotal = marginPerUnit * quantity;
 
   const canSubmit = useMemo(
     () => confirmed && line1.trim().length > 0 && quantity >= 1,
@@ -75,14 +80,22 @@ export function Configurator({ priceBlackCents, priceRedCents, maxCharsPerLine, 
               {formatEuros(lineTotal)}
             </span>
           </div>
+          <div className="mt-2 pt-2 border-t border-ink-100 flex items-center justify-between text-[11px]">
+            <span className="text-emerald-700 font-semibold">
+              {texts.pvprEtiqueta}: {formatEuros(pvprCents)}
+            </span>
+            <span className="text-emerald-800">
+              margen +{formatEuros(marginPerUnit)}/ud
+            </span>
+          </div>
         </div>
       </div>
 
       {/* DESKTOP: preview lateral sticky */}
       <div className="hidden lg:block lg:col-span-2">
-        <div className="sticky top-32">
+        <div className="sticky top-32 space-y-4">
           <BraceletPreview color={color} line1={line1.toUpperCase()} line2={line2.toUpperCase()} />
-          <div className="mt-4 card p-4">
+          <div className="card p-4">
             <div className="flex items-center justify-between text-sm">
               <span className="text-ink-500">Precio unitario</span>
               <span className="font-semibold text-ink-900">{formatEuros(unitPrice)}</span>
@@ -95,6 +108,32 @@ export function Configurator({ priceBlackCents, priceRedCents, maxCharsPerLine, 
               <span className="text-ink-500 text-sm">Total de esta línea</span>
               <span className="text-lg font-semibold text-brand-800">{formatEuros(lineTotal)}</span>
             </div>
+          </div>
+
+          {/* PVPR + margen */}
+          <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] uppercase tracking-wider font-semibold text-emerald-700">
+                {texts.pvprEtiqueta}
+              </span>
+              <span className="text-lg font-semibold text-emerald-800">
+                {formatEuros(pvprCents)}
+              </span>
+            </div>
+            <div className="text-[11px] text-emerald-700/80 mb-3 leading-snug">
+              Precio sugerido al paciente final (igual negra o roja).
+            </div>
+            <div className="border-t border-emerald-200 pt-2 flex items-center justify-between">
+              <span className="text-xs text-emerald-800">{texts.pvprMargenTexto}</span>
+              <span className="text-sm font-semibold text-emerald-900">
+                +{formatEuros(marginPerUnit)}
+              </span>
+            </div>
+            {quantity > 1 && marginPerUnit > 0 && (
+              <div className="mt-1 text-[11px] text-emerald-700/80 text-right">
+                × {quantity} ud · margen línea {formatEuros(marginTotal)}
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -91,6 +91,7 @@ export const cartItemSchema = z.object({
 export const settingsSchema = z.object({
   priceBlackCents: z.coerce.number().int().min(0).max(1_000_000),
   priceRedCents: z.coerce.number().int().min(0).max(1_000_000),
+  pvprCents: z.coerce.number().int().min(0).max(1_000_000),
   shippingCents: z.coerce.number().int().min(0).max(1_000_000),
   freeShippingThresholdCents: z.coerce.number().int().min(0).max(10_000_000),
   minOrderCents: z.coerce.number().int().min(0).max(10_000_000),

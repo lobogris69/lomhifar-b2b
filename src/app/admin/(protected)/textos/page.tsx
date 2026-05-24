@@ -35,6 +35,7 @@ export default async function TextsPage() {
     solicitud: '/solicitud',
     solicitud_ok: '/solicitud/enviada',
     cartel_callout: '/tienda/pedidos',
+    pvpr: '/',
   };
 
   return (

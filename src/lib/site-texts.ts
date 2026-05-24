@@ -28,7 +28,8 @@ export interface TextSlot {
     | 'mispedidos'
     | 'solicitud'
     | 'solicitud_ok'
-    | 'cartel_callout';
+    | 'cartel_callout'
+    | 'pvpr';
   groupLabel: string;
   label: string;                // Título del campo en el admin
   description?: string;         // Ayuda contextual
@@ -764,6 +765,43 @@ export const TEXT_SLOTS: TextSlot[] = [
     defaultValue:
       'Sugerirla cuando dispensa la medicación habitual es el momento perfecto.',
     type: 'long', maxLength: 200,
+  },
+
+  // ============ PVPR (Precio venta recomendado al paciente) ============
+  {
+    key: 'pvpr.etiqueta',
+    group: 'pvpr',
+    groupLabel: 'PVP recomendado al paciente',
+    label: 'Etiqueta corta (badge / chip)',
+    description: 'Texto pequeño que aparece junto al precio recomendado',
+    defaultValue: 'PVP recomendado',
+    type: 'short', maxLength: 40,
+  },
+  {
+    key: 'pvpr.titulo',
+    group: 'pvpr',
+    groupLabel: 'PVP recomendado al paciente',
+    label: 'Título del bloque (landing / configurador)',
+    defaultValue: 'Precio de venta recomendado al paciente',
+    type: 'short', maxLength: 80,
+  },
+  {
+    key: 'pvpr.descripcion',
+    group: 'pvpr',
+    groupLabel: 'PVP recomendado al paciente',
+    label: 'Descripción / nota explicativa',
+    defaultValue:
+      'Precio sugerido por Lomhifar al que la farmacia revende cada pulsera a su cliente final. El importe es el mismo independientemente del color.',
+    type: 'long', maxLength: 400,
+  },
+  {
+    key: 'pvpr.margen_texto',
+    group: 'pvpr',
+    groupLabel: 'PVP recomendado al paciente',
+    label: 'Texto de margen (configurador / carrito)',
+    description: 'Aparece junto al cálculo del margen estimado por pulsera',
+    defaultValue: 'Su margen estimado por pulsera',
+    type: 'short', maxLength: 80,
   },
 
   // ============ SECCIÓN "CANAL PROFESIONAL" (landing) ============

@@ -22,6 +22,7 @@ export async function saveSettings(
   const raw = {
     priceBlackCents: euroToCents(formData.get('priceBlackEuros')),
     priceRedCents: euroToCents(formData.get('priceRedEuros')),
+    pvprCents: euroToCents(formData.get('pvprEuros')),
     shippingCents: euroToCents(formData.get('shippingEuros')),
     freeShippingThresholdCents: euroToCents(formData.get('freeShippingThresholdEuros')),
     minOrderCents: euroToCents(formData.get('minOrderEuros')),
@@ -45,6 +46,7 @@ export async function saveSettings(
   await Promise.all([
     setSetting(SETTING_KEYS.PRICE_BLACK_CENTS, String(v.priceBlackCents)),
     setSetting(SETTING_KEYS.PRICE_RED_CENTS, String(v.priceRedCents)),
+    setSetting(SETTING_KEYS.PVPR_CENTS, String(v.pvprCents)),
     setSetting(SETTING_KEYS.SHIPPING_CENTS, String(v.shippingCents)),
     setSetting(SETTING_KEYS.FREE_SHIPPING_THRESHOLD_CENTS, String(v.freeShippingThresholdCents)),
     setSetting(SETTING_KEYS.MIN_ORDER_CENTS, String(v.minOrderCents)),
@@ -59,6 +61,8 @@ export async function saveSettings(
 
   revalidatePath('/admin/configuracion');
   revalidatePath('/tienda');
+  revalidatePath('/tienda/carrito');
+  revalidatePath('/');
   return { ok: true };
 }
 

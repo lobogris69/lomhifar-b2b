@@ -6,6 +6,7 @@ import { prisma } from './prisma';
 export const SETTING_KEYS = {
   PRICE_BLACK_CENTS: 'price.black.cents',
   PRICE_RED_CENTS: 'price.red.cents',
+  PVPR_CENTS: 'price.pvpr.cents',
   SHIPPING_CENTS: 'shipping.cents',
   FREE_SHIPPING_THRESHOLD_CENTS: 'shipping.free_threshold.cents',
   MIN_ORDER_CENTS: 'order.minimum.cents',
@@ -23,6 +24,7 @@ export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
 export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
   [SETTING_KEYS.PRICE_BLACK_CENTS]: '350', // 3,50 €
   [SETTING_KEYS.PRICE_RED_CENTS]: '350',
+  [SETTING_KEYS.PVPR_CENTS]: '2495', // 24,95 € PVP recomendado al paciente
   [SETTING_KEYS.SHIPPING_CENTS]: '595', // 5,95 €
   [SETTING_KEYS.FREE_SHIPPING_THRESHOLD_CENTS]: '5000', // 50 €
   [SETTING_KEYS.MIN_ORDER_CENTS]: '0',

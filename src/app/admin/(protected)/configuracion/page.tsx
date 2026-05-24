@@ -23,6 +23,7 @@ export default async function SettingsPage() {
         initialValues={{
           priceBlackEuros: centsToEuro(s[SETTING_KEYS.PRICE_BLACK_CENTS]),
           priceRedEuros: centsToEuro(s[SETTING_KEYS.PRICE_RED_CENTS]),
+          pvprEuros: centsToEuro(s[SETTING_KEYS.PVPR_CENTS]),
           shippingEuros: centsToEuro(s[SETTING_KEYS.SHIPPING_CENTS]),
           freeShippingThresholdEuros: centsToEuro(s[SETTING_KEYS.FREE_SHIPPING_THRESHOLD_CENTS]),
           minOrderEuros: centsToEuro(s[SETTING_KEYS.MIN_ORDER_CENTS]),
