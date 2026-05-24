@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 247 247 248;
+  --foreground: 26 26 32;
+}
+
+html,
+body {
+  background: rgb(var(--background));
+  color: rgb(var(--foreground));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
+  }
+  .btn-primary {
+    @apply btn bg-brand-gradient text-white px-5 py-2.5 text-sm shadow-sm hover:shadow-md hover:brightness-105;
+  }
+  .btn-secondary {
+    @apply btn bg-white hover:bg-ink-50 text-ink-900 border border-ink-200 px-5 py-2.5 text-sm;
+  }
+  .btn-dark {
+    @apply btn bg-ink-900 hover:bg-ink-800 text-white px-5 py-2.5 text-sm;
+  }
+  .btn-danger {
+    @apply btn bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 text-sm;
+  }
+  .btn-ghost {
+    @apply btn text-ink-700 hover:text-ink-900 hover:bg-ink-100 px-3 py-2 text-sm;
+  }
+  .input {
+    @apply w-full rounded-lg border border-ink-200 bg-white px-3.5 py-2.5 text-sm text-ink-900 shadow-sm placeholder:text-ink-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:bg-ink-50;
+  }
+  .label {
+    @apply block text-sm font-medium text-ink-800 mb-1.5;
+  }
+  .field-error {
+    @apply text-xs text-danger mt-1;
+  }
+  .card {
+    @apply bg-white rounded-xl border border-ink-100 shadow-card;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+  .badge-success { @apply badge bg-emerald-100 text-emerald-800; }
+  .badge-warning { @apply badge bg-amber-100 text-amber-800; }
+  .badge-danger  { @apply badge bg-red-100 text-red-800; }
+  .badge-info    { @apply badge bg-sky-100 text-sky-800; }
+  .badge-brand   { @apply badge bg-brand-100 text-brand-800; }
+  .badge-muted   { @apply badge bg-ink-100 text-ink-700; }
+
+  .section-title {
+    @apply text-2xl font-semibold tracking-tight text-ink-900;
+  }
+  .section-subtitle {
+    @apply text-sm text-ink-500 mt-1;
+  }
+
+  .table-pro {
+    @apply w-full text-sm;
+  }
+  .table-pro thead th {
+    @apply text-left text-xs font-semibold uppercase tracking-wider text-ink-500 bg-ink-50/60 px-4 py-3 border-b border-ink-100;
+  }
+  .table-pro tbody td {
+    @apply px-4 py-3 border-b border-ink-100 text-ink-800 align-middle;
+  }
+  .table-pro tbody tr:hover {
+    @apply bg-ink-50/50;
+  }
+
+  /* Tipografía de grabado: gruesa, sin serifa, alta legibilidad */
+  .engrave-text {
+    @apply font-engrave font-bold uppercase tracking-[0.06em];
+    font-feature-settings: 'tnum' 1;
+  }
+}
+
+/* Patrón de puntos al estilo del logo */
+.bg-dots {
+  background-image: radial-gradient(circle at 1px 1px, rgba(209, 38, 134, 0.18) 1px, transparent 0);
+  background-size: 18px 18px;
+}
+.bg-dots-light {
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.08) 1px, transparent 0);
+  background-size: 18px 18px;
+}

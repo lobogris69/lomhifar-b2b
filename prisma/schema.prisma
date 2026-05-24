@@ -1,0 +1,243 @@
+// ============================================================
+// Lomhifar B2B - Esquema de base de datos
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  // PRODUCCIÓN: PostgreSQL en Railway (DATABASE_URL la inyecta Railway).
+  //
+  // Para preview local con SQLite (sin Docker/Postgres), cambiar a:
+  //   provider = "sqlite"
+  // y usar DATABASE_URL="file:./dev.db"
+  //
+  // Los enums se modelan como String para que el código sea compatible con
+  // ambos motores. La validación de valores se hace en TypeScript (lib/enums.ts).
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------
+// Administrador del panel privado
+// ------------------------------------------------------------
+model AdminUser {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String
+  name          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ------------------------------------------------------------
+// Cliente farmacia importado desde Excel
+// ------------------------------------------------------------
+model Customer {
+  id              String   @id @default(cuid())
+  cif             String   @unique
+  email           String
+  pharmacyName    String
+  contactName     String?
+  phone           String?
+  address         String?
+  city            String?
+  postalCode      String?
+  province        String?
+  bankAccount     String?  // IBAN
+  whatsapp        String?
+  notes           String?
+  active          Boolean  @default(true)
+  // Valores: EXCEL | APPLICATION | MANUAL
+  source          String   @default("EXCEL")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  accessCodes     AccessCode[]
+  sessions        CustomerSession[]
+  orders          Order[]
+
+  @@index([email])
+  @@index([active])
+}
+
+// ------------------------------------------------------------
+// Solicitud de alta de farmacia (cuando la búsqueda no encuentra cliente)
+// ------------------------------------------------------------
+model PharmacyApplication {
+  id              String   @id @default(cuid())
+  cif             String
+  email           String
+  pharmacyName    String
+  contactName     String
+  phone           String
+  address         String
+  city            String
+  postalCode      String
+  province        String
+  bankAccount     String   // IBAN obligatorio
+  whatsapp        String?
+  message         String?
+  // Valores: PENDING | APPROVED | REJECTED
+  status          String   @default("PENDING")
+  reviewedAt      DateTime?
+  reviewedNotes   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([cif])
+}
+
+// ------------------------------------------------------------
+// Código de acceso enviado por email
+// ------------------------------------------------------------
+model AccessCode {
+  id           String   @id @default(cuid())
+  customerId   String
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  code         String
+  expiresAt    DateTime
+  consumedAt   DateTime?
+  attempts     Int      @default(0)
+  ip           String?
+  createdAt    DateTime @default(now())
+
+  @@index([customerId])
+  @@index([code])
+}
+
+// ------------------------------------------------------------
+// Sesión activa de cliente
+// ------------------------------------------------------------
+model CustomerSession {
+  id           String   @id @default(cuid())
+  customerId   String
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  token        String   @unique
+  expiresAt    DateTime
+  ip           String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  @@index([token])
+  @@index([customerId])
+}
+
+// ------------------------------------------------------------
+// Pedido
+// ------------------------------------------------------------
+model Order {
+  id              String   @id @default(cuid())
+  // En PostgreSQL: @default(autoincrement()). SQLite no soporta autoincrement
+  // fuera del @id, así que el número se asigna manualmente en placeOrder().
+  number          Int      @unique
+  customerId      String
+  customer        Customer @relation(fields: [customerId], references: [id])
+
+  // Valores: RECEIVED | IN_PREPARATION | SHIPPED | DELIVERED | CANCELLED
+  status          String   @default("RECEIVED")
+
+  // Snapshot del cliente al hacer el pedido
+  pharmacyName    String
+  cif             String
+  email           String
+  contactName     String?
+  phone           String?
+  address         String?
+  city            String?
+  postalCode      String?
+  province        String?
+
+  // Importes (en céntimos)
+  subtotalCents   Int
+  shippingCents   Int
+  totalCents      Int
+
+  adminNotes      String?
+  customerNote    String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  items           OrderItem[]
+
+  @@index([customerId])
+  @@index([status])
+}
+
+model OrderItem {
+  id            String   @id @default(cuid())
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Valores: BLACK | RED
+  color         String
+  quantity      Int
+  line1         String
+  line2         String
+
+  unitPriceCents Int
+  lineTotalCents Int
+
+  createdAt     DateTime @default(now())
+
+  @@index([orderId])
+}
+
+// ------------------------------------------------------------
+// Ajustes (clave/valor) - precios, portes, etc.
+// ------------------------------------------------------------
+model Setting {
+  key          String   @id
+  value        String
+  updatedAt    DateTime @updatedAt
+}
+
+// ------------------------------------------------------------
+// Imagen del sitio (logo, hero, producto, casos…) subida por el admin.
+// Si no existe registro para un slot, el endpoint /api/images/[slot]
+// sirve el archivo por defecto desde /public/defaults/.
+// ------------------------------------------------------------
+model SiteImage {
+  id          String   @id @default(cuid())
+  slot        String   @unique  // "logo", "hero-bracelet", "case-sofia", ...
+  filename    String
+  mimeType    String
+  data        Bytes
+  size        Int
+  width       Int?
+  height      Int?
+  uploadedBy  String?
+  updatedAt   DateTime @updatedAt
+}
+
+// ------------------------------------------------------------
+// Cartel promocional subido por el administrador.
+// Si existe registro activo, sustituye al cartel por defecto
+// servido en /public/downloads/cartel-lomhifar-default.pdf
+// ------------------------------------------------------------
+model PosterFile {
+  id          String   @id @default(cuid())
+  filename    String
+  mimeType    String
+  data        Bytes
+  size        Int
+  uploadedBy  String?
+  createdAt   DateTime @default(now())
+}
+
+// ============================================================
+// PARA PRODUCCIÓN POSTGRESQL, descomentar estos enums y cambiar
+// los campos String correspondientes:
+//   source         CustomerSource    @default(EXCEL)
+//   status (apps)  ApplicationStatus @default(PENDING)
+//   status (order) OrderStatus       @default(RECEIVED)
+//   color          BraceletColor
+//
+// enum CustomerSource     { EXCEL APPLICATION MANUAL }
+// enum ApplicationStatus  { PENDING APPROVED REJECTED }
+// enum OrderStatus        { RECEIVED IN_PREPARATION SHIPPED DELIVERED CANCELLED }
+// enum BraceletColor      { BLACK RED }
+// ============================================================
