@@ -19,6 +19,7 @@ import {
   X,
   Package,
   Type,
+  Wrench,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ADMIN_ROLE_LABEL, type AdminRole, canAccessPath } from '@/lib/admin-roles';
@@ -36,6 +37,7 @@ const NAV = [
   { href: '/admin/personas', label: 'Personas / casos uso', icon: Users },
   { href: '/admin/configuracion', label: 'Configuración', icon: Settings },
   { href: '/admin/usuarios', label: 'Usuarios admin', icon: Users2 },
+  { href: '/admin/sistema', label: 'Sistema / Reset', icon: Wrench },
 ];
 
 export interface SidebarBadges {
