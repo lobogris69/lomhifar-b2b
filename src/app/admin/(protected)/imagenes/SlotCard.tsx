@@ -121,22 +121,23 @@ export function SlotCard(props: Props) {
             className="block w-full text-[11px] text-ink-600 file:mr-2 file:px-3 file:py-1.5 file:rounded-md file:border file:border-ink-200 file:bg-white file:text-ink-700 hover:file:border-brand-400 file:cursor-pointer cursor-pointer"
           />
           {filename && <div className="text-[11px] text-ink-700 truncate">{filename}</div>}
-          <div className="flex items-center justify-between gap-2 mt-auto">
-            <Submit />
-            {props.isCustom && (
-              <form action={deleteSiteImage}>
-                <input type="hidden" name="slot" value={props.slot} />
-                <button
-                  type="submit"
-                  className="btn-ghost text-[11px] text-ink-500 hover:text-danger"
-                  title="Restaurar imagen por defecto"
-                >
-                  <RotateCcw className="h-3.5 w-3.5" /> Restaurar default
-                </button>
-              </form>
-            )}
-          </div>
+          <Submit />
         </form>
+
+        {/* Restaurar default — FUERA del form de upload (HTML no permite forms
+            anidados, si quedan dentro el navegador ignora el click). */}
+        {props.isCustom && (
+          <form action={deleteSiteImage} className="mt-2 text-right">
+            <input type="hidden" name="slot" value={props.slot} />
+            <button
+              type="submit"
+              className="btn-ghost text-[11px] text-ink-500 hover:text-danger"
+              title="Restaurar imagen por defecto"
+            >
+              <RotateCcw className="h-3.5 w-3.5" /> Restaurar default
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

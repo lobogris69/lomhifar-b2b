@@ -5,7 +5,7 @@ import { useFormState, useFormStatus } from 'react-dom';
 import { Loader2, Save, RotateCcw, Move, Sparkles } from 'lucide-react';
 import { Alert } from '@/components/ui/Alert';
 import { InteractiveBraceletEditor } from './InteractiveBraceletEditor';
-import { ENGRAVING_PRESETS, type PrintArea } from '@/lib/settings';
+import { ENGRAVING_PRESETS, DEFAULT_PRINT_AREA, type PrintArea } from '@/lib/settings';
 import { saveBraceletAreas, type SaveAreaState } from './actions';
 
 const initial: SaveAreaState = {};
@@ -17,9 +17,9 @@ interface Props {
   photoRedUrl: string | null;
 }
 
-const DEFAULT_AREA: PrintArea = {
-  leftPct: 50, topPct: 42, widthPct: 22, heightPct: 14, rotationDeg: 0, textColor: '#2a2a30',
-};
+// Re-export del default global para que "Restaurar" use SIEMPRE el mismo
+// valor que se aplica en la web pública cuando no hay area guardada.
+const DEFAULT_AREA: PrintArea = DEFAULT_PRINT_AREA;
 
 function Submit() {
   const { pending } = useFormStatus();

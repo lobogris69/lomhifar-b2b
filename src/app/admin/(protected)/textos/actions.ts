@@ -35,8 +35,10 @@ export async function updateSiteText(
   }
 
   await setSiteText(key, value);
-  // Revalidar las páginas que pueden usar este texto
-  revalidatePath('/acceso');
+  // Revalidamos TODO el layout público — los textos se usan en muchas
+  // páginas (landing, /acceso, /tienda, /carrito, /pedidos, etc.) y no
+  // queremos cachear valores antiguos.
+  revalidatePath('/', 'layout');
   revalidatePath('/admin/textos');
   return { ok: true, key };
 }
@@ -45,6 +47,6 @@ export async function resetTextToDefault(formData: FormData) {
   await ensureAdmin();
   const key = String(formData.get('key') ?? '');
   await resetSiteText(key);
-  revalidatePath('/acceso');
+  revalidatePath('/', 'layout');
   revalidatePath('/admin/textos');
 }

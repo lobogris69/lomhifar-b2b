@@ -37,7 +37,7 @@ export async function savePersonas(
     await setSetting(SETTING_KEYS.MARKETING_PERSONAS_JSON, JSON.stringify(personas));
 
     revalidatePath('/admin/personas');
-    revalidatePath('/');
+    revalidatePath('/', 'layout');
     return { ok: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : 'Error al guardar' };
@@ -50,5 +50,5 @@ export async function resetPersonasAction() {
   if (!s) redirect('/admin/login');
   await setSetting(SETTING_KEYS.MARKETING_PERSONAS_JSON, '');
   revalidatePath('/admin/personas');
-  revalidatePath('/');
+  revalidatePath('/', 'layout');
 }

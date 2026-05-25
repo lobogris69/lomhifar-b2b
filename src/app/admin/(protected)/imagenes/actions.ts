@@ -64,7 +64,9 @@ export async function uploadSiteImage(
   });
 
   revalidatePath('/admin/imagenes');
-  revalidatePath('/');
+  // Revalidamos TODO el layout público — la misma imagen puede usarse en
+  // /, /acceso, /tienda, /tienda/carrito, /tienda/pedidos/*, etc.
+  revalidatePath('/', 'layout');
   return { ok: true, slot };
 }
 
@@ -75,7 +77,7 @@ export async function deleteSiteImage(formData: FormData) {
   if (!SLOT_NAMES.includes(slot)) return;
   await prisma.siteImage.deleteMany({ where: { slot } });
   revalidatePath('/admin/imagenes');
-  revalidatePath('/');
+  revalidatePath('/', 'layout');
 }
 
 function sanitizeFilename(name: string): string {
