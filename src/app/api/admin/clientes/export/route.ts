@@ -69,7 +69,7 @@ export async function GET(req: Request) {
     sourceLabel(c.source),
     c.active ? 'Sí' : 'No',
     String(c._count.orders),
-    c.createdAt.toLocaleDateString('es-ES'),
+    c.createdAt.toLocaleDateString('es-ES', { timeZone: 'Europe/Madrid' }),
     c.notes ?? '',
   ]);
 

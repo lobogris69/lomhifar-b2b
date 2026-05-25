@@ -17,7 +17,7 @@ export async function getMonthlyOrderStats(months = 6): Promise<MonthBucket[]> {
   for (let i = months - 1; i >= 0; i -= 1) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const monthIso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    const label = d.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '');
+    const label = d.toLocaleDateString('es-ES', { month: 'short', timeZone: 'Europe/Madrid' }).replace('.', '');
     buckets.push({ month: monthIso, label: capitalize(label), count: 0, totalCents: 0 });
   }
 

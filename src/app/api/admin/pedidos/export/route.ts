@@ -80,8 +80,8 @@ export async function GET(req: Request) {
   const rows: string[][] = [];
   for (const o of orders) {
     const statusLabel = ORDER_STATUS_LABEL[o.status as OrderStatus] ?? o.status;
-    const fecha = o.createdAt.toLocaleDateString('es-ES');
-    const hora = o.createdAt.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    const fecha = o.createdAt.toLocaleDateString('es-ES', { timeZone: 'Europe/Madrid' });
+    const hora = o.createdAt.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' });
     for (const it of o.items) {
       rows.push([
         String(o.number),

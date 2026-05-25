@@ -12,6 +12,11 @@ export function formatEuros(cents: number): string {
   }).format(cents / 100);
 }
 
+/**
+ * Formatea una fecha en hora ESPAÑOLA peninsular (Europe/Madrid).
+ * Importante: el servidor de Railway corre en UTC, así que sin esta
+ * opción las fechas aparecen 1h o 2h por detrás (DST en verano).
+ */
 export function formatDate(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
   return new Intl.DateTimeFormat('es-ES', {
@@ -20,6 +25,18 @@ export function formatDate(date: Date | string): string {
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'Europe/Madrid',
+  }).format(d);
+}
+
+/** Versión solo fecha (sin hora), también en zona horaria española. */
+export function formatDateOnly(date: Date | string): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat('es-ES', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'Europe/Madrid',
   }).format(d);
 }
 

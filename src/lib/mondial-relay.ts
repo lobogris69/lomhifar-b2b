@@ -121,7 +121,10 @@ async function soapCall(method: string, params: Record<string, string>): Promise
     method: 'POST',
     headers: {
       'Content-Type': 'text/xml; charset=utf-8',
-      SOAPAction: `${NAMESPACE}${method}`,
+      // SOAPAction debe ir ENTRE COMILLAS (SOAP 1.1 spec, RFC). Mondial
+      // Relay lo enforza estricto: sin comillas devuelve HTTP 500 con
+      // \"Le serveur n'a pas reconnu la valeur de l'en-tête HTTP SOAPAction\".
+      SOAPAction: `"${NAMESPACE}${method}"`,
     },
     body,
   });
