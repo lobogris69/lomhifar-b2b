@@ -105,7 +105,13 @@ export default async function PosterPage() {
 
           <Alert variant="info">
             Las farmacias ven este cartel desde su panel y al finalizar cualquier
-            pedido. Si subes uno nuevo, el cambio es inmediato para todas.
+            pedido. Si subes uno nuevo, el cambio es inmediato para todas.{' '}
+            <strong>Importante:</strong> la miniatura que aparece junto al botón de
+            descarga es independiente — actualízala en{' '}
+            <a href="/admin/imagenes" className="underline font-semibold">
+              Imágenes del sitio
+            </a>{' '}
+            (slot &laquo;Miniatura del cartel&raquo;) cuando cambies el cartel.
           </Alert>
         </div>
 

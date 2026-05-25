@@ -1,12 +1,21 @@
 import Link from 'next/link';
 import { Download, Megaphone, Printer } from 'lucide-react';
 import { getAllSiteTexts } from '@/lib/site-texts';
+import { getSiteImageMeta } from '@/lib/site-images';
 
 /**
  * Banner promocional grande para usar al final del pedido (confirmación).
  */
 export async function PosterCalloutLarge() {
-  const t = await getAllSiteTexts();
+  const [t, thumbMeta] = await Promise.all([
+    getAllSiteTexts(),
+    getSiteImageMeta('cartel-thumbnail'),
+  ]);
+  // Si el admin ha subido una miniatura custom desde /admin/imagenes la usamos
+  // (con cache-busting). Si no, caemos al PNG estático por defecto.
+  const thumbnailUrl = thumbMeta.isCustom && thumbMeta.hasImage
+    ? `/api/images/cartel-thumbnail?v=${thumbMeta.updatedAt?.getTime() ?? 0}`
+    : '/downloads/cartel-preview.png';
   return (
     <div className="rounded-2xl overflow-hidden border border-brand-200 bg-gradient-to-br from-brand-50 to-white shadow-card">
       <div className="grid sm:grid-cols-[1fr,180px]">
@@ -42,7 +51,7 @@ export async function PosterCalloutLarge() {
         </div>
         <div className="hidden sm:flex items-center justify-center bg-gradient-to-br from-brand-100 to-brand-200/60 p-4">
           <img
-            src="/downloads/cartel-preview.png"
+            src={thumbnailUrl}
             alt="Vista previa del cartel"
             className="max-h-44 w-auto rounded shadow-soft"
           />

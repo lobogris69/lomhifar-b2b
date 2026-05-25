@@ -99,6 +99,17 @@ export const SLOTS: SlotDefinition[] = [
     aspect: '4/3',
   },
   {
+    slot: 'cartel-thumbnail',
+    group: 'producto',
+    label: 'Miniatura del cartel (banner descarga)',
+    description:
+      'Imagen pequeña que se muestra al lado del botón "Descargar cartel" en el banner de confirmación de pedido. Cuando subes un nuevo cartel desde /admin/cartel, sube también una captura/foto del mismo aquí para que el thumbnail no se quede desactualizado. Si lo dejas vacío se usa la miniatura por defecto (/downloads/cartel-preview.png).',
+    recommended: 'JPG/PNG · ratio aproximado A4 vertical (≈ 1:1.4) · 400 × 560 px',
+    hasComponentFallback: true,
+    accept: ['image/jpeg', 'image/png', 'image/webp'],
+    aspect: '1/1.4',
+  },
+  {
     slot: 'landing-proporcion-real',
     group: 'producto',
     label: 'Proporción real (sección "El producto")',
