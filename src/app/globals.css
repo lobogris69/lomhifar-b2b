@@ -106,3 +106,21 @@ body {
   background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.08) 1px, transparent 0);
   background-size: 18px 18px;
 }
+
+/* Highlight de zona cuando se llega via #scroll-{anchor} desde /admin/textos.
+   Lo añade temporalmente el componente <HashHighlight /> y se autodescarga
+   a los ~3.5s. */
+@keyframes hash-highlight-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(209, 38, 134, 0); outline-color: rgba(209, 38, 134, 0); }
+  20% { box-shadow: 0 0 0 14px rgba(209, 38, 134, 0.25); outline-color: rgba(209, 38, 134, 1); }
+  60% { box-shadow: 0 0 0 6px rgba(209, 38, 134, 0.2); outline-color: rgba(209, 38, 134, 0.9); }
+}
+
+.hash-highlight-ring {
+  position: relative;
+  scroll-margin-top: 100px;
+  outline: 3px solid rgba(209, 38, 134, 1);
+  outline-offset: 8px;
+  border-radius: 12px;
+  animation: hash-highlight-pulse 3.5s ease-in-out;
+}

@@ -22,6 +22,7 @@ import { getAllSiteTexts } from '@/lib/site-texts';
 import { getSettings, SETTING_KEYS } from '@/lib/settings';
 import { getSiteImageMeta } from '@/lib/site-images';
 import { formatEuros } from '@/lib/utils';
+import { HashHighlight } from '@/components/HashHighlight';
 
 export default async function LandingPage() {
   const [t, settings, heroBraceletMeta] = await Promise.all([
@@ -38,11 +39,12 @@ export default async function LandingPage() {
     : null;
   return (
     <div className="flex min-h-screen flex-col">
+      <HashHighlight />
       <PublicHeader />
 
       <main className="flex-1">
         {/* HERO */}
-        <section className="relative overflow-hidden bg-ink-gradient text-white">
+        <section id="scroll-hero" className="relative overflow-hidden bg-ink-gradient text-white">
           <div className="absolute inset-0 bg-dots-light pointer-events-none" />
           <div
             className="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full pointer-events-none"
@@ -135,19 +137,27 @@ export default async function LandingPage() {
         </section>
 
         {/* ============ CASOS REALES — fotografías del producto en uso ============ */}
-        <RealCasesGallery />
+        <div id="scroll-casos">
+          <RealCasesGallery />
+        </div>
 
         {/* ============ STATS — abrir la mente al farmacéutico ============ */}
-        <AwarenessStats />
+        <div id="scroll-stats">
+          <AwarenessStats />
+        </div>
 
         {/* ============ PERFILES DE PACIENTE — 8 grupos demográficos ============ */}
-        <PatientPersonas />
+        <div id="scroll-personas">
+          <PatientPersonas />
+        </div>
 
         {/* ============ GUÍA PARA EL FARMACÉUTICO — cuándo recomendarla ============ */}
-        <PharmacistGuide />
+        <div id="scroll-guia">
+          <PharmacistGuide />
+        </div>
 
         {/* PRODUCTO REAL CON MEDIDAS */}
-        <section className="bg-ink-50/40 py-20">
+        <section id="scroll-producto" className="bg-ink-50/40 py-20">
           <div className="mx-auto max-w-6xl px-6 grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <span className="badge-brand">El producto</span>
@@ -225,7 +235,7 @@ export default async function LandingPage() {
         </section>
 
         {/* CARACTERÍSTICAS DEL CANAL */}
-        <section className="bg-white py-20">
+        <section id="scroll-canal" className="bg-white py-20">
           <div className="mx-auto max-w-6xl px-6">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <span className="badge-brand">{t['canal.badge']}</span>
@@ -279,7 +289,7 @@ export default async function LandingPage() {
         </section>
 
         {/* CTA FINAL */}
-        <section className="bg-brand-gradient text-white relative overflow-hidden">
+        <section id="scroll-cta-final" className="bg-brand-gradient text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-dots-light pointer-events-none" />
           <div className="relative mx-auto max-w-6xl px-6 py-16 flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
