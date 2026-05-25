@@ -49,19 +49,25 @@ export async function PatientPersonas() {
                 </header>
                 <div className="text-xs text-ink-600 mb-3 min-h-[2.5rem]">{p.context}</div>
 
-                <div className="bg-ink-50/60 rounded-lg p-2 mb-3">
+                {/* Hueco de pulsera/foto con aspecto FIJO para que todas las
+                    tarjetas midan lo mismo y el texto vaya pegado debajo
+                    sin huecos feos. */}
+                <div className="bg-ink-50/60 rounded-lg overflow-hidden mb-3 aspect-[5/3] flex items-center justify-center">
                   {photoUrl ? (
                     <img
                       src={photoUrl}
                       alt={`Pulsera Lomhifar — ${p.group}`}
-                      className="w-full h-auto rounded"
+                      className="w-full h-full object-cover"
                     />
                   ) : (
-                    <BraceletPreview color={p.color} line1={p.line1} line2={p.line2} size="sm" />
+                    <div className="w-full p-2">
+                      <BraceletPreview color={p.color} line1={p.line1} line2={p.line2} size="sm" />
+                    </div>
                   )}
                 </div>
 
-                <p className="text-xs text-ink-600 leading-relaxed mt-auto">{p.why}</p>
+                {/* Texto descriptivo PEGADO debajo de la foto (sin mt-auto) */}
+                <p className="text-xs text-ink-600 leading-relaxed">{p.why}</p>
               </article>
             );
           })}
