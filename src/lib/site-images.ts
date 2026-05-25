@@ -98,6 +98,17 @@ export const SLOTS: SlotDefinition[] = [
     accept: ['image/jpeg', 'image/png', 'image/webp'],
     aspect: '4/3',
   },
+  {
+    slot: 'landing-proporcion-real',
+    group: 'producto',
+    label: 'Proporción real (sección "El producto")',
+    description:
+      'Foto real para la tarjeta "Proporción real" en la landing (dentro de la sección "El producto"). Si se sube, reemplaza el dibujo SVG con escala de medidas. Si se deja vacío, se sigue mostrando el dibujo con las medidas marcadas (22 cm × 1 cm + placa 4 × 1 cm).',
+    recommended: 'JPG/PNG · ratio panorámico ~5:2 (ej. 1500 × 600 px) · fondo neutro, idealmente con regla o referencia de medida',
+    hasComponentFallback: true,
+    accept: ['image/jpeg', 'image/png', 'image/webp'],
+    aspect: '5/2',
+  },
 
   // ============ CASOS REALES ============
   {

@@ -14,6 +14,8 @@ interface Props {
    */
   size?: 'sm' | 'md' | 'lg';
   showRuler?: boolean;
+  /** Oculta los badges inferiores ("Pulsera negra · silicona médica" / "Placa…") */
+  hideMeta?: boolean;
 }
 
 const SIZE_CLASS = {
@@ -41,6 +43,7 @@ export function BraceletPreview({
   className,
   size = 'md',
   showRuler = false,
+  hideMeta = false,
 }: Props) {
   const isBlack = color === 'BLACK';
   const strapBorder = isBlack ? '#000' : '#3a0509';
@@ -237,12 +240,14 @@ export function BraceletPreview({
         </svg>
       </div>
 
-      <div className="mt-3 flex items-center justify-between text-xs text-ink-500">
-        <span className="badge-muted">
-          {isBlack ? 'Pulsera negra' : 'Pulsera roja'} · silicona médica
-        </span>
-        <span>Placa de aluminio 4 × 1 cm · grabado láser</span>
-      </div>
+      {!hideMeta && (
+        <div className="mt-3 flex items-center justify-between text-xs text-ink-500">
+          <span className="badge-muted">
+            {isBlack ? 'Pulsera negra' : 'Pulsera roja'} · silicona médica
+          </span>
+          <span>Placa de aluminio 4 × 1 cm · grabado láser</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -25,10 +25,11 @@ import { formatEuros } from '@/lib/utils';
 import { HashHighlight } from '@/components/HashHighlight';
 
 export default async function LandingPage() {
-  const [t, settings, heroBraceletMeta] = await Promise.all([
+  const [t, settings, heroBraceletMeta, proporcionMeta] = await Promise.all([
     getAllSiteTexts(),
     getSettings(),
     getSiteImageMeta('acceso-bracelet'),
+    getSiteImageMeta('landing-proporcion-real'),
   ]);
   const pvprCents = Number(settings[SETTING_KEYS.PVPR_CENTS]);
   // La misma foto del slot "acceso-bracelet" se reutiliza en el hero de la
@@ -36,6 +37,12 @@ export default async function LandingPage() {
   // se sigue mostrando el preview SVG en vivo.
   const heroBraceletUrl = heroBraceletMeta.isCustom && heroBraceletMeta.hasImage
     ? `/api/images/acceso-bracelet?v=${heroBraceletMeta.updatedAt?.getTime() ?? 0}`
+    : null;
+  // Foto opcional para la tarjeta "Proporción real" dentro de la sección
+  // "El producto". Si no hay foto, se sigue mostrando el dibujo SVG con
+  // la regla de medidas.
+  const proporcionUrl = proporcionMeta.isCustom && proporcionMeta.hasImage
+    ? `/api/images/landing-proporcion-real?v=${proporcionMeta.updatedAt?.getTime() ?? 0}`
     : null;
   return (
     <div className="flex min-h-screen flex-col">
@@ -220,15 +227,30 @@ export default async function LandingPage() {
               </div>
               <div className="rounded-2xl bg-white shadow-card p-6">
                 <div className="text-xs uppercase tracking-wider text-ink-400 mb-3">
-                  Proporción real
+                  {t['producto.proporcion_titulo']}
                 </div>
-                <BraceletPreview
-                  color="BLACK"
-                  line1="DIABETES TIPO 1"
-                  line2="TFNO 666 123 456"
-                  showRuler
-                  size="lg"
-                />
+                {proporcionUrl ? (
+                  <img
+                    src={proporcionUrl}
+                    alt={t['producto.proporcion_titulo']}
+                    className="w-full h-auto rounded-lg"
+                  />
+                ) : (
+                  <BraceletPreview
+                    color="BLACK"
+                    line1="DIABETES TIPO 1"
+                    line2="TFNO 666 123 456"
+                    showRuler
+                    size="lg"
+                    hideMeta
+                  />
+                )}
+                <div className="mt-3 flex items-center justify-between text-xs text-ink-500 flex-wrap gap-2">
+                  <span className="badge-muted">
+                    {t['producto.proporcion_badge1']}
+                  </span>
+                  <span>{t['producto.proporcion_badge2']}</span>
+                </div>
               </div>
             </div>
           </div>

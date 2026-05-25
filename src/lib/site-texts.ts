@@ -396,6 +396,32 @@ export const TEXT_SLOTS: TextSlot[] = [
       'Silicona hipoalergénica de grado médico, cierre regulable, placa central de aluminio con grabado láser permanente en tono antracita.',
     type: 'long', maxLength: 400,
   },
+  // === Tarjeta "Proporción real" dentro de la sección ===
+  {
+    key: 'producto.proporcion_titulo',
+    group: 'producto',
+    groupLabel: 'Sección "El producto" (landing)',
+    label: 'Tarjeta "Proporción real" — Título',
+    description: 'Texto pequeño gris arriba de la tarjeta con la pulsera a escala',
+    defaultValue: 'Proporción real',
+    type: 'short', maxLength: 40,
+  },
+  {
+    key: 'producto.proporcion_badge1',
+    group: 'producto',
+    groupLabel: 'Sección "El producto" (landing)',
+    label: 'Tarjeta "Proporción real" — Badge izquierdo (chip magenta)',
+    defaultValue: 'Pulsera negra · silicona médica',
+    type: 'short', maxLength: 80,
+  },
+  {
+    key: 'producto.proporcion_badge2',
+    group: 'producto',
+    groupLabel: 'Sección "El producto" (landing)',
+    label: 'Tarjeta "Proporción real" — Texto derecho (gris)',
+    defaultValue: 'Placa de aluminio 4 × 1 cm · grabado láser',
+    type: 'short', maxLength: 80,
+  },
 
   // ============ CONFIGURADOR (/tienda) ============
   {
