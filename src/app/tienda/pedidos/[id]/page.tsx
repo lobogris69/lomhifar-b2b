@@ -6,7 +6,7 @@ import { getCustomerSession } from '@/lib/auth';
 import { formatDate, formatEuros } from '@/lib/utils';
 import { Alert } from '@/components/ui/Alert';
 import { OrderStatusBadge } from '@/components/shop/OrderStatusBadge';
-import { PosterCalloutLarge } from '@/components/shop/PosterCallout';
+import { PosterCalloutLarge } from '@/components/shop/PosterCalloutLarge';
 import { colorLabel } from '@/lib/cart';
 import { reorderAction } from './actions';
 import { getAllSiteTexts } from '@/lib/site-texts';

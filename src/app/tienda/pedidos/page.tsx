@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getCustomerSession } from '@/lib/auth';
 import { formatDate, formatEuros } from '@/lib/utils';
 import { OrderStatusBadge } from '@/components/shop/OrderStatusBadge';
-import { PosterCalloutLarge } from '@/components/shop/PosterCallout';
+import { PosterCalloutLarge } from '@/components/shop/PosterCalloutLarge';
 import { getAllSiteTexts } from '@/lib/site-texts';
 
 export const metadata = { title: 'Mis pedidos · Lomhifar' };
