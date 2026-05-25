@@ -102,25 +102,25 @@ export default async function LandingPage() {
               <div className="relative bg-white rounded-2xl p-6 shadow-soft">
                 <div className="flex items-center justify-between mb-4">
                   <div className="text-xs font-medium uppercase tracking-wider text-ink-500">
-                    {heroBraceletUrl ? 'Pulseras Lomhifar' : 'Vista previa del grabado'}
+                    {heroBraceletUrl ? t['landing.hero_card_titulo'] : 'Vista previa del grabado'}
                   </div>
                   <span className="badge-brand">
-                    {heroBraceletUrl ? 'negra · roja' : 'en vivo'}
+                    {heroBraceletUrl ? t['landing.hero_card_badge'] : 'en vivo'}
                   </span>
                 </div>
                 {heroBraceletUrl ? (
                   <img
                     src={heroBraceletUrl}
-                    alt="Pulseras Lomhifar — negra y roja"
+                    alt={t['landing.hero_card_titulo']}
                     className="w-full h-auto rounded-lg"
                   />
                 ) : (
                   <BraceletPreview color="BLACK" line1="DIABETES TIPO 1" line2="TFNO 666 123 456" />
                 )}
                 <div className="mt-5 grid grid-cols-3 gap-3 text-xs">
-                  <KV k="Material" v="Aluminio" />
-                  <KV k="Grabado" v="Láser" />
-                  <KV k="Colores" v="Negra/Roja" />
+                  <KV k={t['landing.hero_kv1_label']} v={t['landing.hero_kv1_valor']} />
+                  <KV k={t['landing.hero_kv2_label']} v={t['landing.hero_kv2_valor']} />
+                  <KV k={t['landing.hero_kv3_label']} v={t['landing.hero_kv3_valor']} />
                 </div>
               </div>
               {/* Pulsera secundaria decorativa: solo si NO hay foto custom (la foto ya
