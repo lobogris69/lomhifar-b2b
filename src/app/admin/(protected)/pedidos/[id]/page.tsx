@@ -8,17 +8,22 @@ import { OrderStatusBadge, ORDER_STATUS_LABEL } from '@/components/shop/OrderSta
 import { BraceletPreview } from '@/components/shop/BraceletPreview';
 import { PrintButton } from '@/components/admin/PrintButton';
 import { CARRIERS } from '@/lib/shipping';
+import { isMondialRelayEnabled } from '@/lib/mondial-relay';
 import { saveAdminNotes, saveTracking, updateOrderStatus } from '../actions';
 import { Truck, ExternalLink } from 'lucide-react';
+import { GenerateMondialRelayLabel } from './GenerateMondialRelayLabel';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Pedido · Admin Lomhifar' };
 
 export default async function AdminOrderPage({ params }: { params: { id: string } }) {
-  const order = await prisma.order.findUnique({
-    where: { id: params.id },
-    include: { items: true, customer: true },
-  });
+  const [order, mrEnabled] = await Promise.all([
+    prisma.order.findUnique({
+      where: { id: params.id },
+      include: { items: true, customer: true },
+    }),
+    isMondialRelayEnabled(),
+  ]);
   if (!order) notFound();
 
   return (
@@ -150,6 +155,11 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
               <button type="submit" className="btn-primary w-full">Actualizar estado</button>
             </form>
           </div>
+
+          {/* Generación automática de etiqueta via API Mondial Relay */}
+          {mrEnabled && !order.trackingNumber && order.postalCode && (
+            <GenerateMondialRelayLabel orderId={order.id} destCP={order.postalCode} />
+          )}
 
           <div className="card p-6">
             <div className="flex items-center gap-2 mb-3">

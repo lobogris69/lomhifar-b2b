@@ -78,6 +78,22 @@ export async function saveSettings(
   const inpostSignatureMode = inpostSignatureModeRaw === 'body_only' ? 'body_only' : 'timestamp_body';
   const shippingNotifyCustomer = formData.get('shippingNotifyCustomer') === 'on';
 
+  // Mondial Relay config
+  const mrModeRaw = String(formData.get('mrMode') ?? 'test');
+  const mrMode = mrModeRaw === 'production' ? 'production' : 'test';
+  const mrEnseigne = String(formData.get('mrEnseigne') ?? '').trim().toUpperCase();
+  const mrPrivateKey = String(formData.get('mrPrivateKey') ?? '').trim();
+  const mrEnabled = formData.get('mrEnabled') === 'on';
+  const mrSenderName = String(formData.get('mrSenderName') ?? '').trim();
+  const mrSenderStreet = String(formData.get('mrSenderStreet') ?? '').trim();
+  const mrSenderCity = String(formData.get('mrSenderCity') ?? '').trim();
+  const mrSenderCP = String(formData.get('mrSenderCP') ?? '').trim();
+  const mrSenderCountry = String(formData.get('mrSenderCountry') ?? 'ES').trim().toUpperCase();
+  const mrSenderPhone = String(formData.get('mrSenderPhone') ?? '').trim();
+  const mrSenderEmail = String(formData.get('mrSenderEmail') ?? '').trim();
+  const mrDeliveryMode = String(formData.get('mrDeliveryMode') ?? '24R').trim().toUpperCase();
+  const mrDefaultWeightG = String(Math.max(50, Math.min(70000, Number(formData.get('mrDefaultWeightG') ?? '100') || 100)));
+
   const parsed = settingsSchema.safeParse(raw);
   if (!parsed.success) {
     const fe: Record<string, string> = {};
@@ -108,6 +124,20 @@ export async function saveSettings(
     setSetting(SETTING_KEYS.SHIPPING_INPOST_WEBHOOK_SECRET, inpostWebhookSecret),
     setSetting(SETTING_KEYS.SHIPPING_INPOST_SIGNATURE_MODE, inpostSignatureMode),
     setSetting(SETTING_KEYS.SHIPPING_NOTIFY_CUSTOMER, shippingNotifyCustomer ? 'true' : 'false'),
+    // Mondial Relay
+    setSetting(SETTING_KEYS.SHIPPING_MR_MODE, mrMode),
+    setSetting(SETTING_KEYS.SHIPPING_MR_ENSEIGNE, mrEnseigne),
+    setSetting(SETTING_KEYS.SHIPPING_MR_PRIVATE_KEY, mrPrivateKey),
+    setSetting(SETTING_KEYS.SHIPPING_MR_ENABLED, mrEnabled ? 'true' : 'false'),
+    setSetting(SETTING_KEYS.SHIPPING_MR_SENDER_NAME, mrSenderName),
+    setSetting(SETTING_KEYS.SHIPPING_MR_SENDER_STREET, mrSenderStreet),
+    setSetting(SETTING_KEYS.SHIPPING_MR_SENDER_CITY, mrSenderCity),
+    setSetting(SETTING_KEYS.SHIPPING_MR_SENDER_CP, mrSenderCP),
+    setSetting(SETTING_KEYS.SHIPPING_MR_SENDER_COUNTRY, mrSenderCountry),
+    setSetting(SETTING_KEYS.SHIPPING_MR_SENDER_PHONE, mrSenderPhone),
+    setSetting(SETTING_KEYS.SHIPPING_MR_SENDER_EMAIL, mrSenderEmail),
+    setSetting(SETTING_KEYS.SHIPPING_MR_DELIVERY_MODE, mrDeliveryMode),
+    setSetting(SETTING_KEYS.SHIPPING_MR_DEFAULT_WEIGHT_G, mrDefaultWeightG),
   ]);
 
   revalidatePath('/admin/configuracion');

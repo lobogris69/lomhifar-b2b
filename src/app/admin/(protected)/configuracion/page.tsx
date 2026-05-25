@@ -53,6 +53,21 @@ export default async function SettingsPage() {
           notifyCustomer: (s[SETTING_KEYS.SHIPPING_NOTIFY_CUSTOMER] ?? 'true') === 'true',
           webhookUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://pulseraspersonalizadas.lomhifar.net'}/api/webhooks/inpost`,
         }}
+        mondialRelay={{
+          enseigne: s[SETTING_KEYS.SHIPPING_MR_ENSEIGNE] ?? '',
+          privateKey: s[SETTING_KEYS.SHIPPING_MR_PRIVATE_KEY] ?? '',
+          mode: s[SETTING_KEYS.SHIPPING_MR_MODE] === 'production' ? 'production' : 'test',
+          enabled: (s[SETTING_KEYS.SHIPPING_MR_ENABLED] ?? 'false') === 'true',
+          senderName: s[SETTING_KEYS.SHIPPING_MR_SENDER_NAME] ?? '',
+          senderStreet: s[SETTING_KEYS.SHIPPING_MR_SENDER_STREET] ?? '',
+          senderCity: s[SETTING_KEYS.SHIPPING_MR_SENDER_CITY] ?? '',
+          senderCP: s[SETTING_KEYS.SHIPPING_MR_SENDER_CP] ?? '',
+          senderCountry: s[SETTING_KEYS.SHIPPING_MR_SENDER_COUNTRY] ?? 'ES',
+          senderPhone: s[SETTING_KEYS.SHIPPING_MR_SENDER_PHONE] ?? '',
+          senderEmail: s[SETTING_KEYS.SHIPPING_MR_SENDER_EMAIL] ?? '',
+          deliveryMode: s[SETTING_KEYS.SHIPPING_MR_DELIVERY_MODE] ?? '24R',
+          defaultWeightG: s[SETTING_KEYS.SHIPPING_MR_DEFAULT_WEIGHT_G] ?? '100',
+        }}
       />
     </div>
   );

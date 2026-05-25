@@ -8,6 +8,11 @@ import { getAdminSession } from '@/lib/auth';
 import { emailLayout, sendEmail } from '@/lib/email';
 import { ORDER_STATUS_LABEL } from '@/components/shop/OrderStatusBadge';
 import { buildTrackingUrl } from '@/lib/shipping';
+import {
+  createShipment as mrCreateShipment,
+  buildPublicTrackingUrl as mrTrackingUrl,
+  isMondialRelayEnabled,
+} from '@/lib/mondial-relay';
 
 async function ensureAdmin() {
   const s = await getAdminSession();
@@ -125,4 +130,87 @@ export async function saveTracking(formData: FormData) {
 
   revalidatePath('/admin/pedidos');
   revalidatePath(`/admin/pedidos/${id}`);
+}
+
+// ===========================================================================
+// MONDIAL RELAY — generación automática de etiqueta
+// ===========================================================================
+
+export interface CreateMrLabelState {
+  ok?: boolean;
+  error?: string;
+  trackingNumber?: string;
+  labelUrl?: string;
+}
+
+/**
+ * Crea automáticamente una expedición en Mondial Relay para el pedido dado,
+ * guarda el nº de tracking en la BD y deja la URL del PDF de la etiqueta
+ * para que el admin la imprima. Marca el pedido como SHIPPED.
+ */
+export async function createMondialRelayLabel(
+  _prev: CreateMrLabelState,
+  formData: FormData,
+): Promise<CreateMrLabelState> {
+  await ensureAdmin();
+
+  const id = String(formData.get('orderId') ?? '');
+  const relayId = String(formData.get('relayId') ?? '').trim() || undefined;
+
+  if (!(await isMondialRelayEnabled())) {
+    return {
+      error: 'Mondial Relay no está activo. Configura credenciales y activa el toggle en /admin/configuracion.',
+    };
+  }
+
+  const order = await prisma.order.findUnique({ where: { id } });
+  if (!order) return { error: 'Pedido no encontrado' };
+
+  if (!order.email || !order.phone || !order.address || !order.city || !order.postalCode) {
+    return {
+      error: 'Faltan datos del destinatario (email, teléfono, dirección, ciudad o CP). Completa la ficha del cliente antes de generar la etiqueta.',
+    };
+  }
+
+  const result = await mrCreateShipment({
+    destName: order.pharmacyName,
+    destStreet: order.address,
+    destCity: order.city,
+    destCP: order.postalCode,
+    destCountry: 'ES',
+    destPhone: order.phone,
+    destEmail: order.email,
+    relayId,
+    relayCountry: relayId ? 'ES' : undefined,
+    reference: `LH-${order.number}`,
+  });
+
+  if (!result.ok || !result.trackingNumber) {
+    return { error: result.errorMessage ?? 'Error desconocido al crear la etiqueta' };
+  }
+
+  // Guardar tracking + URL + marcar como SHIPPED si no lo estaba
+  const newStatus =
+    order.status === 'RECEIVED' || order.status === 'IN_PREPARATION' || order.status === 'ON_HOLD'
+      ? 'SHIPPED'
+      : order.status;
+
+  await prisma.order.update({
+    where: { id },
+    data: {
+      trackingNumber: result.trackingNumber,
+      trackingUrl: mrTrackingUrl(result.trackingNumber),
+      status: newStatus,
+      shippedAt: newStatus === 'SHIPPED' && !order.shippedAt ? new Date() : order.shippedAt,
+    },
+  });
+
+  revalidatePath('/admin/pedidos');
+  revalidatePath(`/admin/pedidos/${id}`);
+
+  return {
+    ok: true,
+    trackingNumber: result.trackingNumber,
+    labelUrl: result.labelUrl,
+  };
 }

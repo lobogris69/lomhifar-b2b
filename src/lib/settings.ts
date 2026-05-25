@@ -33,6 +33,24 @@ export const SETTING_KEYS = {
   SHIPPING_INPOST_WEBHOOK_SECRET: 'shipping.inpost.webhook_secret',
   SHIPPING_INPOST_SIGNATURE_MODE: 'shipping.inpost.signature_mode', // 'timestamp_body' | 'body_only'
   SHIPPING_NOTIFY_CUSTOMER: 'shipping.notify_customer', // 'true' | 'false'
+  // === MONDIAL RELAY (SOAP API) ===
+  // Credenciales que da la oficina comercial de Mondial Relay/InPost.
+  SHIPPING_MR_ENSEIGNE: 'shipping.mr.enseigne',         // p.ej. 'BDTEST' (test) o código real
+  SHIPPING_MR_PRIVATE_KEY: 'shipping.mr.private_key',   // clave usada para firmar (MD5)
+  SHIPPING_MR_MODE: 'shipping.mr.mode',                 // 'test' | 'production'
+  SHIPPING_MR_ENABLED: 'shipping.mr.enabled',           // 'true' | 'false'
+  // Datos por defecto del REMITENTE (tu empresa - aparecen en las etiquetas)
+  SHIPPING_MR_SENDER_NAME: 'shipping.mr.sender_name',
+  SHIPPING_MR_SENDER_STREET: 'shipping.mr.sender_street',
+  SHIPPING_MR_SENDER_CITY: 'shipping.mr.sender_city',
+  SHIPPING_MR_SENDER_CP: 'shipping.mr.sender_cp',
+  SHIPPING_MR_SENDER_COUNTRY: 'shipping.mr.sender_country',
+  SHIPPING_MR_SENDER_PHONE: 'shipping.mr.sender_phone',
+  SHIPPING_MR_SENDER_EMAIL: 'shipping.mr.sender_email',
+  // Modo de entrega por defecto (24R=Punto Pack/Locker · LD1=domicilio · LDS=domicilio firma)
+  SHIPPING_MR_DELIVERY_MODE: 'shipping.mr.delivery_mode',
+  // Peso por defecto del pedido en gramos (las pulseras pesan poco)
+  SHIPPING_MR_DEFAULT_WEIGHT_G: 'shipping.mr.default_weight_g',
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
@@ -90,6 +108,20 @@ export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
   [SETTING_KEYS.SHIPPING_INPOST_WEBHOOK_SECRET]: '', // vacío = webhooks no activos
   [SETTING_KEYS.SHIPPING_INPOST_SIGNATURE_MODE]: 'timestamp_body',
   [SETTING_KEYS.SHIPPING_NOTIFY_CUSTOMER]: 'true',
+  // === Mondial Relay (defaults vacíos / sandbox)
+  [SETTING_KEYS.SHIPPING_MR_ENSEIGNE]: '',
+  [SETTING_KEYS.SHIPPING_MR_PRIVATE_KEY]: '',
+  [SETTING_KEYS.SHIPPING_MR_MODE]: 'test',
+  [SETTING_KEYS.SHIPPING_MR_ENABLED]: 'false',
+  [SETTING_KEYS.SHIPPING_MR_SENDER_NAME]: 'Lomhifar',
+  [SETTING_KEYS.SHIPPING_MR_SENDER_STREET]: '',
+  [SETTING_KEYS.SHIPPING_MR_SENDER_CITY]: '',
+  [SETTING_KEYS.SHIPPING_MR_SENDER_CP]: '',
+  [SETTING_KEYS.SHIPPING_MR_SENDER_COUNTRY]: 'ES',
+  [SETTING_KEYS.SHIPPING_MR_SENDER_PHONE]: '',
+  [SETTING_KEYS.SHIPPING_MR_SENDER_EMAIL]: '',
+  [SETTING_KEYS.SHIPPING_MR_DELIVERY_MODE]: '24R',
+  [SETTING_KEYS.SHIPPING_MR_DEFAULT_WEIGHT_G]: '100',
 };
 
 // ============================================================

@@ -26,8 +26,25 @@ interface InpostInitial {
   webhookUrl: string;
 }
 
+interface MondialRelayInitial {
+  enseigne: string;
+  privateKey: string;
+  mode: 'test' | 'production';
+  enabled: boolean;
+  senderName: string;
+  senderStreet: string;
+  senderCity: string;
+  senderCP: string;
+  senderCountry: string;
+  senderPhone: string;
+  senderEmail: string;
+  deliveryMode: string;
+  defaultWeightG: string;
+}
+
 interface Props {
   inpost?: InpostInitial;
+  mondialRelay?: MondialRelayInitial;
   initialValues: {
     priceBlackEuros: string;
     priceRedEuros: string;
@@ -50,7 +67,7 @@ interface Props {
   };
 }
 
-export function SettingsForm({ initialValues, inpost }: Props) {
+export function SettingsForm({ initialValues, inpost, mondialRelay }: Props) {
   const [state, action] = useFormState(saveSettings, initial);
   const [shippingMode, setShippingMode] = useState<ShippingMode>(initialValues.shippingMode);
   const [tiers, setTiers] = useState<VolumeDiscountTier[]>(
@@ -59,6 +76,24 @@ export function SettingsForm({ initialValues, inpost }: Props) {
       : [],
   );
   const [equivEnabled, setEquivEnabled] = useState<boolean>(initialValues.equivSurchargeEnabled);
+  const [mrEnabled, setMrEnabled] = useState<boolean>(mondialRelay?.enabled ?? false);
+  const [mrMode, setMrMode] = useState<'test' | 'production'>(mondialRelay?.mode ?? 'test');
+  const [mrTesting, setMrTesting] = useState(false);
+  const [mrTestResult, setMrTestResult] = useState<{ ok: boolean; message: string } | null>(null);
+
+  async function testMondialRelayConnection() {
+    setMrTesting(true);
+    setMrTestResult(null);
+    try {
+      const res = await fetch('/api/admin/mondial-relay/test', { method: 'POST' });
+      const data = await res.json();
+      setMrTestResult({ ok: !!data.ok, message: data.message ?? 'Sin respuesta' });
+    } catch (e) {
+      setMrTestResult({ ok: false, message: e instanceof Error ? e.message : 'Error de red' });
+    } finally {
+      setMrTesting(false);
+    }
+  }
 
   function addTier() {
     const lastQty = tiers.length > 0 ? tiers[tiers.length - 1].minQuantity : 10;
@@ -340,6 +375,189 @@ export function SettingsForm({ initialValues, inpost }: Props) {
                   recogido por cliente, incidencia, entregado…) el cliente recibirá un
                   email contextual con el botón &laquo;Ver seguimiento&raquo;. Es uno de los
                   detalles más valorados por las farmacias.
+                </div>
+              </div>
+            </label>
+          </div>
+        </Section>
+      )}
+
+      {mondialRelay && (
+        <Section title="Mondial Relay (API SOAP — generación automática de etiquetas)">
+          <p className="text-xs text-ink-500 -mt-2 mb-4 leading-relaxed">
+            Conecta tu cuenta de Mondial Relay para <strong>generar etiquetas de envío
+            automáticamente</strong> al marcar un pedido como enviado. Ahorra ~3 min por
+            pedido respecto a hacerlo a mano en su panel web. URL del WebService:{' '}
+            <code className="bg-ink-50 px-1.5 py-0.5 rounded text-[10px]">
+              https://api.mondialrelay.com/Web_Services.asmx
+            </code>
+          </p>
+
+          <div className="card p-4 bg-amber-50/40 border-amber-200 mb-4 text-xs">
+            <div className="font-semibold text-amber-900 mb-2">📋 Cómo activarlo:</div>
+            <ol className="list-decimal list-inside text-amber-900 space-y-1 ml-1 leading-relaxed">
+              <li>Entra a tu panel de Mondial Relay → Configuración → API.</li>
+              <li>
+                Copia el <strong>Código de comerciante (Enseigne)</strong> y la
+                <strong> Clave privada</strong> (pulsa el ojo 👁 para verla). Empieza por las
+                de PRUEBA (Enseigne <code>TTMRSDBX</code>) para verificar que todo funciona.
+              </li>
+              <li>Pégalos aquí abajo, marca el modo &laquo;test&raquo;, guarda.</li>
+              <li>Pulsa <strong>«Probar conexión»</strong>. Si dice ✓, cambia a &laquo;producción&raquo;
+                con las credenciales reales y vuelve a probar.</li>
+              <li>Activa el toggle &laquo;Mondial Relay activo&raquo; y a partir de ese momento
+                podrás generar etiquetas desde cada pedido.</li>
+            </ol>
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <label className="label">Modo</label>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <label className={`flex items-start gap-3 cursor-pointer rounded-lg border p-3 transition-all ${mrMode === 'test' ? 'border-brand-600 bg-brand-50 ring-2 ring-brand-500/20' : 'border-ink-200 bg-white hover:border-ink-300'}`}>
+                  <input
+                    type="radio"
+                    name="mrMode"
+                    value="test"
+                    checked={mrMode === 'test'}
+                    onChange={() => setMrMode('test')}
+                    className="mt-1"
+                  />
+                  <div>
+                    <div className="font-semibold text-ink-900 text-sm">Test / Sandbox</div>
+                    <div className="text-xs text-ink-500 mt-0.5">
+                      NO genera envíos reales. Para verificar credenciales sin riesgo.
+                    </div>
+                  </div>
+                </label>
+                <label className={`flex items-start gap-3 cursor-pointer rounded-lg border p-3 transition-all ${mrMode === 'production' ? 'border-brand-600 bg-brand-50 ring-2 ring-brand-500/20' : 'border-ink-200 bg-white hover:border-ink-300'}`}>
+                  <input
+                    type="radio"
+                    name="mrMode"
+                    value="production"
+                    checked={mrMode === 'production'}
+                    onChange={() => setMrMode('production')}
+                    className="mt-1"
+                  />
+                  <div>
+                    <div className="font-semibold text-ink-900 text-sm">Producción</div>
+                    <div className="text-xs text-ink-500 mt-0.5">
+                      Crea etiquetas REALES. Las recogerá Mondial Relay.
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label className="label" htmlFor="mrEnseigne">
+                  Enseigne (código de comerciante)
+                </label>
+                <input
+                  id="mrEnseigne"
+                  name="mrEnseigne"
+                  type="text"
+                  defaultValue={mondialRelay.enseigne}
+                  placeholder={mrMode === 'test' ? 'TTMRSDBX' : 'CC23XIZM'}
+                  className="input font-mono text-sm uppercase"
+                  autoComplete="off"
+                />
+              </div>
+              <div>
+                <label className="label" htmlFor="mrPrivateKey">
+                  Clave privada (PrivateKey)
+                </label>
+                <input
+                  id="mrPrivateKey"
+                  name="mrPrivateKey"
+                  type="password"
+                  defaultValue={mondialRelay.privateKey}
+                  placeholder="••••••••"
+                  className="input font-mono text-sm"
+                  autoComplete="off"
+                />
+              </div>
+            </div>
+
+            {/* Test connection */}
+            <div className="rounded-lg bg-ink-50/40 border border-ink-200 p-3 flex items-center justify-between gap-3 flex-wrap">
+              <div className="text-xs text-ink-700 leading-relaxed flex-1 min-w-[200px]">
+                Verifica que las credenciales actuales se aceptan por Mondial Relay sin
+                crear ningún envío.
+              </div>
+              <button
+                type="button"
+                onClick={testMondialRelayConnection}
+                disabled={mrTesting}
+                className="btn-secondary text-xs shrink-0"
+              >
+                {mrTesting ? '⏳ Probando…' : 'Probar conexión'}
+              </button>
+            </div>
+            {mrTestResult && (
+              <Alert variant={mrTestResult.ok ? 'success' : 'danger'}>
+                {mrTestResult.message}
+              </Alert>
+            )}
+
+            <div className="border-t border-ink-100 pt-3">
+              <div className="text-sm font-semibold text-ink-900 mb-2">
+                📦 Datos del REMITENTE (aparecen en la etiqueta)
+              </div>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <Field label="Nombre / razón social" name="mrSenderName" defaultValue={mondialRelay.senderName} />
+                <Field label="Teléfono" name="mrSenderPhone" defaultValue={mondialRelay.senderPhone} />
+                <Field label="Calle y nº" name="mrSenderStreet" defaultValue={mondialRelay.senderStreet} className="sm:col-span-2" />
+                <Field label="Localidad" name="mrSenderCity" defaultValue={mondialRelay.senderCity} />
+                <Field label="Código postal" name="mrSenderCP" defaultValue={mondialRelay.senderCP} />
+                <Field label="País (ISO 2)" name="mrSenderCountry" defaultValue={mondialRelay.senderCountry} />
+                <Field label="Email" name="mrSenderEmail" type="email" defaultValue={mondialRelay.senderEmail} />
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label className="label" htmlFor="mrDeliveryMode">
+                  Modo de entrega por defecto
+                </label>
+                <select
+                  id="mrDeliveryMode"
+                  name="mrDeliveryMode"
+                  defaultValue={mondialRelay.deliveryMode}
+                  className="input"
+                >
+                  <option value="24R">24R — Punto Pack / Locker (lo más común)</option>
+                  <option value="LD1">LD1 — Domicilio (sin firma)</option>
+                  <option value="LDS">LDS — Domicilio con firma</option>
+                </select>
+              </div>
+              <Field
+                label="Peso por defecto (gramos)"
+                name="mrDefaultWeightG"
+                type="number"
+                defaultValue={mondialRelay.defaultWeightG}
+                min={50}
+                max={70000}
+              />
+            </div>
+
+            <label className="flex items-start gap-3 cursor-pointer select-none p-3 rounded-lg bg-emerald-50/40 border border-emerald-200">
+              <input
+                type="checkbox"
+                name="mrEnabled"
+                checked={mrEnabled}
+                onChange={(e) => setMrEnabled(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-ink-300 text-brand-700 focus:ring-brand-500"
+              />
+              <div className="flex-1">
+                <div className="text-sm font-semibold text-ink-900">
+                  Mondial Relay ACTIVO — mostrar botón &laquo;Generar etiqueta&raquo; en pedidos
+                </div>
+                <div className="text-xs text-ink-500 mt-0.5">
+                  Cuando esté activo, en /admin/pedidos/[id] aparecerá un botón para crear
+                  automáticamente la etiqueta llamando a la API. Si está apagado, sigue
+                  funcionando solo la entrada manual de nº de tracking.
                 </div>
               </div>
             </label>
