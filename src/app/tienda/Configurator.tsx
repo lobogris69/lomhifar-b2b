@@ -34,6 +34,8 @@ interface Props {
     confirmacion: string;
     pvprEtiqueta: string;
     pvprMargenTexto: string;
+    pvfLabel: string;
+    pvprLabel: string;
   };
 }
 
@@ -56,6 +58,7 @@ function SubmitBtn({ disabled }: { disabled: boolean }) {
 export function Configurator({
   priceBlackCents,
   priceRedCents,
+  pvprCents,
   maxCharsPerLine,
   deliveryDays,
   photoBlackUrl,
@@ -208,11 +211,19 @@ export function Configurator({
             <BraceletPreview color={color} line1={line1.toUpperCase()} line2={previewLine2.toUpperCase()} />
           )}
           <div className="card p-4">
+            {/* P.V.F. — lo que paga la farmacia */}
             <div className="flex items-center justify-between text-sm">
-              <span className="text-ink-500">Precio unitario</span>
+              <span className="text-ink-500">{texts.pvfLabel}</span>
               <span className="font-semibold text-ink-900">{formatEuros(unitPrice)}</span>
             </div>
-            <div className="flex items-center justify-between text-sm mt-2">
+            {/* P.V.P.R. — lo que la farmacia recomendaría cobrar al paciente */}
+            {pvprCents > 0 && (
+              <div className="flex items-center justify-between text-sm mt-1.5 pt-1.5 border-t border-dashed border-ink-100">
+                <span className="text-emerald-700 font-medium">{texts.pvprLabel}</span>
+                <span className="font-semibold text-emerald-700">{formatEuros(pvprCents)}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between text-sm mt-3 pt-2 border-t border-ink-100">
               <span className="text-ink-500">Plazo estimado</span>
               <span className="font-medium text-ink-900">{deliveryDays} días laborables</span>
             </div>

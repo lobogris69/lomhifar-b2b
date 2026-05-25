@@ -102,6 +102,8 @@ export default async function ShopPage() {
           confirmacion: t['tienda.confirmacion_texto'],
           pvprEtiqueta: t['pvpr.etiqueta'],
           pvprMargenTexto: t['pvpr.margen_texto'],
+          pvfLabel: t['tienda.precio_pvf_label'],
+          pvprLabel: t['tienda.precio_pvpr_label'],
         }}
       />
     </div>

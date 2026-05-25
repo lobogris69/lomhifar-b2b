@@ -491,6 +491,24 @@ export const TEXT_SLOTS: TextSlot[] = [
       'Confirmo que el color, las unidades y el texto grabado son correctos. Entiendo que las pulseras se fabricarán exactamente con estos datos.',
     type: 'long', maxLength: 400,
   },
+  {
+    key: 'tienda.precio_pvf_label',
+    group: 'tienda',
+    groupLabel: 'Configurador de pulseras',
+    label: 'Etiqueta precio P.V.F. (sticky configurador)',
+    description: 'Texto a la izquierda del precio que paga la farmacia. PVF = Precio Venta a Farmacia',
+    defaultValue: 'P.V.F. unitario',
+    type: 'short', maxLength: 40,
+  },
+  {
+    key: 'tienda.precio_pvpr_label',
+    group: 'tienda',
+    groupLabel: 'Configurador de pulseras',
+    label: 'Etiqueta precio P.V.P.R. (sticky configurador)',
+    description: 'Texto del precio sugerido al que la farmacia revende. PVPR = Precio Venta al Público Recomendado',
+    defaultValue: 'P.V.P.R. recomendado',
+    type: 'short', maxLength: 40,
+  },
 
   // ============ HEADER + FOOTER PÚBLICOS ============
   {
