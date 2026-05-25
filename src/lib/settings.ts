@@ -22,6 +22,10 @@ export const SETTING_KEYS = {
   MARKETING_PERSONAS_JSON: 'marketing.personas_json',
   SHIPPING_MODE: 'shipping.mode', // 'included' | 'separate'
   VOLUME_DISCOUNT_TIERS_JSON: 'discount.volume_tiers_json',
+  // === IMPUESTOS ===
+  TAX_VAT_PCT: 'tax.vat_pct',                       // p.ej. '21'
+  TAX_EQUIV_SURCHARGE_PCT: 'tax.equiv_surcharge_pct', // p.ej. '5.2'
+  TAX_EQUIV_SURCHARGE_ENABLED: 'tax.equiv_surcharge_enabled', // 'true' | 'false'
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
@@ -64,7 +68,37 @@ export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
     { minQuantity: 50, discountPct: 15 },
     { minQuantity: 100, discountPct: 20 },
   ]),
+  // === Impuestos por defecto (España, B2B farmacia)
+  [SETTING_KEYS.TAX_VAT_PCT]: '21',
+  [SETTING_KEYS.TAX_EQUIV_SURCHARGE_PCT]: '5.2',
+  [SETTING_KEYS.TAX_EQUIV_SURCHARGE_ENABLED]: 'true', // farmacias suelen estar bajo este régimen
 };
+
+// ============================================================
+// IMPUESTOS (IVA + Recargo de equivalencia)
+// ============================================================
+
+export interface TaxConfig {
+  vatPct: number;
+  equivSurchargePct: number;
+  equivSurchargeEnabled: boolean;
+}
+
+export function parseTaxConfig(
+  vatRaw: string | undefined,
+  equivPctRaw: string | undefined,
+  equivEnabledRaw: string | undefined,
+): TaxConfig {
+  const vatPct = clamp01to50(Number(vatRaw), 21);
+  const equivSurchargePct = clamp01to50(Number(equivPctRaw), 5.2);
+  const equivSurchargeEnabled = equivEnabledRaw === 'true';
+  return { vatPct, equivSurchargePct, equivSurchargeEnabled };
+}
+
+function clamp01to50(n: number, fallback: number): number {
+  if (!Number.isFinite(n) || n < 0 || n > 50) return fallback;
+  return n;
+}
 
 // ============================================================
 // PORTES / SHIPPING

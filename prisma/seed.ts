@@ -19,6 +19,10 @@ const DEFAULT_SETTINGS: { key: string; value: string }[] = [
   { key: 'company.name', value: 'Lomhifar' },
   { key: 'company.phone', value: '' },
   { key: 'company.email', value: 'pedidos@lomhifar.com' },
+  // Impuestos (España B2B farmacia por defecto)
+  { key: 'tax.vat_pct', value: '21' },
+  { key: 'tax.equiv_surcharge_pct', value: '5.2' },
+  { key: 'tax.equiv_surcharge_enabled', value: 'true' },
 ];
 
 async function main() {

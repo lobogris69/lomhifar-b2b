@@ -61,6 +61,17 @@ export async function saveSettings(
     })
     .sort((a, b) => a.minQuantity - b.minQuantity);
 
+  // Impuestos
+  function parsePct(raw: FormDataEntryValue | null): string {
+    const s = String(raw ?? '').replace(',', '.').trim();
+    const n = Number(s);
+    if (!Number.isFinite(n) || n < 0 || n > 50) return '0';
+    return String(n);
+  }
+  const vatPct = parsePct(formData.get('vatPct'));
+  const equivSurchargePct = parsePct(formData.get('equivSurchargePct'));
+  const equivSurchargeEnabled = formData.get('equivSurchargeEnabled') === 'on';
+
   const parsed = settingsSchema.safeParse(raw);
   if (!parsed.success) {
     const fe: Record<string, string> = {};
@@ -85,6 +96,9 @@ export async function saveSettings(
     setSetting(SETTING_KEYS.COMPANY_EMAIL, v.companyEmail),
     setSetting(SETTING_KEYS.SHIPPING_MODE, shippingMode),
     setSetting(SETTING_KEYS.VOLUME_DISCOUNT_TIERS_JSON, JSON.stringify(cleanTiers)),
+    setSetting(SETTING_KEYS.TAX_VAT_PCT, vatPct),
+    setSetting(SETTING_KEYS.TAX_EQUIV_SURCHARGE_PCT, equivSurchargePct),
+    setSetting(SETTING_KEYS.TAX_EQUIV_SURCHARGE_ENABLED, equivSurchargeEnabled ? 'true' : 'false'),
   ]);
 
   revalidatePath('/admin/configuracion');

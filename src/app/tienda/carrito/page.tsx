@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ShoppingBag, Trash2, ChevronRight } from 'lucide-react';
+import { ShoppingBag, Trash2, ChevronRight, ArrowLeft, Plus } from 'lucide-react';
 import { readCart } from '@/lib/cart';
 import { priceCart } from '@/lib/pricing';
 import { formatEuros } from '@/lib/utils';
@@ -7,8 +7,10 @@ import { Alert } from '@/components/ui/Alert';
 import { CheckoutForm } from './CheckoutForm';
 import { removeItemAction, updateQtyAction, clearCartAction } from './actions';
 import { BraceletPreview } from '@/components/shop/BraceletPreview';
-import { getSettings, SETTING_KEYS } from '@/lib/settings';
+import { BraceletPhoto } from '@/components/shop/BraceletPhoto';
+import { getSettings, SETTING_KEYS, parsePrintArea } from '@/lib/settings';
 import { getAllSiteTexts } from '@/lib/site-texts';
+import { getSiteImageMeta } from '@/lib/site-images';
 
 export const metadata = { title: 'Carrito · Lomhifar' };
 
@@ -18,12 +20,26 @@ export default async function CartPage({
   searchParams: { added?: string; reordered?: string };
 }) {
   const cart = readCart();
-  const [{ items, totals }, settings, t] = await Promise.all([
+  const [{ items, totals }, settings, t, photoBlackMeta, photoRedMeta] = await Promise.all([
     priceCart(cart),
     getSettings(),
     getAllSiteTexts(),
+    getSiteImageMeta('configurator-bracelet-black'),
+    getSiteImageMeta('configurator-bracelet-red'),
   ]);
   const deliveryDays = settings[SETTING_KEYS.DELIVERY_DAYS];
+
+  // Si el admin ha subido foto real de cada pulsera la usamos también aquí,
+  // para que el carrito muestre la pulsera EN COLOR CORRECTO y con el grabado
+  // sobre la placa real (igual que en el configurador).
+  const photoBlackUrl = photoBlackMeta.isCustom && photoBlackMeta.hasImage
+    ? `/api/images/configurator-bracelet-black?v=${photoBlackMeta.updatedAt?.getTime() ?? 0}`
+    : null;
+  const photoRedUrl = photoRedMeta.isCustom && photoRedMeta.hasImage
+    ? `/api/images/configurator-bracelet-red?v=${photoRedMeta.updatedAt?.getTime() ?? 0}`
+    : null;
+  const areaBlack = parsePrintArea(settings[SETTING_KEYS.CONFIGURATOR_AREA_BLACK]);
+  const areaRed = parsePrintArea(settings[SETTING_KEYS.CONFIGURATOR_AREA_RED]);
 
   if (cart.length === 0) {
     return (
@@ -42,6 +58,15 @@ export default async function CartPage({
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
+      {/* Botón "Seguir comprando" siempre visible arriba */}
+      <Link
+        href="/tienda"
+        className="inline-flex items-center gap-1.5 text-sm text-ink-500 hover:text-brand-700 transition-colors mb-4"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Seguir comprando — añadir más pulseras
+      </Link>
+
       {searchParams.added && (
         <Alert variant="success" className="mb-6">
           Pulsera añadida al carrito. Revise los datos antes de confirmar el pedido.
@@ -63,24 +88,45 @@ export default async function CartPage({
         <div className="lg:col-span-2 space-y-4">
           {items.map((it, idx) => {
             const cartItem = cart[idx];
+            const isBlack = it.color === 'BLACK';
+            const photoUrl = isBlack ? photoBlackUrl : photoRedUrl;
+            const area = isBlack ? areaBlack : areaRed;
             return (
               <div key={cartItem.id} className="card p-5">
                 <div className="grid sm:grid-cols-5 gap-5">
                   <div className="sm:col-span-2">
-                    <BraceletPreview
-                      color={it.color}
-                      line1={it.line1.toUpperCase()}
-                      line2={it.line2.toUpperCase()}
-                    />
+                    {photoUrl ? (
+                      <BraceletPhoto
+                        imageUrl={photoUrl}
+                        area={area}
+                        line1={it.line1}
+                        line2={it.line2}
+                        line3={it.line3}
+                        alt={`Pulsera ${isBlack ? 'negra' : 'roja'} Lomhifar`}
+                      />
+                    ) : (
+                      <BraceletPreview
+                        color={it.color}
+                        line1={it.line1.toUpperCase()}
+                        line2={it.line2.toUpperCase()}
+                      />
+                    )}
                   </div>
                   <div className="sm:col-span-3 flex flex-col">
                     <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="text-xs uppercase tracking-wider text-ink-400">
-                          Pulsera {it.color === 'BLACK' ? 'negra' : 'roja'}
-                        </div>
-                        <div className="mt-1 font-semibold text-ink-900 text-lg">
-                          {formatEuros(it.unitPriceCents)} <span className="text-sm font-normal text-ink-500">/ ud</span>
+                      <div className="flex items-center gap-2">
+                        {/* Punto del color para que se identifique al instante */}
+                        <span
+                          className={`inline-block h-4 w-4 rounded-full border border-ink-200 ${isBlack ? 'bg-ink-950' : 'bg-red-600'}`}
+                          aria-hidden
+                        />
+                        <div>
+                          <div className="text-xs uppercase tracking-wider text-ink-400">
+                            Pulsera {isBlack ? 'negra' : 'roja'}
+                          </div>
+                          <div className="mt-0.5 font-semibold text-ink-900 text-lg">
+                            {formatEuros(it.unitPriceCents)} <span className="text-sm font-normal text-ink-500">/ ud</span>
+                          </div>
                         </div>
                       </div>
                       <form action={removeItemAction}>
@@ -152,16 +198,22 @@ export default async function CartPage({
             );
           })}
 
-          <form action={clearCartAction} className="text-right">
-            <button type="submit" className="btn-ghost text-ink-500 hover:text-danger text-xs">
-              Vaciar carrito
-            </button>
-          </form>
+          {/* CTA "Añadir otra pulsera" + Vaciar carrito */}
+          <div className="flex items-center justify-between gap-3 pt-2 flex-wrap">
+            <Link href="/tienda" className="btn-secondary text-sm">
+              <Plus className="h-4 w-4" /> Añadir otra pulsera
+            </Link>
+            <form action={clearCartAction}>
+              <button type="submit" className="btn-ghost text-ink-500 hover:text-danger text-xs">
+                Vaciar carrito
+              </button>
+            </form>
+          </div>
         </div>
 
         <aside className="lg:col-span-1">
           <div className="card p-6 sticky top-32 space-y-4">
-            <h2 className="text-base font-semibold text-ink-900">Resumen</h2>
+            <h2 className="text-base font-semibold text-ink-900">Resumen del pedido</h2>
             <dl className="text-sm space-y-2">
               <div className="flex items-center justify-between">
                 <dt className="text-ink-500">Subtotal ({totals.totalUnits} uds)</dt>
@@ -203,9 +255,27 @@ export default async function CartPage({
                 </>
               )}
 
-              <div className="border-t border-ink-100 pt-3 flex items-center justify-between">
-                <dt className="font-semibold text-ink-900">Total</dt>
-                <dd className="text-xl font-semibold text-brand-800">
+              {/* Base imponible (informativo, sirve de separador antes de los impuestos) */}
+              <div className="flex items-center justify-between border-t border-ink-100 pt-2">
+                <dt className="text-ink-500 text-xs">Base imponible</dt>
+                <dd className="text-ink-700 text-xs">{formatEuros(totals.taxableBaseCents)}</dd>
+              </div>
+              <div className="flex items-center justify-between">
+                <dt className="text-ink-500 text-xs">IVA ({totals.vatPct}%)</dt>
+                <dd className="text-ink-700 text-xs">{formatEuros(totals.vatCents)}</dd>
+              </div>
+              {totals.equivSurchargeEnabled && (
+                <div className="flex items-center justify-between">
+                  <dt className="text-ink-500 text-xs">
+                    Recargo equivalencia ({totals.equivSurchargePct}%)
+                  </dt>
+                  <dd className="text-ink-700 text-xs">{formatEuros(totals.equivSurchargeCents)}</dd>
+                </div>
+              )}
+
+              <div className="border-t-2 border-ink-200 pt-3 flex items-center justify-between">
+                <dt className="font-semibold text-ink-900">TOTAL</dt>
+                <dd className="text-2xl font-bold text-brand-800">
                   {formatEuros(totals.totalCents)}
                 </dd>
               </div>
@@ -229,6 +299,13 @@ export default async function CartPage({
               ctaLabel={t['carrito.cta']}
               confirmLabel={t['carrito.checkbox']}
             />
+
+            <Link
+              href="/tienda"
+              className="block text-center text-xs text-ink-500 hover:text-brand-700 transition-colors pt-1"
+            >
+              ← Seguir comprando
+            </Link>
           </div>
         </aside>
       </div>

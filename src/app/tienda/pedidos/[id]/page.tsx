@@ -137,18 +137,40 @@ export default async function OrderDetailPage({
           </table>
         </div>
 
-        <dl className="mt-6 ml-auto max-w-xs text-sm space-y-2">
+        <dl className="mt-6 ml-auto max-w-sm text-sm space-y-1.5">
           <div className="flex items-center justify-between">
             <dt className="text-ink-500">Subtotal</dt>
             <dd>{formatEuros(order.subtotalCents)}</dd>
           </div>
-          <div className="flex items-center justify-between">
-            <dt className="text-ink-500">Portes</dt>
-            <dd>{order.shippingCents === 0 ? 'Gratis' : formatEuros(order.shippingCents)}</dd>
+          {order.discountCents > 0 && (
+            <div className="flex items-center justify-between text-emerald-700">
+              <dt>Descuento volumen{order.discountPct ? ` (${order.discountPct}%)` : ''}</dt>
+              <dd className="font-semibold">−{formatEuros(order.discountCents)}</dd>
+            </div>
+          )}
+          {order.shippingCents > 0 && (
+            <div className="flex items-center justify-between">
+              <dt className="text-ink-500">Portes</dt>
+              <dd>{formatEuros(order.shippingCents)}</dd>
+            </div>
+          )}
+          <div className="flex items-center justify-between border-t border-ink-100 pt-1.5">
+            <dt className="text-ink-500 text-xs">Base imponible</dt>
+            <dd className="text-ink-700 text-xs">{formatEuros(order.taxableBaseCents)}</dd>
           </div>
-          <div className="flex items-center justify-between border-t border-ink-100 pt-2">
-            <dt className="font-semibold">Total</dt>
-            <dd className="text-lg font-semibold text-brand-800">{formatEuros(order.totalCents)}</dd>
+          <div className="flex items-center justify-between">
+            <dt className="text-ink-500 text-xs">IVA ({order.vatPct}%)</dt>
+            <dd className="text-ink-700 text-xs">{formatEuros(order.vatCents)}</dd>
+          </div>
+          {order.equivSurchargeCents > 0 && (
+            <div className="flex items-center justify-between">
+              <dt className="text-ink-500 text-xs">Recargo equivalencia ({order.equivSurchargePct}%)</dt>
+              <dd className="text-ink-700 text-xs">{formatEuros(order.equivSurchargeCents)}</dd>
+            </div>
+          )}
+          <div className="flex items-center justify-between border-t-2 border-ink-200 pt-2">
+            <dt className="font-semibold text-ink-900">TOTAL</dt>
+            <dd className="text-xl font-bold text-brand-800">{formatEuros(order.totalCents)}</dd>
           </div>
         </dl>
       </div>

@@ -3,9 +3,11 @@ import {
   SETTING_KEYS,
   parseShippingMode,
   parseVolumeDiscountTiers,
+  parseTaxConfig,
   findApplicableTier,
   type ShippingMode,
   type VolumeDiscountTier,
+  type TaxConfig,
 } from './settings';
 
 export interface PricedItem {
@@ -19,20 +21,31 @@ export interface PricedItem {
 }
 
 export interface OrderTotals {
+  /** Suma bruta de líneas (sin descuento) */
   subtotalCents: number;
-  /**
-   * Descuento por volumen aplicado al subtotal completo del carrito
-   * (basado en el número TOTAL de unidades de todas las líneas).
-   */
+  /** Descuento por volumen aplicado al subtotal completo del carrito */
   discountCents: number;
   discountTier: VolumeDiscountTier | null;
-  /** Suma de unidades de todas las líneas del carrito */
+  /** Suma de unidades de todas las líneas */
   totalUnits: number;
 
+  /** Portes (0 si modo 'included') */
   shippingCents: number;
   shippingMode: ShippingMode;
-  totalCents: number;
+  /** Umbral configurado de portes gratis */
   freeShippingThresholdCents: number;
+
+  /** Base imponible = subtotal − descuento + portes (cuando aplican) */
+  taxableBaseCents: number;
+  vatPct: number;
+  vatCents: number;
+  equivSurchargeEnabled: boolean;
+  equivSurchargePct: number;
+  equivSurchargeCents: number;
+
+  /** Total final con IVA + recargo (lo que paga el cliente) */
+  totalCents: number;
+
   meetsMinimum: boolean;
   minimumCents: number;
 }
@@ -49,6 +62,11 @@ export async function priceCart(
 
   const shippingMode = parseShippingMode(settings[SETTING_KEYS.SHIPPING_MODE]);
   const tiers = parseVolumeDiscountTiers(settings[SETTING_KEYS.VOLUME_DISCOUNT_TIERS_JSON]);
+  const tax: TaxConfig = parseTaxConfig(
+    settings[SETTING_KEYS.TAX_VAT_PCT],
+    settings[SETTING_KEYS.TAX_EQUIV_SURCHARGE_PCT],
+    settings[SETTING_KEYS.TAX_EQUIV_SURCHARGE_ENABLED],
+  );
 
   const priced: PricedItem[] = items.map((it) => {
     const unit = it.color === 'BLACK' ? priceBlack : priceRed;
@@ -66,21 +84,34 @@ export async function priceCart(
   const subtotal = priced.reduce((a, b) => a + b.lineTotalCents, 0);
   const totalUnits = priced.reduce((a, b) => a + b.quantity, 0);
 
-  // Descuento por volumen sobre el subtotal del carrito
+  // 1) Descuento por volumen
   const tier = findApplicableTier(totalUnits, tiers);
   const discountCents = tier
     ? Math.round((subtotal * tier.discountPct) / 100)
     : 0;
   const subtotalAfterDiscount = subtotal - discountCents;
 
-  // Portes según modo
+  // 2) Portes
   let shipping = 0;
   if (shippingMode === 'separate') {
     shipping = freeThreshold > 0 && subtotalAfterDiscount >= freeThreshold
       ? 0
       : shippingFlat;
   }
-  // En modo 'included' → siempre 0 (los portes van dentro del precio unitario)
+
+  // 3) Base imponible (subtotal con descuento + portes)
+  const taxableBase = subtotalAfterDiscount + shipping;
+
+  // 4) IVA
+  const vatCents = Math.round((taxableBase * tax.vatPct) / 100);
+
+  // 5) Recargo de equivalencia (opcional)
+  const equivSurchargeCents = tax.equivSurchargeEnabled
+    ? Math.round((taxableBase * tax.equivSurchargePct) / 100)
+    : 0;
+
+  // 6) Total final
+  const totalCents = taxableBase + vatCents + equivSurchargeCents;
 
   return {
     items: priced,
@@ -91,8 +122,14 @@ export async function priceCart(
       totalUnits,
       shippingCents: shipping,
       shippingMode,
-      totalCents: subtotalAfterDiscount + shipping,
       freeShippingThresholdCents: freeThreshold,
+      taxableBaseCents: taxableBase,
+      vatPct: tax.vatPct,
+      vatCents,
+      equivSurchargeEnabled: tax.equivSurchargeEnabled,
+      equivSurchargePct: tax.equivSurchargePct,
+      equivSurchargeCents,
+      totalCents,
       meetsMinimum: subtotalAfterDiscount >= minOrder,
       minimumCents: minOrder,
     },

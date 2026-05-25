@@ -96,7 +96,14 @@ export async function placeOrder(
       postalCode: customer.postalCode,
       province: customer.province,
       subtotalCents: totals.subtotalCents,
+      discountCents: totals.discountCents,
+      discountPct: totals.discountTier?.discountPct ?? null,
       shippingCents: totals.shippingCents,
+      taxableBaseCents: totals.taxableBaseCents,
+      vatPct: totals.vatPct,
+      vatCents: totals.vatCents,
+      equivSurchargePct: totals.equivSurchargeEnabled ? totals.equivSurchargePct : 0,
+      equivSurchargeCents: totals.equivSurchargeCents,
       totalCents: totals.totalCents,
       customerNote: parsed.data.note || null,
       items: {
@@ -128,11 +135,25 @@ export async function placeOrder(
     .map((it) => orderRowHtml(it))
     .join('');
 
+  const discountRow = order.discountCents > 0
+    ? `<tr><td style="padding:4px 0;color:#16a34a;">Descuento volumen${order.discountPct ? ` (${order.discountPct}%)` : ''}</td><td style="text-align:right;color:#16a34a;">−${formatEuros(order.discountCents)}</td></tr>`
+    : '';
+  const shippingRow = totals.shippingMode === 'separate'
+    ? `<tr><td style="padding:4px 0;color:#637787;">Portes</td><td style="text-align:right;">${order.shippingCents === 0 ? 'Gratis' : formatEuros(order.shippingCents)}</td></tr>`
+    : '';
+  const equivRow = order.equivSurchargeCents > 0
+    ? `<tr><td style="padding:4px 0;color:#637787;">Recargo equivalencia (${order.equivSurchargePct}%)</td><td style="text-align:right;">${formatEuros(order.equivSurchargeCents)}</td></tr>`
+    : '';
+
   const totalsBlock = `
     <table style="margin-top:16px;width:100%;font-size:14px;">
-      <tr><td style="padding:4px 0;color:#637787;">Subtotal</td><td style="text-align:right;">${formatEuros(order.subtotalCents)}</td></tr>
-      <tr><td style="padding:4px 0;color:#637787;">Portes</td><td style="text-align:right;">${order.shippingCents === 0 ? 'Gratis' : formatEuros(order.shippingCents)}</td></tr>
-      <tr><td style="padding:8px 0 0;font-weight:700;border-top:1px solid #ebeef0;">Total</td><td style="text-align:right;padding-top:8px;font-weight:700;border-top:1px solid #ebeef0;">${formatEuros(order.totalCents)}</td></tr>
+      <tr><td style="padding:4px 0;color:#637787;">Subtotal (${totals.totalUnits} uds)</td><td style="text-align:right;">${formatEuros(order.subtotalCents)}</td></tr>
+      ${discountRow}
+      ${shippingRow}
+      <tr><td style="padding:4px 0;color:#637787;border-top:1px solid #ebeef0;">Base imponible</td><td style="text-align:right;border-top:1px solid #ebeef0;">${formatEuros(order.taxableBaseCents)}</td></tr>
+      <tr><td style="padding:4px 0;color:#637787;">IVA (${order.vatPct}%)</td><td style="text-align:right;">${formatEuros(order.vatCents)}</td></tr>
+      ${equivRow}
+      <tr><td style="padding:8px 0 0;font-weight:700;border-top:1px solid #ebeef0;">TOTAL</td><td style="text-align:right;padding-top:8px;font-weight:700;border-top:1px solid #ebeef0;">${formatEuros(order.totalCents)}</td></tr>
     </table>`;
 
   const customerBlock = `

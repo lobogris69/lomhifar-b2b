@@ -41,6 +41,9 @@ export default async function SettingsPage() {
           companyEmail: s[SETTING_KEYS.COMPANY_EMAIL],
           shippingMode: parseShippingMode(s[SETTING_KEYS.SHIPPING_MODE]),
           volumeDiscountTiers: parseVolumeDiscountTiers(s[SETTING_KEYS.VOLUME_DISCOUNT_TIERS_JSON]),
+          vatPct: s[SETTING_KEYS.TAX_VAT_PCT] ?? '21',
+          equivSurchargePct: s[SETTING_KEYS.TAX_EQUIV_SURCHARGE_PCT] ?? '5.2',
+          equivSurchargeEnabled: s[SETTING_KEYS.TAX_EQUIV_SURCHARGE_ENABLED] === 'true',
         }}
       />
     </div>

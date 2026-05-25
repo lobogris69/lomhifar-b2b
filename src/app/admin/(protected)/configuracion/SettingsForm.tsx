@@ -36,6 +36,9 @@ interface Props {
     companyEmail: string;
     shippingMode: ShippingMode;
     volumeDiscountTiers: VolumeDiscountTier[];
+    vatPct: string;
+    equivSurchargePct: string;
+    equivSurchargeEnabled: boolean;
   };
 }
 
@@ -47,6 +50,7 @@ export function SettingsForm({ initialValues }: Props) {
       ? initialValues.volumeDiscountTiers
       : [],
   );
+  const [equivEnabled, setEquivEnabled] = useState<boolean>(initialValues.equivSurchargeEnabled);
 
   function addTier() {
     const lastQty = tiers.length > 0 ? tiers[tiers.length - 1].minQuantity : 10;
@@ -205,6 +209,45 @@ export function SettingsForm({ initialValues }: Props) {
         </button>
       </Section>
 
+      <Section title="Impuestos (IVA y recargo de equivalencia)">
+        <p className="text-xs text-ink-500 -mt-2 mb-4 leading-relaxed">
+          El IVA y el recargo de equivalencia se calculan sobre la base imponible
+          (subtotal − descuento + portes). En España las farmacias suelen estar bajo
+          el régimen de recargo de equivalencia (21% IVA + 5,2% recargo). Si tu
+          cliente no lo está, desactiva el recargo aquí abajo.
+        </p>
+
+        <div className="grid sm:grid-cols-2 gap-4 mb-3">
+          <PercentField name="vatPct" label="IVA (%)" defaultValue={initialValues.vatPct} placeholder="21" />
+          <PercentField
+            name="equivSurchargePct"
+            label="Recargo equivalencia (%)"
+            defaultValue={initialValues.equivSurchargePct}
+            placeholder="5.2"
+            disabled={!equivEnabled}
+          />
+        </div>
+
+        <label className="flex items-start gap-3 cursor-pointer select-none p-3 rounded-lg bg-brand-50/40 border border-brand-100">
+          <input
+            type="checkbox"
+            name="equivSurchargeEnabled"
+            checked={equivEnabled}
+            onChange={(e) => setEquivEnabled(e.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded border-ink-300 text-brand-700 focus:ring-brand-500"
+          />
+          <div className="flex-1">
+            <div className="text-sm font-semibold text-ink-900">
+              Aplicar recargo de equivalencia a TODOS los pedidos
+            </div>
+            <div className="text-xs text-ink-500 mt-0.5">
+              Si está activo se suma el recargo al total. Para farmacias bajo este
+              régimen (lo más común en España).
+            </div>
+          </div>
+        </label>
+      </Section>
+
       <Section title="Plazo y unidades">
         <div className="grid sm:grid-cols-3 gap-4">
           <Field label="Plazo de entrega (días)" name="deliveryDays" type="number" defaultValue={initialValues.deliveryDays} error={state.fieldErrors?.deliveryDays} min={1} />
@@ -285,6 +328,34 @@ function Money({ label, name, defaultValue, error }: { label: string; name: stri
         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 text-sm">€</span>
       </div>
       {error && <p className="field-error">{error}</p>}
+    </div>
+  );
+}
+
+function PercentField({ label, name, defaultValue, placeholder, disabled }: {
+  label: string;
+  name: string;
+  defaultValue?: string;
+  placeholder?: string;
+  disabled?: boolean;
+}) {
+  return (
+    <div className={disabled ? 'opacity-50' : ''}>
+      <label className="label" htmlFor={name}>{label}</label>
+      <div className="relative">
+        <input
+          id={name}
+          name={name}
+          type="text"
+          inputMode="decimal"
+          pattern="\d+([.,]\d{1,2})?"
+          defaultValue={defaultValue}
+          placeholder={placeholder}
+          disabled={disabled}
+          className="input pr-9"
+        />
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 text-sm">%</span>
+      </div>
     </div>
   );
 }

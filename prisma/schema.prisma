@@ -176,9 +176,16 @@ model Order {
   province        String?
 
   // Importes (en céntimos)
-  subtotalCents   Int
-  shippingCents   Int
-  totalCents      Int
+  subtotalCents       Int
+  discountCents       Int      @default(0)
+  discountPct         Float?
+  shippingCents       Int
+  taxableBaseCents    Int      @default(0)
+  vatPct              Float    @default(21)
+  vatCents            Int      @default(0)
+  equivSurchargePct   Float    @default(0)
+  equivSurchargeCents Int      @default(0)
+  totalCents          Int
 
   adminNotes      String?
   customerNote    String?
