@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { loginSchema, codeSchema } from '@/lib/validations';
 import { generateCode, normalizeCif, normalizeEmail } from '@/lib/utils';
 import { emailLayout, sendEmail } from '@/lib/email';
-import { createCustomerSession } from '@/lib/auth';
+import { createCustomerSession, getTrustedDeviceCustomerId, setTrustedDevice } from '@/lib/auth';
 import { cookies, headers } from 'next/headers';
 
 const PENDING_COOKIE = 'lomhifar_pending_access';
@@ -59,16 +59,28 @@ export async function requestAccessCode(
 
   const ip =
     headers().get('x-forwarded-for')?.split(',')[0]?.trim() ?? undefined;
+  const ua = headers().get('user-agent') ?? undefined;
 
   // -------- BYPASS PARA PREVIEW LOCAL --------
   // Si PREVIEW_BYPASS_CODE=true, omitimos el código por email y creamos
   // sesión directamente. NO USAR EN PRODUCCIÓN.
   if (process.env.PREVIEW_BYPASS_CODE === 'true') {
-    const ua = headers().get('user-agent') ?? undefined;
     await createCustomerSession(customer.id, { ip, userAgent: ua });
     redirect('/tienda');
   }
   // -------------------------------------------
+
+  // -------- DISPOSITIVO DE CONFIANZA --------
+  // Si este navegador ya verificó código antes para ESTE mismo cliente,
+  // no le volvemos a pedir el código de 6 dígitos. Entra directo.
+  const trustedCustomerId = await getTrustedDeviceCustomerId();
+  if (trustedCustomerId && trustedCustomerId === customer.id) {
+    await createCustomerSession(customer.id, { ip, userAgent: ua });
+    // Refrescamos la cookie de confianza (extiende otro año)
+    await setTrustedDevice(customer.id);
+    redirect('/tienda');
+  }
+  // ------------------------------------------
 
   const code = generateCode(6);
   const expiresAt = new Date(Date.now() + CODE_TTL_MIN * 60 * 1000);
@@ -162,6 +174,10 @@ export async function verifyAccessCode(
   const ua = headers().get('user-agent') ?? undefined;
   const ip = headers().get('x-forwarded-for')?.split(',')[0]?.trim() ?? undefined;
   await createCustomerSession(customerId, { ip, userAgent: ua });
+
+  // Marca este navegador como confiable durante 1 año.
+  // En el próximo login no se le pedirá código.
+  await setTrustedDevice(customerId);
 
   cookies().delete(PENDING_COOKIE);
   redirect('/tienda');
