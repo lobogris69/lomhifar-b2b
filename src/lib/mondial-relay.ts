@@ -21,7 +21,11 @@ import { getSettings, SETTING_KEYS } from './settings';
  * Para producción contactar con tu Account Manager de Mondial Relay/InPost.
  */
 
-const SOAP_URL = 'https://api.mondialrelay.com/Web_Services.asmx';
+// URL del WebService SOAP. Mondial Relay expone DOS variantes públicas:
+//   - https://api.mondialrelay.com/WebService.asmx     (la que muestra el panel del usuario)
+//   - https://api.mondialrelay.com/Web_Services.asmx   (legacy, también funciona)
+// Usamos la que aparece literalmente en el portal del cliente.
+const SOAP_URL = 'https://api.mondialrelay.com/WebService.asmx';
 const NAMESPACE = 'http://www.mondialrelay.fr/webservice/';
 
 // ===========================================================================
@@ -117,16 +121,23 @@ function extractTag(xml: string, tag: string): string | undefined {
 /** Ejecuta una petición SOAP y devuelve el XML de respuesta. */
 async function soapCall(method: string, params: Record<string, string>): Promise<string> {
   const body = buildSoapEnvelope(method, params);
+
+  // IMPORTANTE: SOAPAction debe ir ENTRE COMILLAS DOBLES (SOAP 1.1 / RFC).
+  // Mondial Relay (ASMX/.NET) lo enforza estrictamente: sin comillas
+  // devuelve HTTP 500 \"Le serveur n'a pas reconnu la valeur de l'en-tête\".
+  // Usamos Headers explícito para evitar que algún normalizador de undici
+  // toque las comillas.
+  const headers = new Headers();
+  headers.set('Content-Type', 'text/xml; charset=utf-8');
+  headers.set('SOAPAction', `"${NAMESPACE}${method}"`);
+  headers.set('Accept', 'text/xml, application/xml, */*');
+
   const res = await fetch(SOAP_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'text/xml; charset=utf-8',
-      // SOAPAction debe ir ENTRE COMILLAS (SOAP 1.1 spec, RFC). Mondial
-      // Relay lo enforza estricto: sin comillas devuelve HTTP 500 con
-      // \"Le serveur n'a pas reconnu la valeur de l'en-tête HTTP SOAPAction\".
-      SOAPAction: `"${NAMESPACE}${method}"`,
-    },
+    headers,
     body,
+    // Evitar cualquier cache: cada llamada es única.
+    cache: 'no-store',
   });
   if (!res.ok) {
     throw new Error(`Mondial Relay HTTP ${res.status}: ${await res.text().catch(() => '')}`);
