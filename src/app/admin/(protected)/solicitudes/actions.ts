@@ -1,14 +1,13 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import { getAdminSession } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { emailLayout, sendEmail } from '@/lib/email';
 
 async function ensureAdmin() {
-  const s = await getAdminSession();
-  if (!s) redirect('/admin/login');
+  // Bloquea VIEWER (rol de solo lectura) automáticamente.
+  await requireAdmin({ write: true });
 }
 
 export async function approveApplication(formData: FormData) {

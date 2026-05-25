@@ -1,8 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-import { getAdminSession } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { SETTING_KEYS, setSetting, type VolumeDiscountTier } from '@/lib/settings';
 import { settingsSchema } from '@/lib/validations';
 
@@ -16,8 +15,8 @@ export async function saveSettings(
   _prev: SaveSettingsState,
   formData: FormData,
 ): Promise<SaveSettingsState> {
-  const s = await getAdminSession();
-  if (!s) redirect('/admin/login');
+  // Bloquea VIEWER (rol de solo lectura) automáticamente.
+  await requireAdmin({ write: true });
 
   const raw = {
     priceBlackCents: euroToCents(formData.get('priceBlackEuros')),

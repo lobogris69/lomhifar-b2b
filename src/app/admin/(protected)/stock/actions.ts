@@ -1,16 +1,14 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { getAdminSession } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { ensureStockBase } from '@/lib/stock';
 
 async function ensureAdmin() {
-  const s = await getAdminSession();
-  if (!s) redirect('/admin/login');
-  return s;
+  // Bloquea VIEWER (rol de solo lectura) automáticamente.
+  return await requireAdmin({ write: true });
 }
 
 const adjustSchema = z.object({

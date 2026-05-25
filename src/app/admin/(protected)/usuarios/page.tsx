@@ -20,6 +20,7 @@ const ROLE_BADGE: Record<AdminRole, string> = {
   SUPER_ADMIN: 'bg-brand-100 text-brand-800',
   ADMIN: 'bg-sky-100 text-sky-800',
   ORDER_MANAGER: 'bg-emerald-100 text-emerald-800',
+  VIEWER: 'bg-amber-100 text-amber-800',
 };
 
 export default async function UsersPage() {
@@ -58,6 +59,7 @@ export default async function UsersPage() {
           <li>· <strong>Super-Admin:</strong> acceso total + gestión de usuarios admin (este panel)</li>
           <li>· <strong>Administrador:</strong> acceso total excepto crear/borrar usuarios admin</li>
           <li>· <strong>Gestor de pedidos:</strong> solo puede ver pedidos y cambiar su estado</li>
+          <li>· <strong>Supervisor (solo lectura):</strong> ve todo el panel pero NO puede modificar nada — ideal para auditores o socios</li>
         </ul>
       </Alert>
 

@@ -1,8 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-import { getAdminSession } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { SETTING_KEYS, setSetting, type MarketingPersona } from '@/lib/settings';
 
 export interface SavePersonasState {
@@ -14,8 +13,8 @@ export async function savePersonas(
   _prev: SavePersonasState,
   formData: FormData,
 ): Promise<SavePersonasState> {
-  const s = await getAdminSession();
-  if (!s) redirect('/admin/login');
+  // Bloquea VIEWER (rol de solo lectura) automáticamente.
+  await requireAdmin({ write: true });
 
   try {
     const personas: MarketingPersona[] = [];
@@ -46,8 +45,8 @@ export async function savePersonas(
 
 /** Restaura los 8 valores por defecto (borra el setting custom). */
 export async function resetPersonasAction() {
-  const s = await getAdminSession();
-  if (!s) redirect('/admin/login');
+  // Bloquea VIEWER (rol de solo lectura) automáticamente.
+  await requireAdmin({ write: true });
   await setSetting(SETTING_KEYS.MARKETING_PERSONAS_JSON, '');
   revalidatePath('/admin/personas');
   revalidatePath('/', 'layout');

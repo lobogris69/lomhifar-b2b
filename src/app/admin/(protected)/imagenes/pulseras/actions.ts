@@ -1,8 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-import { getAdminSession } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { SETTING_KEYS, setSetting, type PrintArea } from '@/lib/settings';
 
 export interface SaveAreaState {
@@ -14,8 +13,8 @@ export async function saveBraceletAreas(
   _prev: SaveAreaState,
   formData: FormData,
 ): Promise<SaveAreaState> {
-  const s = await getAdminSession();
-  if (!s) redirect('/admin/login');
+  // Bloquea VIEWER (rol de solo lectura) automáticamente.
+  await requireAdmin({ write: true });
 
   try {
     const black = readArea(formData, 'black');

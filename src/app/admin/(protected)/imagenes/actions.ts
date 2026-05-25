@@ -1,9 +1,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import { getAdminSession } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { getSlotDefinition, SLOT_NAMES } from '@/lib/site-images';
 
 const MAX_BYTES = 6 * 1024 * 1024; // 6 MB
@@ -18,8 +17,8 @@ export async function uploadSiteImage(
   _prev: UploadImageState,
   formData: FormData,
 ): Promise<UploadImageState> {
-  const session = await getAdminSession();
-  if (!session) redirect('/admin/login');
+  // Bloquea VIEWER (rol de solo lectura) automáticamente.
+  const session = await requireAdmin({ write: true });
 
   const slot = String(formData.get('slot') ?? '');
   if (!SLOT_NAMES.includes(slot)) return { error: 'Slot no válido', slot };
@@ -71,8 +70,8 @@ export async function uploadSiteImage(
 }
 
 export async function deleteSiteImage(formData: FormData) {
-  const session = await getAdminSession();
-  if (!session) redirect('/admin/login');
+  // Bloquea VIEWER (rol de solo lectura) automáticamente.
+  await requireAdmin({ write: true });
   const slot = String(formData.get('slot') ?? '');
   if (!SLOT_NAMES.includes(slot)) return;
   await prisma.siteImage.deleteMany({ where: { slot } });

@@ -1,9 +1,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import { getAdminSession } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 
 const MAX_BYTES = 8 * 1024 * 1024; // 8 MB
 const ALLOWED_MIME = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
@@ -17,8 +16,8 @@ export async function uploadPoster(
   _prev: UploadPosterState,
   formData: FormData,
 ): Promise<UploadPosterState> {
-  const session = await getAdminSession();
-  if (!session) redirect('/admin/login');
+  // Bloquea VIEWER (rol de solo lectura) automáticamente.
+  const session = await requireAdmin({ write: true });
 
   const file = formData.get('file') as File | null;
   if (!file || file.size === 0) return { error: 'Adjunte un archivo' };
@@ -53,8 +52,8 @@ export async function uploadPoster(
 }
 
 export async function deletePoster() {
-  const session = await getAdminSession();
-  if (!session) redirect('/admin/login');
+  // Bloquea VIEWER (rol de solo lectura) automáticamente.
+  await requireAdmin({ write: true });
   await prisma.posterFile.deleteMany({});
   revalidatePath('/admin/cartel');
 }

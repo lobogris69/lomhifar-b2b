@@ -28,6 +28,7 @@ export function RoleSelect({ userId, currentRole, isMe, badgeClass }: Props) {
         <option value="SUPER_ADMIN">Super-Admin</option>
         <option value="ADMIN">Administrador</option>
         <option value="ORDER_MANAGER">Gestor pedidos</option>
+        <option value="VIEWER">Supervisor (solo lectura)</option>
       </select>
     </form>
   );

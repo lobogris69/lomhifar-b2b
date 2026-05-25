@@ -1,11 +1,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
-import { getAdminSession } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 
 const changePasswordSchema = z
   .object({
@@ -35,8 +34,9 @@ export async function changePassword(
   _prev: ChangePasswordState,
   formData: FormData,
 ): Promise<ChangePasswordState> {
-  const session = await getAdminSession();
-  if (!session) redirect('/admin/login');
+  // VIEWER también puede cambiar su propia contraseña (no es escritura de
+  // datos del sitio — es su propio perfil personal).
+  const session = await requireAdmin();
 
   const parsed = changePasswordSchema.safeParse({
     currentPassword: String(formData.get('currentPassword') ?? ''),
@@ -75,8 +75,8 @@ export async function changeProfile(
   _prev: ChangeProfileState,
   formData: FormData,
 ): Promise<ChangeProfileState> {
-  const session = await getAdminSession();
-  if (!session) redirect('/admin/login');
+  // VIEWER también puede editar su propio nombre.
+  const session = await requireAdmin();
 
   const parsed = changeProfileSchema.safeParse({
     name: String(formData.get('name') ?? '').trim(),

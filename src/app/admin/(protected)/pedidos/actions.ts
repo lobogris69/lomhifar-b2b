@@ -1,10 +1,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { ORDER_STATUSES } from '@/lib/enums';
 import { prisma } from '@/lib/prisma';
-import { getAdminSession } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { emailLayout, sendEmail } from '@/lib/email';
 import { ORDER_STATUS_LABEL } from '@/components/shop/OrderStatusBadge';
 import { buildTrackingUrl } from '@/lib/shipping';
@@ -15,8 +14,8 @@ import {
 } from '@/lib/mondial-relay';
 
 async function ensureAdmin() {
-  const s = await getAdminSession();
-  if (!s) redirect('/admin/login');
+  // Bloquea VIEWER (rol de solo lectura) automáticamente.
+  await requireAdmin({ write: true });
 }
 
 export async function updateOrderStatus(formData: FormData) {

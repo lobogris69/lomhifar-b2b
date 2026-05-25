@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getAdminSession } from '@/lib/auth';
 import { AdminSidebar, AdminMobileTopbar } from '@/components/admin/AdminSidebar';
 import { MustChangePasswordBanner } from '@/components/admin/MustChangePasswordBanner';
+import { ReadOnlyBanner } from '@/components/admin/ReadOnlyBanner';
 import { Logo } from '@/components/brand/Logo';
 import { prisma } from '@/lib/prisma';
 
@@ -59,6 +60,7 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
           badges={badges}
         />
         {session.mustChangePassword && <MustChangePasswordBanner />}
+        {adminRole === 'VIEWER' && <ReadOnlyBanner />}
         <main className="flex-1 min-w-0">{children}</main>
       </div>
     </div>

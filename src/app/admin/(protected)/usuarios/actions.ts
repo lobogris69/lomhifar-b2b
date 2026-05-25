@@ -21,7 +21,7 @@ const createSchema = z.object({
   email: z.string().email('Email no válido').max(120),
   name: z.string().max(120).optional().or(z.literal('')),
   password: z.string().min(8, 'Mínimo 8 caracteres'),
-  role: z.enum(['SUPER_ADMIN', 'ADMIN', 'ORDER_MANAGER'] as const),
+  role: z.enum(['SUPER_ADMIN', 'ADMIN', 'ORDER_MANAGER', 'VIEWER'] as const),
 });
 
 export interface CreateAdminState {

@@ -1,7 +1,9 @@
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { sealData, unsealData } from 'iron-session';
 import { prisma } from './prisma';
 import { generateToken } from './utils';
+import { canWrite } from './admin-roles';
 
 const ADMIN_COOKIE = 'lomhifar_admin';
 const CUSTOMER_COOKIE = 'lomhifar_session';
@@ -79,6 +81,36 @@ export async function getAdminSession(): Promise<AdminSessionData | null> {
 
 export function destroyAdminSession() {
   cookies().delete(ADMIN_COOKIE);
+}
+
+/**
+ * Mensaje de error que se lanza cuando un VIEWER intenta hacer una acción
+ * de escritura. Usamos un string específico para detectarlo en el cliente
+ * si quisiéramos mostrar un toast amigable.
+ */
+export const READ_ONLY_ERROR =
+  'Tu cuenta es de solo lectura (Supervisor). No puedes realizar modificaciones. Si necesitas hacer cambios, contacta con un administrador.';
+
+/**
+ * Helper centralizado para usar en TODAS las server actions del admin.
+ *
+ *  - Si no hay sesión → redirige a /admin/login
+ *  - Si `opts.write === true` y el rol es VIEWER → lanza READ_ONLY_ERROR
+ *  - Devuelve la sesión para que el caller pueda usar email, role, etc.
+ *
+ * Ejemplo:
+ *   export async function deleteCustomer(formData: FormData) {
+ *     await requireAdmin({ write: true });   // ← bloquea VIEWER
+ *     ...
+ *   }
+ */
+export async function requireAdmin(opts: { write?: boolean } = {}) {
+  const session = await getAdminSession();
+  if (!session) redirect('/admin/login');
+  if (opts.write && !canWrite(session.role)) {
+    throw new Error(READ_ONLY_ERROR);
+  }
+  return session;
 }
 
 // ============================================================

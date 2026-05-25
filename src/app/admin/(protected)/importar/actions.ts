@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
-import { getAdminSession } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { parseCustomersExcel, type ParsedCustomerRow } from '@/lib/excel';
 
 export interface ImportState {
@@ -25,8 +25,8 @@ export async function previewImport(
   _prev: ImportState,
   formData: FormData,
 ): Promise<ImportState> {
-  const session = await getAdminSession();
-  if (!session) return { error: 'No autorizado' };
+  // Bloquea VIEWER (rol de solo lectura) automáticamente.
+  await requireAdmin({ write: true });
 
   const file = formData.get('file') as File | null;
   if (!file || file.size === 0) return { error: 'Adjunte un archivo Excel' };
@@ -57,8 +57,8 @@ export async function commitImport(
   formData: FormData,
 ): Promise<ImportState> {
   const t0 = Date.now();
-  const session = await getAdminSession();
-  if (!session) return { error: 'No autorizado' };
+  // Bloquea VIEWER (rol de solo lectura) automáticamente.
+  await requireAdmin({ write: true });
 
   const file = formData.get('file') as File | null;
   if (!file || file.size === 0) {
