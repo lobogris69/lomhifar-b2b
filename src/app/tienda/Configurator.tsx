@@ -8,7 +8,7 @@ import { BraceletPhoto } from '@/components/shop/BraceletPhoto';
 import { Alert } from '@/components/ui/Alert';
 import { addBraceletToCart, type AddState } from './actions';
 import { cn, formatEuros } from '@/lib/utils';
-import type { PrintArea } from '@/lib/settings';
+import { findApplicableTier, findNextTier, type PrintArea, type VolumeDiscountTier } from '@/lib/settings';
 
 interface Props {
   priceBlackCents: number;
@@ -22,6 +22,10 @@ interface Props {
   photoRedUrl: string | null;
   areaBlack: PrintArea;
   areaRed: PrintArea;
+  /** Tramos de descuento por volumen (vacío = sin descuentos) */
+  volumeDiscountTiers: VolumeDiscountTier[];
+  /** Si los portes ya van incluidos en el precio (default) o se cobran aparte */
+  shippingIncluded: boolean;
   texts: {
     paso1: string;
     paso2: string;
@@ -58,10 +62,12 @@ export function Configurator({
   photoRedUrl,
   areaBlack,
   areaRed,
+  volumeDiscountTiers,
+  shippingIncluded,
   texts,
 }: Props) {
   const [color, setColor] = useState<'BLACK' | 'RED'>('BLACK');
-  const [quantity, setQuantity] = useState<number>(10);
+  const [quantity, setQuantity] = useState<number>(1);
   const [line1, setLine1] = useState('');
   const [line2, setLine2] = useState('');
   const [line3, setLine3] = useState('');
@@ -72,6 +78,23 @@ export function Configurator({
 
   const unitPrice = color === 'BLACK' ? priceBlackCents : priceRedCents;
   const lineTotal = unitPrice * quantity;
+
+  // Descuento por volumen aplicable a esta línea (basado en uds de esta línea)
+  const currentTier = findApplicableTier(quantity, volumeDiscountTiers);
+  const nextTier = findNextTier(quantity, volumeDiscountTiers);
+  const discountCents = currentTier
+    ? Math.round((lineTotal * currentTier.discountPct) / 100)
+    : 0;
+  const lineTotalAfterDiscount = lineTotal - discountCents;
+
+  // Hint del próximo tramo: cuánto se ahorraría al alcanzarlo
+  let nextTierHint: { unitsToAdd: number; savingsCents: number } | null = null;
+  if (nextTier) {
+    const unitsToAdd = nextTier.minQuantity - quantity;
+    const projectedSubtotal = unitPrice * nextTier.minQuantity;
+    const projectedDiscount = Math.round((projectedSubtotal * nextTier.discountPct) / 100);
+    nextTierHint = { unitsToAdd, savingsCents: projectedDiscount };
+  }
 
   const currentPhotoUrl = color === 'BLACK' ? photoBlackUrl : photoRedUrl;
   const currentArea = color === 'BLACK' ? areaBlack : areaRed;
@@ -137,10 +160,35 @@ export function Configurator({
             <span className="text-ink-500">
               {formatEuros(unitPrice)} × {quantity} ud
             </span>
-            <span className="text-base font-semibold text-brand-800">
-              {formatEuros(lineTotal)}
-            </span>
+            {currentTier ? (
+              <span className="flex items-baseline gap-1.5">
+                <span className="line-through text-[11px] text-ink-400">{formatEuros(lineTotal)}</span>
+                <span className="text-base font-bold text-brand-800">
+                  {formatEuros(lineTotalAfterDiscount)}
+                </span>
+                <span className="text-[10px] font-bold text-emerald-700">
+                  −{currentTier.discountPct}%
+                </span>
+              </span>
+            ) : (
+              <span className="text-base font-semibold text-brand-800">
+                {formatEuros(lineTotal)}
+              </span>
+            )}
           </div>
+          {nextTierHint && nextTierHint.unitsToAdd > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setQuantity(nextTier!.minQuantity);
+                setConfirmed(false);
+              }}
+              className="mt-2 w-full rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-[11px] px-2 py-1.5 text-left hover:bg-amber-100 transition-colors"
+            >
+              🎯 <strong>Pide {nextTierHint.unitsToAdd} más</strong> → ahorra {nextTier!.discountPct}%
+              ({formatEuros(nextTierHint.savingsCents)})
+            </button>
+          )}
         </div>
       </div>
 
@@ -168,11 +216,79 @@ export function Configurator({
               <span className="text-ink-500">Plazo estimado</span>
               <span className="font-medium text-ink-900">{deliveryDays} días laborables</span>
             </div>
-            <div className="mt-3 pt-3 border-t border-ink-100 flex items-center justify-between">
-              <span className="text-ink-500 text-sm">Total de esta línea</span>
-              <span className="text-lg font-semibold text-brand-800">{formatEuros(lineTotal)}</span>
+            <div className="mt-3 pt-3 border-t border-ink-100">
+              {currentTier ? (
+                <>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-ink-500">Subtotal sin descuento</span>
+                    <span className="line-through text-ink-400">{formatEuros(lineTotal)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs mt-1">
+                    <span className="text-emerald-700 font-semibold">
+                      Descuento volumen −{currentTier.discountPct}%
+                    </span>
+                    <span className="text-emerald-700 font-semibold">
+                      −{formatEuros(discountCents)}
+                    </span>
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-ink-100 flex items-center justify-between">
+                    <span className="text-ink-700 text-sm font-semibold">Total línea</span>
+                    <span className="text-xl font-bold text-brand-800">
+                      {formatEuros(lineTotalAfterDiscount)}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <span className="text-ink-500 text-sm">Total de esta línea</span>
+                  <span className="text-lg font-semibold text-brand-800">{formatEuros(lineTotal)}</span>
+                </div>
+              )}
+              {shippingIncluded && (
+                <p className="mt-1 text-[11px] text-ink-500 italic text-right">
+                  Portes incluidos
+                </p>
+              )}
             </div>
           </div>
+
+          {/* Chip comercial: tramo alcanzado + invitación al siguiente */}
+          {currentTier && (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs flex items-center gap-2">
+              <span className="text-emerald-700 font-bold">✓</span>
+              <span className="text-emerald-800">
+                <strong>¡Descuento {currentTier.discountPct}% aplicado!</strong>{' '}
+                Ahorras {formatEuros(discountCents)}.
+              </span>
+            </div>
+          )}
+          {nextTierHint && nextTierHint.unitsToAdd > 0 && (
+            <div className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white px-3 py-3 text-xs">
+              <div className="flex items-start gap-2">
+                <span className="text-amber-600 text-base shrink-0">🎯</span>
+                <div>
+                  <div className="text-amber-900 font-semibold">
+                    Pide {nextTierHint.unitsToAdd} ud{nextTierHint.unitsToAdd === 1 ? '' : 's'} más
+                    {' '}y ahorra el {nextTier!.discountPct}%
+                  </div>
+                  <div className="text-amber-700 mt-0.5">
+                    Pasarías a pagar {formatEuros((unitPrice * nextTier!.minQuantity) - nextTierHint.savingsCents)}
+                    {' '}por {nextTier!.minQuantity} uds (te ahorrarías {formatEuros(nextTierHint.savingsCents)}).
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuantity(nextTier!.minQuantity);
+                      setConfirmed(false);
+                    }}
+                    className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-semibold px-2.5 py-1 transition-colors"
+                  >
+                    Subir a {nextTier!.minQuantity} uds
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

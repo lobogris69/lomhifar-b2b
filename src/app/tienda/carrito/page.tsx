@@ -164,32 +164,56 @@ export default async function CartPage({
             <h2 className="text-base font-semibold text-ink-900">Resumen</h2>
             <dl className="text-sm space-y-2">
               <div className="flex items-center justify-between">
-                <dt className="text-ink-500">Subtotal</dt>
+                <dt className="text-ink-500">Subtotal ({totals.totalUnits} uds)</dt>
                 <dd className="font-medium text-ink-900">{formatEuros(totals.subtotalCents)}</dd>
               </div>
-              <div className="flex items-center justify-between">
-                <dt className="text-ink-500">Portes</dt>
-                <dd className="font-medium text-ink-900">
-                  {totals.shippingCents === 0 ? (
-                    <span className="text-brand-700">Gratis</span>
-                  ) : (
-                    formatEuros(totals.shippingCents)
-                  )}
-                </dd>
-              </div>
-              {totals.freeShippingThresholdCents > 0 &&
-                totals.subtotalCents < totals.freeShippingThresholdCents && (
-                  <p className="text-xs text-ink-500 leading-relaxed">
-                    Le faltan {formatEuros(totals.freeShippingThresholdCents - totals.subtotalCents)}{' '}
-                    para portes gratis.
-                  </p>
-                )}
+
+              {/* Descuento por volumen — destacado en verde */}
+              {totals.discountTier && (
+                <div className="flex items-center justify-between rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 -mx-1">
+                  <dt className="text-emerald-800 font-semibold text-xs">
+                    🎉 Descuento {totals.discountTier.discountPct}% por {totals.totalUnits} uds
+                  </dt>
+                  <dd className="font-bold text-emerald-700">
+                    −{formatEuros(totals.discountCents)}
+                  </dd>
+                </div>
+              )}
+
+              {/* Portes — solo en modo "separate" */}
+              {totals.shippingMode === 'separate' && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <dt className="text-ink-500">Portes</dt>
+                    <dd className="font-medium text-ink-900">
+                      {totals.shippingCents === 0 ? (
+                        <span className="text-brand-700">Gratis</span>
+                      ) : (
+                        formatEuros(totals.shippingCents)
+                      )}
+                    </dd>
+                  </div>
+                  {totals.freeShippingThresholdCents > 0 &&
+                    totals.subtotalCents < totals.freeShippingThresholdCents && (
+                      <p className="text-xs text-ink-500 leading-relaxed">
+                        Le faltan {formatEuros(totals.freeShippingThresholdCents - totals.subtotalCents)}{' '}
+                        para portes gratis.
+                      </p>
+                    )}
+                </>
+              )}
+
               <div className="border-t border-ink-100 pt-3 flex items-center justify-between">
                 <dt className="font-semibold text-ink-900">Total</dt>
                 <dd className="text-xl font-semibold text-brand-800">
                   {formatEuros(totals.totalCents)}
                 </dd>
               </div>
+              {totals.shippingMode === 'included' && (
+                <p className="text-[11px] text-ink-500 text-right italic">
+                  Portes incluidos en el precio
+                </p>
+              )}
             </dl>
 
             <div className="text-xs text-ink-500">Plazo estimado: {deliveryDays} días laborables</div>

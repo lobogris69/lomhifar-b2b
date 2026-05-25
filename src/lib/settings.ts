@@ -20,6 +20,8 @@ export const SETTING_KEYS = {
   CONFIGURATOR_AREA_BLACK: 'configurator.bracelet_black.area_json',
   CONFIGURATOR_AREA_RED: 'configurator.bracelet_red.area_json',
   MARKETING_PERSONAS_JSON: 'marketing.personas_json',
+  SHIPPING_MODE: 'shipping.mode', // 'included' | 'separate'
+  VOLUME_DISCOUNT_TIERS_JSON: 'discount.volume_tiers_json',
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
@@ -52,7 +54,77 @@ export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
   }),
   // Personas/casos de uso (editables desde /admin/personas)
   [SETTING_KEYS.MARKETING_PERSONAS_JSON]: '', // vacío = usar DEFAULT_PERSONAS
+  // Modo de portes (default: incluidos en el precio — no se cobra envío)
+  [SETTING_KEYS.SHIPPING_MODE]: 'included',
+  // Tramos de descuento por volumen (vacío = sin descuentos)
+  // Formato: [{ minQuantity: number, discountPct: number }]
+  [SETTING_KEYS.VOLUME_DISCOUNT_TIERS_JSON]: JSON.stringify([
+    { minQuantity: 10, discountPct: 5 },
+    { minQuantity: 25, discountPct: 10 },
+    { minQuantity: 50, discountPct: 15 },
+    { minQuantity: 100, discountPct: 20 },
+  ]),
 };
+
+// ============================================================
+// PORTES / SHIPPING
+// ============================================================
+
+export type ShippingMode = 'included' | 'separate';
+
+export function parseShippingMode(raw: string | undefined): ShippingMode {
+  return raw === 'separate' ? 'separate' : 'included';
+}
+
+// ============================================================
+// DESCUENTOS POR VOLUMEN
+// ============================================================
+
+export interface VolumeDiscountTier {
+  minQuantity: number;
+  discountPct: number; // 0 - 50
+}
+
+export function parseVolumeDiscountTiers(raw: string | undefined): VolumeDiscountTier[] {
+  if (!raw) return [];
+  try {
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return [];
+    const tiers = arr
+      .map((t) => ({
+        minQuantity: Math.max(1, Math.floor(Number(t?.minQuantity) || 0)),
+        discountPct: Math.max(0, Math.min(50, Number(t?.discountPct) || 0)),
+      }))
+      .filter((t) => t.minQuantity > 0 && t.discountPct > 0)
+      // Orden ASC por cantidad → fácil iterar para encontrar próximo tramo
+      .sort((a, b) => a.minQuantity - b.minQuantity);
+    return tiers;
+  } catch {
+    return [];
+  }
+}
+
+/** Devuelve el tramo APLICABLE (el de mayor descuento que cumpla el mínimo). */
+export function findApplicableTier(
+  quantity: number,
+  tiers: VolumeDiscountTier[],
+): VolumeDiscountTier | null {
+  let best: VolumeDiscountTier | null = null;
+  for (const t of tiers) {
+    if (quantity >= t.minQuantity) {
+      if (!best || t.discountPct > best.discountPct) best = t;
+    }
+  }
+  return best;
+}
+
+/** Devuelve el SIGUIENTE tramo (primero con minQuantity mayor que quantity actual). */
+export function findNextTier(
+  quantity: number,
+  tiers: VolumeDiscountTier[],
+): VolumeDiscountTier | null {
+  return tiers.find((t) => t.minQuantity > quantity) ?? null;
+}
 
 export interface PrintArea {
   leftPct: number;

@@ -1,4 +1,10 @@
-import { getSettings, SETTING_KEYS, parsePrintArea } from '@/lib/settings';
+import {
+  getSettings,
+  SETTING_KEYS,
+  parsePrintArea,
+  parseShippingMode,
+  parseVolumeDiscountTiers,
+} from '@/lib/settings';
 import { getStockSummary } from '@/lib/stock';
 import { getAllSiteTexts } from '@/lib/site-texts';
 import { getSiteImageMeta } from '@/lib/site-images';
@@ -27,6 +33,8 @@ export default async function ShopPage() {
 
   const areaBlack = parsePrintArea(settings[SETTING_KEYS.CONFIGURATOR_AREA_BLACK]);
   const areaRed = parsePrintArea(settings[SETTING_KEYS.CONFIGURATOR_AREA_RED]);
+  const shippingMode = parseShippingMode(settings[SETTING_KEYS.SHIPPING_MODE]);
+  const volumeDiscountTiers = parseVolumeDiscountTiers(settings[SETTING_KEYS.VOLUME_DISCOUNT_TIERS_JSON]);
 
   const lowOrEmpty = stocks.filter((s) => s.isLow || s.isEmpty);
 
@@ -84,6 +92,8 @@ export default async function ShopPage() {
         photoRedUrl={photoRedUrl}
         areaBlack={areaBlack}
         areaRed={areaRed}
+        volumeDiscountTiers={volumeDiscountTiers}
+        shippingIncluded={shippingMode === 'included'}
         texts={{
           paso1: t['tienda.paso1_titulo'],
           paso2: t['tienda.paso2_titulo'],

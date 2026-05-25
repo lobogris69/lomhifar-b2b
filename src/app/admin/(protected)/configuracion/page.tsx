@@ -1,5 +1,10 @@
 import { Settings } from 'lucide-react';
-import { getSettings, SETTING_KEYS } from '@/lib/settings';
+import {
+  getSettings,
+  SETTING_KEYS,
+  parseShippingMode,
+  parseVolumeDiscountTiers,
+} from '@/lib/settings';
 import { SettingsForm } from './SettingsForm';
 
 export const metadata = { title: 'Configuración · Admin Lomhifar' };
@@ -34,6 +39,8 @@ export default async function SettingsPage() {
           companyName: s[SETTING_KEYS.COMPANY_NAME],
           companyPhone: s[SETTING_KEYS.COMPANY_PHONE],
           companyEmail: s[SETTING_KEYS.COMPANY_EMAIL],
+          shippingMode: parseShippingMode(s[SETTING_KEYS.SHIPPING_MODE]),
+          volumeDiscountTiers: parseVolumeDiscountTiers(s[SETTING_KEYS.VOLUME_DISCOUNT_TIERS_JSON]),
         }}
       />
     </div>

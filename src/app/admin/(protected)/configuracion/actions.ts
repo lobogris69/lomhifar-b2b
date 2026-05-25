@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getAdminSession } from '@/lib/auth';
-import { SETTING_KEYS, setSetting } from '@/lib/settings';
+import { SETTING_KEYS, setSetting, type VolumeDiscountTier } from '@/lib/settings';
 import { settingsSchema } from '@/lib/validations';
 
 export interface SaveSettingsState {
@@ -35,6 +35,32 @@ export async function saveSettings(
     companyEmail: String(formData.get('companyEmail') ?? '').trim(),
   };
 
+  // Modo de portes (incluidos / aparte)
+  const shippingModeRaw = String(formData.get('shippingMode') ?? 'included');
+  const shippingMode = shippingModeRaw === 'separate' ? 'separate' : 'included';
+
+  // Tramos de descuento por volumen: vienen como pares de inputs
+  // tierMinQty[] y tierDiscountPct[] (paralelos por índice)
+  const tierMinQtys = formData.getAll('tierMinQty').map((v) => Number(v));
+  const tierDiscountPcts = formData.getAll('tierDiscountPct').map((v) => Number(v));
+  const tiers: VolumeDiscountTier[] = [];
+  for (let i = 0; i < tierMinQtys.length; i++) {
+    const q = Math.floor(tierMinQtys[i]);
+    const p = tierDiscountPcts[i];
+    if (Number.isFinite(q) && q > 0 && Number.isFinite(p) && p > 0 && p <= 50) {
+      tiers.push({ minQuantity: q, discountPct: p });
+    }
+  }
+  // dedupe + sort
+  const seen = new Set<number>();
+  const cleanTiers = tiers
+    .filter((t) => {
+      if (seen.has(t.minQuantity)) return false;
+      seen.add(t.minQuantity);
+      return true;
+    })
+    .sort((a, b) => a.minQuantity - b.minQuantity);
+
   const parsed = settingsSchema.safeParse(raw);
   if (!parsed.success) {
     const fe: Record<string, string> = {};
@@ -57,6 +83,8 @@ export async function saveSettings(
     setSetting(SETTING_KEYS.COMPANY_NAME, v.companyName),
     setSetting(SETTING_KEYS.COMPANY_PHONE, v.companyPhone ?? ''),
     setSetting(SETTING_KEYS.COMPANY_EMAIL, v.companyEmail),
+    setSetting(SETTING_KEYS.SHIPPING_MODE, shippingMode),
+    setSetting(SETTING_KEYS.VOLUME_DISCOUNT_TIERS_JSON, JSON.stringify(cleanTiers)),
   ]);
 
   revalidatePath('/admin/configuracion');
