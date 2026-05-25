@@ -153,7 +153,9 @@ export function InteractiveBraceletEditor({
   const lineCount = Math.max(1, Math.min(3, lines.length));
   const heightFontByCount: Record<number, number> = { 1: 62, 2: 42, 3: 28 };
   const maxLen = Math.max(...lines.map((l) => l.length), 1);
-  const widthCq = Math.max(8, 170 / Math.max(maxLen, 4));
+  // Formula sincronizada con BraceletPhoto: 130/N para garantizar que el
+  // texto NUNCA se sale del rectángulo, ni con 17 chars y letter-spacing.
+  const widthCq = Math.max(8, 130 / Math.max(maxLen, 4));
   const fontSize = `min(${heightFontByCount[lineCount]}cqh, ${widthCq.toFixed(2)}cqw)`;
 
   return (
@@ -212,7 +214,7 @@ export function InteractiveBraceletEditor({
                 fontWeight: 600,
                 fontSize,
                 lineHeight: '1.02',
-                letterSpacing: '0.05em',
+                letterSpacing: '0.04em',
                 textShadow: '0 0 0.4px rgba(0,0,0,0.25)',
                 opacity: 0.95,
                 WebkitFontSmoothing: 'antialiased',

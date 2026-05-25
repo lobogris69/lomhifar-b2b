@@ -48,12 +48,14 @@ export function BraceletPhoto({
   const heightCq = heightFontByCount[lineCount];
 
   // Tamaño máximo según ancho disponible (en % del ANCHO del área).
-  // Asumimos ratio medio carácter ≈ 0.55em para fuente bold sans.
-  // Por tanto, para encajar N chars: fontSize_px ≤ areaWidth / (N · 0.55)
-  // En unidades cqw: fontSize_cqw = 100 / (N · 0.55) ≈ 180 / N
-  // Como queremos margen lateral pequeño, restamos un poco.
+  // Para una fuente bold sans (Helvetica Neue) con letter-spacing 0.04em,
+  // cada carácter ocupa ≈ 0.65em. Necesitamos:
+  //     fontSize_em × 0.65 × N  ≤  ancho_efectivo (88cqw tras padding lateral)
+  //  →  fontSize_cqw  ≤  88 / (0.65 × N)  ≈  135 / N
+  // Bajamos a 130/N para tener margen de seguridad y NO recortar nunca
+  // los extremos del texto, ni en líneas de 17 caracteres.
   const maxLen = Math.max(...lines.map((l) => l.length), 1);
-  const widthCq = Math.max(8, 170 / Math.max(maxLen, 4));
+  const widthCq = Math.max(8, 130 / Math.max(maxLen, 4));
 
   // Usamos CSS min() para tomar el más pequeño de los dos límites.
   const fontSize = `min(${heightCq}cqh, ${widthCq.toFixed(2)}cqw)`;
@@ -121,7 +123,7 @@ export function BraceletPhoto({
                 fontWeight: 600,
                 fontSize,
                 lineHeight: '1.02',
-                letterSpacing: '0.05em',
+                letterSpacing: '0.04em',
                 textShadow: '0 0 0.4px rgba(0,0,0,0.25)',
                 opacity: 0.95,
                 WebkitFontSmoothing: 'antialiased',
