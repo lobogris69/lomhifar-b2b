@@ -147,8 +147,9 @@ export function InteractiveBraceletEditor({
   }, [drag, pxToPct, setArea]);
 
   // Texto a renderizar dentro del rectángulo (igual algoritmo que BraceletPhoto)
+  // WYSIWYG: respetamos la capitalización tal cual la escribe el admin/cliente.
   const lines = [line1, line2, line3]
-    .map((l) => (l ?? '').toUpperCase().trim())
+    .map((l) => (l ?? '').trim())
     .filter((l) => l.length > 0);
   const lineCount = Math.max(1, Math.min(3, lines.length));
   const heightFontByCount: Record<number, number> = { 1: 62, 2: 42, 3: 28 };

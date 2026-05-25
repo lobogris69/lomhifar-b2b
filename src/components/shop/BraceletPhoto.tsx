@@ -36,8 +36,10 @@ export function BraceletPhoto({
   alt = 'Pulsera Lomhifar',
   className = '',
 }: Props) {
+  // WYSIWYG: respetamos EXACTAMENTE lo que escribe el cliente (mayúsculas,
+  // minúsculas o mixto). El láser grabará idéntico a lo que ve aquí.
   const lines = [line1, line2, line3 ?? '']
-    .map((l) => (l ?? '').toUpperCase().trim())
+    .map((l) => (l ?? '').trim())
     .filter((l) => l.length > 0);
 
   const lineCount = Math.max(1, Math.min(3, lines.length));

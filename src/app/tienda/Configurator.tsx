@@ -157,7 +157,7 @@ export function Configurator({
               />
             </div>
           ) : (
-            <BraceletPreview color={color} line1={line1.toUpperCase()} line2={previewLine2.toUpperCase()} size="sm" />
+            <BraceletPreview color={color} line1={line1} line2={previewLine2} size="sm" />
           )}
           <div className="mt-2 flex items-center justify-between text-xs">
             <span className="text-ink-500">
@@ -208,7 +208,7 @@ export function Configurator({
               alt={`Pulsera ${color === 'BLACK' ? 'negra' : 'roja'} Lomhifar`}
             />
           ) : (
-            <BraceletPreview color={color} line1={line1.toUpperCase()} line2={previewLine2.toUpperCase()} />
+            <BraceletPreview color={color} line1={line1} line2={previewLine2} />
           )}
           <div className="card p-4">
             {/* P.V.F. — lo que paga la farmacia */}
@@ -397,7 +397,7 @@ export function Configurator({
                 value={line1}
                 onChange={(e) => handleLineChange(setLine1, e.target.value)}
                 placeholder="Ej: DIABETES TIPO 1"
-                className="input uppercase tracking-wide"
+                className="input tracking-wide"
                 autoComplete="off"
               />
               {state.fieldErrors?.line1 && <p className="field-error">{state.fieldErrors.line1}</p>}
@@ -438,7 +438,7 @@ export function Configurator({
                   value={line2}
                   onChange={(e) => handleLineChange(setLine2, e.target.value)}
                   placeholder="Ej: TFNO 666 123 456"
-                  className="input uppercase tracking-wide"
+                  className="input tracking-wide"
                   autoComplete="off"
                 />
                 {state.fieldErrors?.line2 && <p className="field-error">{state.fieldErrors.line2}</p>}
@@ -481,7 +481,7 @@ export function Configurator({
                   value={line3}
                   onChange={(e) => handleLineChange(setLine3, e.target.value)}
                   placeholder="Ej: ICE +34 666 123 456"
-                  className="input uppercase tracking-wide"
+                  className="input tracking-wide"
                   autoComplete="off"
                 />
                 {state.fieldErrors?.line3 && <p className="field-error">{state.fieldErrors.line3}</p>}
@@ -529,12 +529,12 @@ export function Configurator({
               <Summary label="Color" value={color === 'BLACK' ? 'Negra' : 'Roja'} />
               <Summary label="Unidades" value={String(quantity)} />
               <Summary label="Total línea" value={formatEuros(lineTotal)} />
-              <Summary label="Línea 1" value={line1.toUpperCase() || '—'} className="col-span-3" />
+              <Summary label="Línea 1" value={line1 || '—'} className="col-span-3" />
               {line2Visible && (
-                <Summary label="Línea 2" value={line2.toUpperCase() || '—'} className="col-span-3" />
+                <Summary label="Línea 2" value={line2 || '—'} className="col-span-3" />
               )}
               {line3Visible && (
-                <Summary label="Línea 3" value={line3.toUpperCase() || '—'} className="col-span-3" />
+                <Summary label="Línea 3" value={line3 || '—'} className="col-span-3" />
               )}
             </div>
           </div>

@@ -107,8 +107,8 @@ export default async function CartPage({
                     ) : (
                       <BraceletPreview
                         color={it.color}
-                        line1={it.line1.toUpperCase()}
-                        line2={it.line2.toUpperCase()}
+                        line1={it.line1}
+                        line2={it.line2}
                       />
                     )}
                   </div>
@@ -145,14 +145,14 @@ export default async function CartPage({
                       <div>
                         <dt className="text-[11px] uppercase tracking-wider text-ink-400">Línea 1</dt>
                         <dd className="font-mono font-medium text-ink-900 break-words">
-                          {it.line1.toUpperCase()}
+                          {it.line1}
                         </dd>
                       </div>
                       {it.line2 && (
                         <div>
                           <dt className="text-[11px] uppercase tracking-wider text-ink-400">Línea 2</dt>
                           <dd className="font-mono font-medium text-ink-900 break-words">
-                            {it.line2.toUpperCase()}
+                            {it.line2}
                           </dd>
                         </div>
                       )}
@@ -160,7 +160,7 @@ export default async function CartPage({
                         <div>
                           <dt className="text-[11px] uppercase tracking-wider text-ink-400">Línea 3</dt>
                           <dd className="font-mono font-medium text-ink-900 break-words">
-                            {it.line3.toUpperCase()}
+                            {it.line3}
                           </dd>
                         </div>
                       )}
