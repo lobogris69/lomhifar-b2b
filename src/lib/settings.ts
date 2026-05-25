@@ -19,6 +19,7 @@ export const SETTING_KEYS = {
   COMPANY_EMAIL: 'company.email',
   CONFIGURATOR_AREA_BLACK: 'configurator.bracelet_black.area_json',
   CONFIGURATOR_AREA_RED: 'configurator.bracelet_red.area_json',
+  MARKETING_PERSONAS_JSON: 'marketing.personas_json',
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
@@ -49,6 +50,8 @@ export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
   [SETTING_KEYS.CONFIGURATOR_AREA_RED]: JSON.stringify({
     leftPct: 50, topPct: 42, widthPct: 22, heightPct: 14, rotationDeg: 0, textColor: '#7d7d80',
   }),
+  // Personas/casos de uso (editables desde /admin/personas)
+  [SETTING_KEYS.MARKETING_PERSONAS_JSON]: '', // vacío = usar DEFAULT_PERSONAS
 };
 
 export interface PrintArea {
@@ -63,6 +66,130 @@ export interface PrintArea {
 export const DEFAULT_PRINT_AREA: PrintArea = {
   leftPct: 50, topPct: 42, widthPct: 22, heightPct: 14, rotationDeg: 0, textColor: '#7d7d80',
 };
+
+/**
+ * Personas / casos de uso mostrados en la sección "Para todos los pacientes"
+ * de la landing. Editables desde /admin/personas. Cada persona puede tener
+ * además una foto custom (slot persona-1 ... persona-8) que reemplaza el
+ * dibujo SVG de la pulsera.
+ */
+export interface MarketingPersona {
+  emoji: string;
+  group: string;
+  ageRange: string;
+  context: string;
+  color: 'BLACK' | 'RED';
+  line1: string;
+  line2: string;
+  why: string;
+}
+
+export const DEFAULT_PERSONAS: MarketingPersona[] = [
+  {
+    emoji: '🧒',
+    group: 'Niños',
+    ageRange: '4 - 12 años',
+    context: 'Asma, alergias graves, epilepsia infantil',
+    color: 'RED',
+    line1: 'ASMA · EPILEPSIA',
+    line2: 'MAMÁ 666 111 222',
+    why: 'En el cole, parque o excursiones — si no están con sus padres, la pulsera habla por ellos.',
+  },
+  {
+    emoji: '🧑‍🎓',
+    group: 'Adolescentes',
+    ageRange: '13 - 18 años',
+    context: 'Diabetes, alergia a frutos secos',
+    color: 'BLACK',
+    line1: 'ALÉRGICO NUECES',
+    line2: 'EPIPEN · 666 222 333',
+    why: 'Salidas con amigos, viajes, deporte. Más vergonzoso explicar la patología que llevarla bien grabada.',
+  },
+  {
+    emoji: '🤰',
+    group: 'Embarazadas',
+    ageRange: '18 - 45 años',
+    context: 'Embarazo de riesgo, RH negativo, gestacional',
+    color: 'RED',
+    line1: 'EMBARAZO 32 SEM',
+    line2: 'GINEC 666 333 444',
+    why: 'Información crítica en urgencias. En caso de accidente, el equipo médico sabe que hay dos vidas.',
+  },
+  {
+    emoji: '🏃',
+    group: 'Deportistas',
+    ageRange: '20 - 60 años',
+    context: 'Asma de esfuerzo, cardiopatía, diabetes',
+    color: 'BLACK',
+    line1: 'CARDIO · ASMA',
+    line2: 'TFNO 666 444 555',
+    why: 'Running, ciclismo, montaña. Lejos del coche y los papeles, la muñeca es donde miran los sanitarios.',
+  },
+  {
+    emoji: '👨',
+    group: 'Adultos',
+    ageRange: '30 - 65 años',
+    context: 'Diabetes, hipertensión, anticoagulación',
+    color: 'RED',
+    line1: 'DIABETES TIPO 2',
+    line2: 'METFORMINA',
+    why: 'Vida laboral activa. Ante un mareo o accidente, sus compañeros y los servicios saben qué hacer.',
+  },
+  {
+    emoji: '👩‍⚕️',
+    group: 'Patologías raras',
+    ageRange: 'Toda edad',
+    context: 'Porfiria, Addison, hemofilia',
+    color: 'BLACK',
+    line1: 'PORFIRIA',
+    line2: 'NO BARBITÚR.',
+    why: 'Las enfermedades minoritarias no las conoce todo el personal sanitario. Su pulsera evita errores.',
+  },
+  {
+    emoji: '👵',
+    group: 'Mayores',
+    ageRange: '65+ años',
+    context: 'Alzheimer, demencia, marcapasos',
+    color: 'RED',
+    line1: 'ALZHEIMER',
+    line2: 'TFNO 666 555 666',
+    why: 'Pueden desorientarse y alejarse de casa. La pulsera permite que cualquiera contacte con la familia.',
+  },
+  {
+    emoji: '♿',
+    group: 'Discapacidad',
+    ageRange: 'Toda edad',
+    context: 'Autismo, sordomudez, parálisis cerebral',
+    color: 'BLACK',
+    line1: 'TEA · NO HABLA',
+    line2: 'TUTOR 666 666 777',
+    why: 'Personas que no pueden comunicar verbalmente sus necesidades médicas. La pulsera lo hace por ellas.',
+  },
+];
+
+export function parsePersonas(raw: string | undefined): MarketingPersona[] {
+  if (!raw) return DEFAULT_PERSONAS;
+  try {
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return DEFAULT_PERSONAS;
+    // Normalizamos cada persona, conservando defaults si faltan campos
+    return arr.slice(0, 8).map((p, i) => {
+      const def = DEFAULT_PERSONAS[i] ?? DEFAULT_PERSONAS[0];
+      return {
+        emoji: typeof p?.emoji === 'string' ? p.emoji : def.emoji,
+        group: typeof p?.group === 'string' ? p.group : def.group,
+        ageRange: typeof p?.ageRange === 'string' ? p.ageRange : def.ageRange,
+        context: typeof p?.context === 'string' ? p.context : def.context,
+        color: p?.color === 'BLACK' || p?.color === 'RED' ? p.color : def.color,
+        line1: typeof p?.line1 === 'string' ? p.line1 : def.line1,
+        line2: typeof p?.line2 === 'string' ? p.line2 : def.line2,
+        why: typeof p?.why === 'string' ? p.why : def.why,
+      } satisfies MarketingPersona;
+    });
+  } catch {
+    return DEFAULT_PERSONAS;
+  }
+}
 
 /**
  * Colores típicos de grabado láser sobre aluminio sin pintura (presets admin).

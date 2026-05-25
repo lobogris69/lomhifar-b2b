@@ -57,6 +57,7 @@ export const ROLE_ALLOWED_PATHS: Record<AdminRole, RegExp[]> = {
     /^\/admin\/cartel/,
     /^\/admin\/imagenes/,
     /^\/admin\/textos/,
+    /^\/admin\/personas/,
     /^\/admin\/configuracion/,
     /^\/admin\/perfil/,
   ],

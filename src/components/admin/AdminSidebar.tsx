@@ -33,6 +33,7 @@ const NAV = [
   { href: '/admin/cartel', label: 'Cartel promocional', icon: Megaphone },
   { href: '/admin/imagenes', label: 'Imágenes del sitio', icon: Images },
   { href: '/admin/textos', label: 'Textos del sitio', icon: Type },
+  { href: '/admin/personas', label: 'Personas / casos uso', icon: Users },
   { href: '/admin/configuracion', label: 'Configuración', icon: Settings },
   { href: '/admin/usuarios', label: 'Usuarios admin', icon: Users2 },
 ];

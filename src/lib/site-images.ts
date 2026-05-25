@@ -13,7 +13,7 @@ import { prisma } from './prisma';
  */
 export interface SlotDefinition {
   slot: string;
-  group: 'branding' | 'producto' | 'casos' | 'hero';
+  group: 'branding' | 'producto' | 'casos' | 'personas' | 'hero';
   label: string;
   description: string;
   recommended: string;
@@ -162,12 +162,26 @@ export const SLOTS: SlotDefinition[] = [
     accept: ['image/jpeg', 'image/png'],
     aspect: '5/4',
   },
+
+  // ============ PERSONAS (8 casos de uso de la landing) ============
+  ...Array.from({ length: 8 }, (_, i): SlotDefinition => ({
+    slot: `persona-${i + 1}`,
+    group: 'personas',
+    label: `Persona ${i + 1} — foto de pulsera`,
+    description:
+      `Foto opcional que reemplaza el dibujo SVG de la pulsera en la tarjeta de la Persona ${i + 1} (landing). Se gestiona desde /admin/personas.`,
+    recommended: 'JPG/PNG · ratio 4:1 (ej. 800 × 200 px) · fondo neutro',
+    hasComponentFallback: true,
+    accept: ['image/jpeg', 'image/png', 'image/webp'],
+    aspect: '4/1',
+  })),
 ];
 
 export const GROUP_LABELS: Record<SlotDefinition['group'], string> = {
   branding: 'Branding · Logo',
   producto: 'Imágenes de producto',
   casos: 'Galería "Casos reales"',
+  personas: 'Personas / casos de uso (landing)',
   hero: 'Imágenes de portada',
 };
 
