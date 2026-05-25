@@ -19,7 +19,15 @@ function Submit() {
   );
 }
 
+interface InpostInitial {
+  webhookSecret: string;
+  signatureMode: 'timestamp_body' | 'body_only';
+  notifyCustomer: boolean;
+  webhookUrl: string;
+}
+
 interface Props {
+  inpost?: InpostInitial;
   initialValues: {
     priceBlackEuros: string;
     priceRedEuros: string;
@@ -42,7 +50,7 @@ interface Props {
   };
 }
 
-export function SettingsForm({ initialValues }: Props) {
+export function SettingsForm({ initialValues, inpost }: Props) {
   const [state, action] = useFormState(saveSettings, initial);
   const [shippingMode, setShippingMode] = useState<ShippingMode>(initialValues.shippingMode);
   const [tiers, setTiers] = useState<VolumeDiscountTier[]>(
@@ -247,6 +255,97 @@ export function SettingsForm({ initialValues }: Props) {
           </div>
         </label>
       </Section>
+
+      {inpost && (
+        <Section title="Trazabilidad InPost (webhooks)">
+          <p className="text-xs text-ink-500 -mt-2 mb-4 leading-relaxed">
+            Conecta tu cuenta de InPost para recibir actualizaciones automáticas
+            del estado del envío. Cuando InPost notifique &laquo;listo en el locker&raquo;,
+            &laquo;recogido por el cliente&raquo; o cualquier incidencia, tu cliente recibirá
+            un email automático con el detalle.
+          </p>
+
+          <div className="card p-4 bg-amber-50/40 border-amber-200 mb-4 text-xs space-y-2">
+            <div className="font-semibold text-amber-900">📋 Cómo activarlo (3 pasos):</div>
+            <ol className="list-decimal list-inside text-amber-900 space-y-1 ml-1 leading-relaxed">
+              <li>Contacta con tu Account Manager de InPost (no hay self-service todavía).</li>
+              <li>
+                Dale esta URL de webhook:{' '}
+                <code className="bg-white px-2 py-0.5 rounded border border-amber-200 font-mono text-[11px] break-all">
+                  {inpost.webhookUrl}
+                </code>
+              </li>
+              <li>
+                Pídeles que firmen con HMAC-SHA256 y te den el SECRETO. Pégalo abajo y
+                guarda. Listo.
+              </li>
+            </ol>
+            <p className="text-amber-900/80 mt-2 italic">
+              Doc oficial: <a href="https://developers.inpost-group.com/webhooks" target="_blank" rel="noopener noreferrer" className="underline">developers.inpost-group.com/webhooks</a>
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <label className="label" htmlFor="inpostWebhookSecret">
+                Secreto de firma webhook (HMAC-SHA256)
+              </label>
+              <input
+                id="inpostWebhookSecret"
+                name="inpostWebhookSecret"
+                type="password"
+                defaultValue={inpost.webhookSecret}
+                placeholder="Pega aquí el secreto que te dé InPost…"
+                className="input font-mono text-sm"
+                autoComplete="off"
+              />
+              <p className="text-xs text-ink-500 mt-1">
+                {inpost.webhookSecret
+                  ? '✓ Hay un secreto guardado. Los webhooks están ACTIVOS y se valida la firma de cada petición.'
+                  : '⚠ Sin secreto, los webhooks NO procesan eventos en producción (rechazo 401).'}
+              </p>
+            </div>
+
+            <div>
+              <label className="label" htmlFor="inpostSignatureMode">
+                Modo de firma
+              </label>
+              <select
+                id="inpostSignatureMode"
+                name="inpostSignatureMode"
+                defaultValue={inpost.signatureMode}
+                className="input"
+              >
+                <option value="timestamp_body">Firma sobre timestamp + cuerpo (recomendado, anti-replay)</option>
+                <option value="body_only">Firma solo sobre el cuerpo</option>
+              </select>
+              <p className="text-xs text-ink-500 mt-1">
+                Pregunta a InPost qué modo configuraron. El más seguro es el primero.
+              </p>
+            </div>
+
+            <label className="flex items-start gap-3 cursor-pointer select-none p-3 rounded-lg bg-emerald-50/40 border border-emerald-200">
+              <input
+                type="checkbox"
+                name="shippingNotifyCustomer"
+                defaultChecked={inpost.notifyCustomer}
+                className="mt-0.5 h-4 w-4 rounded border-ink-300 text-brand-700 focus:ring-brand-500"
+              />
+              <div className="flex-1">
+                <div className="text-sm font-semibold text-ink-900">
+                  Enviar emails automáticos al cliente con cada hito del envío
+                </div>
+                <div className="text-xs text-ink-500 mt-0.5 leading-relaxed">
+                  Cuando llegue un evento de InPost (recogido, en tránsito, listo en locker,
+                  recogido por cliente, incidencia, entregado…) el cliente recibirá un
+                  email contextual con el botón &laquo;Ver seguimiento&raquo;. Es uno de los
+                  detalles más valorados por las farmacias.
+                </div>
+              </div>
+            </label>
+          </div>
+        </Section>
+      )}
 
       <Section title="Plazo y unidades">
         <div className="grid sm:grid-cols-3 gap-4">

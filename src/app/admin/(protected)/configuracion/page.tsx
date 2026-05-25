@@ -45,6 +45,14 @@ export default async function SettingsPage() {
           equivSurchargePct: s[SETTING_KEYS.TAX_EQUIV_SURCHARGE_PCT] ?? '5.2',
           equivSurchargeEnabled: s[SETTING_KEYS.TAX_EQUIV_SURCHARGE_ENABLED] === 'true',
         }}
+        inpost={{
+          webhookSecret: s[SETTING_KEYS.SHIPPING_INPOST_WEBHOOK_SECRET] ?? '',
+          signatureMode: (s[SETTING_KEYS.SHIPPING_INPOST_SIGNATURE_MODE] === 'body_only'
+            ? 'body_only'
+            : 'timestamp_body'),
+          notifyCustomer: (s[SETTING_KEYS.SHIPPING_NOTIFY_CUSTOMER] ?? 'true') === 'true',
+          webhookUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://pulseraspersonalizadas.lomhifar.net'}/api/webhooks/inpost`,
+        }}
       />
     </div>
   );

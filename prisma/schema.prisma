@@ -194,11 +194,17 @@ model Order {
   trackingNumber  String?
   trackingUrl     String?
   shippedAt       DateTime?
+  // Resumen del último evento de tracking (rellenado por el webhook)
+  lastTrackingCode    String?
+  lastTrackingLabel   String?
+  lastTrackingAt      DateTime?
+  deliveredAt         DateTime?
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   items           OrderItem[]
+  trackingEvents  TrackingEvent[]
 
   @@index([customerId])
   @@index([status])
@@ -222,6 +228,39 @@ model OrderItem {
   createdAt     DateTime @default(now())
 
   @@index([orderId])
+}
+
+// ------------------------------------------------------------
+// Eventos de tracking del envío (InPost u otros).
+// Recibidos via webhook desde el carrier o entrados manualmente.
+// Sirven como audit log + timeline en la página del pedido.
+// ------------------------------------------------------------
+model TrackingEvent {
+  id              String   @id @default(cuid())
+  orderId         String
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Carrier que originó el evento (inpost, seur, mrw, correos, manual...)
+  carrier         String   @default("inpost")
+  // Identificador único del evento en el sistema del carrier (idempotencia)
+  externalEventId String?  @unique
+  // Código original (ej "LMD.1005")
+  eventCode       String
+  // Etiqueta humana en español (ej "Listo en el locker para recoger")
+  eventLabel      String
+  // Estado interno mapeado: RECEIVED | IN_PREPARATION | SHIPPED | DELIVERED | INCIDENT | RETURNED
+  mappedStatus    String?
+  // Timestamp del propio evento (cuando ocurrió en la red del carrier)
+  eventAt         DateTime
+  // Cuándo lo recibimos en nuestro servidor
+  receivedAt      DateTime @default(now())
+  // Payload completo serializado para debugging
+  payloadJson     String?
+  // ¿Notificamos al cliente por email?
+  customerNotified Boolean @default(false)
+
+  @@index([orderId])
+  @@index([eventCode])
 }
 
 // ------------------------------------------------------------

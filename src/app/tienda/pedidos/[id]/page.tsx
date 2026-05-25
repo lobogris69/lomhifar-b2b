@@ -24,7 +24,10 @@ export default async function OrderDetailPage({
   const [order, t] = await Promise.all([
     prisma.order.findFirst({
       where: { id: params.id, customerId: session!.customer.id },
-      include: { items: true },
+      include: {
+        items: true,
+        trackingEvents: { orderBy: { eventAt: 'desc' } },
+      },
     }),
     getAllSiteTexts(),
   ]);
@@ -78,14 +81,14 @@ export default async function OrderDetailPage({
             <Truck className="h-5 w-5 text-emerald-700 shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="text-xs uppercase tracking-wider text-emerald-700 font-semibold">
-                Pedido en camino
+                {order.lastTrackingLabel ?? 'Pedido en camino'}
               </div>
               <div className="text-sm font-mono text-ink-900 break-all">
                 {order.trackingNumber}
               </div>
-              {order.shippedAt && (
+              {order.lastTrackingAt && (
                 <div className="text-[11px] text-emerald-700">
-                  Enviado el {formatDate(order.shippedAt)}
+                  Última actualización: {formatDate(order.lastTrackingAt)}
                 </div>
               )}
             </div>
@@ -99,6 +102,40 @@ export default async function OrderDetailPage({
                 Seguir envío <ExternalLink className="h-3 w-3" />
               </a>
             )}
+          </div>
+        )}
+
+        {/* Timeline de eventos de tracking (poblado por webhook InPost) */}
+        {order.trackingEvents.length > 0 && (
+          <div className="mt-4 p-5 rounded-xl bg-white border border-ink-100">
+            <h3 className="text-sm font-semibold text-ink-900 mb-3">
+              Historial de envío
+            </h3>
+            <ol className="relative border-l-2 border-ink-100 ml-2 space-y-3">
+              {order.trackingEvents.map((ev, idx) => {
+                const isLast = idx === 0; // primer item (orderBy desc) = más reciente
+                const dotColor =
+                  ev.eventCode.startsWith('EOL.1') ? 'bg-emerald-500'
+                  : ev.eventCode.startsWith('LMD.9') || ev.eventCode.startsWith('EOL.9') ? 'bg-red-500'
+                  : ev.eventCode.startsWith('LMD.10') ? 'bg-emerald-500'
+                  : isLast ? 'bg-brand-600'
+                  : 'bg-ink-300';
+                return (
+                  <li key={ev.id} className="pl-5 relative">
+                    <span
+                      className={`absolute -left-[7px] top-1 h-3 w-3 rounded-full ${dotColor} ring-4 ring-white`}
+                      aria-hidden
+                    />
+                    <div className={`text-sm ${isLast ? 'font-semibold text-ink-900' : 'text-ink-700'}`}>
+                      {ev.eventLabel}
+                    </div>
+                    <div className="text-[11px] text-ink-500 mt-0.5">
+                      {formatDate(ev.eventAt)} · <span className="font-mono">{ev.eventCode}</span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
           </div>
         )}
       </div>

@@ -26,6 +26,13 @@ export const SETTING_KEYS = {
   TAX_VAT_PCT: 'tax.vat_pct',                       // p.ej. '21'
   TAX_EQUIV_SURCHARGE_PCT: 'tax.equiv_surcharge_pct', // p.ej. '5.2'
   TAX_EQUIV_SURCHARGE_ENABLED: 'tax.equiv_surcharge_enabled', // 'true' | 'false'
+  // === TRAZABILIDAD / ENVÍOS ===
+  SHIPPING_DEFAULT_CARRIER: 'shipping.default_carrier',
+  SHIPPING_CARRIER_URLS_JSON: 'shipping.carrier_urls_json',
+  // InPost webhooks
+  SHIPPING_INPOST_WEBHOOK_SECRET: 'shipping.inpost.webhook_secret',
+  SHIPPING_INPOST_SIGNATURE_MODE: 'shipping.inpost.signature_mode', // 'timestamp_body' | 'body_only'
+  SHIPPING_NOTIFY_CUSTOMER: 'shipping.notify_customer', // 'true' | 'false'
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
@@ -72,6 +79,17 @@ export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
   [SETTING_KEYS.TAX_VAT_PCT]: '21',
   [SETTING_KEYS.TAX_EQUIV_SURCHARGE_PCT]: '5.2',
   [SETTING_KEYS.TAX_EQUIV_SURCHARGE_ENABLED]: 'true', // farmacias suelen estar bajo este régimen
+  // === Trazabilidad / envíos
+  [SETTING_KEYS.SHIPPING_DEFAULT_CARRIER]: 'inpost',
+  [SETTING_KEYS.SHIPPING_CARRIER_URLS_JSON]: JSON.stringify({
+    inpost: 'https://inpost.es/track/{number}',
+    seur: 'https://www.seur.com/es/particulares/herramientas/livetracking?segOnlineIdentifier={number}',
+    mrw: 'https://www.mrw.es/seguimiento_envios/MRW_seguimiento_online.asp?numero_envio={number}',
+    correos: 'https://www.correos.es/es/es/herramientas/localizador/envios/detalle?tracking-number={number}',
+  }),
+  [SETTING_KEYS.SHIPPING_INPOST_WEBHOOK_SECRET]: '', // vacío = webhooks no activos
+  [SETTING_KEYS.SHIPPING_INPOST_SIGNATURE_MODE]: 'timestamp_body',
+  [SETTING_KEYS.SHIPPING_NOTIFY_CUSTOMER]: 'true',
 };
 
 // ============================================================

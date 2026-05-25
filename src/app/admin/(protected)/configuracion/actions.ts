@@ -72,6 +72,12 @@ export async function saveSettings(
   const equivSurchargePct = parsePct(formData.get('equivSurchargePct'));
   const equivSurchargeEnabled = formData.get('equivSurchargeEnabled') === 'on';
 
+  // InPost webhook config
+  const inpostWebhookSecret = String(formData.get('inpostWebhookSecret') ?? '').trim();
+  const inpostSignatureModeRaw = String(formData.get('inpostSignatureMode') ?? 'timestamp_body');
+  const inpostSignatureMode = inpostSignatureModeRaw === 'body_only' ? 'body_only' : 'timestamp_body';
+  const shippingNotifyCustomer = formData.get('shippingNotifyCustomer') === 'on';
+
   const parsed = settingsSchema.safeParse(raw);
   if (!parsed.success) {
     const fe: Record<string, string> = {};
@@ -99,6 +105,9 @@ export async function saveSettings(
     setSetting(SETTING_KEYS.TAX_VAT_PCT, vatPct),
     setSetting(SETTING_KEYS.TAX_EQUIV_SURCHARGE_PCT, equivSurchargePct),
     setSetting(SETTING_KEYS.TAX_EQUIV_SURCHARGE_ENABLED, equivSurchargeEnabled ? 'true' : 'false'),
+    setSetting(SETTING_KEYS.SHIPPING_INPOST_WEBHOOK_SECRET, inpostWebhookSecret),
+    setSetting(SETTING_KEYS.SHIPPING_INPOST_SIGNATURE_MODE, inpostSignatureMode),
+    setSetting(SETTING_KEYS.SHIPPING_NOTIFY_CUSTOMER, shippingNotifyCustomer ? 'true' : 'false'),
   ]);
 
   revalidatePath('/admin/configuracion');
