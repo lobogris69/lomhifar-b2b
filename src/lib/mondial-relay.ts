@@ -302,9 +302,16 @@ export async function createShipment(input: CreateShipmentInput): Promise<Create
   const modeLiv = input.modeLiv ?? cfg.deliveryMode;
   const weight = input.weightG ?? cfg.defaultWeightG;
 
-  // ORDEN IMPORTANTE: Mondial Relay calcula la firma concatenando los
-  // VALORES en el ORDEN en que se construye el objeto. NO CAMBIES el
-  // orden de las claves a la ligera.
+  // ORDEN IMPORTANTE: Mondial Relay calcula la firma MD5 concatenando los
+  // VALORES en el ORDEN EXACTO definido por el WSDL. NO CAMBIAR.
+  // Lista oficial de WSI2_CreationExpedition (46 parámetros + Security):
+  //   Enseigne, ModeCol, ModeLiv, NDossier, NClient,
+  //   Expe_Langage, Expe_Ad1..Ad4, Expe_Ville, Expe_CP, Expe_Pays, Expe_Tel1, Expe_Tel2, Expe_Mail,
+  //   Dest_Langage, Dest_Ad1..Ad4, Dest_Ville, Dest_CP, Dest_Pays, Dest_Tel1, Dest_Tel2, Dest_Mail,
+  //   Poids, Longueur, Taille, NbColis,
+  //   CRT_Valeur, CRT_Devise, Exp_Valeur, Exp_Devise,
+  //   COL_Rel_Pays, COL_Rel, LIV_Rel_Pays, LIV_Rel,
+  //   TAvisage, TReprise, Montage, TRDV, Assurance, Instructions, Security
   const params: Record<string, string> = {
     Enseigne: cfg.enseigne,
     ModeCol: 'CCC',                 // CCC = colecta en domicilio del remitente
@@ -334,6 +341,8 @@ export async function createShipment(input: CreateShipmentInput): Promise<Create
     Dest_Tel2: '',
     Dest_Mail: input.destEmail,
     Poids: String(Math.max(50, Math.min(70000, weight))),  // gramos, 50g - 70kg
+    Longueur: '',                   // largura del paquete (cm) — opcional
+    Taille: '',                     // formato/tamaño — opcional
     NbColis: '1',
     CRT_Valeur: '0',
     CRT_Devise: 'EUR',
@@ -349,13 +358,13 @@ export async function createShipment(input: CreateShipmentInput): Promise<Create
     TRDV: '',
     Assurance: '',
     Instructions: '',
-    Texte: '',
+    // Security se añade automáticamente al final por la función `call()`
   };
 
   try {
-    const result = await call('WSI4_CreationExpedition', params, cfg.privateKey);
+    // OJO: el método correcto es WSI2_CreationExpedition (NO existe WSI4).
+    const result = await call('WSI2_CreationExpedition', params, cfg.privateKey);
     const trackingNumber = extractTag(result.xml, 'ExpeditionNum') ?? extractTag(result.xml, 'NumExpedition');
-    const labelUrl = extractTag(result.xml, 'URL_Etiquette');
 
     if (!result.ok) {
       return {
@@ -370,12 +379,38 @@ export async function createShipment(input: CreateShipmentInput): Promise<Create
     return {
       ok: true,
       trackingNumber,
-      // La URL de etiqueta es relativa al dominio de MR, la convertimos a absoluta
-      labelUrl: labelUrl ? toAbsoluteLabelUrl(labelUrl) : undefined,
+      // WSI2_CreationExpedition NO devuelve URL de etiqueta — la construimos
+      // con el algoritmo CRC público de Mondial Relay (StickerMaker2.aspx).
+      labelUrl: buildLabelPdfUrl(cfg.enseigne, trackingNumber, cfg.privateKey),
     };
   } catch (e) {
     return { ok: false, errorMessage: e instanceof Error ? e.message : 'Error desconocido' };
   }
+}
+
+/**
+ * Construye la URL pública del PDF de la etiqueta de un envío.
+ * Mondial Relay expone una URL firmada con CRC = MD5(ens+expedition+lang+format+privateKey).
+ *
+ * Formatos válidos: 'A4', 'A5', '10x15'.
+ */
+export function buildLabelPdfUrl(
+  enseigne: string,
+  expeditionNum: string,
+  privateKey: string,
+  format: 'A4' | 'A5' | '10x15' = 'A4',
+  language = 'ES',
+): string {
+  const concat = enseigne + expeditionNum + language + format + privateKey;
+  const crc = createHash('md5').update(concat, 'utf8').digest('hex').toUpperCase();
+  const params = new URLSearchParams({
+    ens: enseigne,
+    expedition: expeditionNum,
+    lng: language,
+    format,
+    crc,
+  });
+  return `https://www.mondialrelay.com/ww2/PDF/StickerMaker2.aspx?${params.toString()}`;
 }
 
 function clean(s: string, max: number): string {
