@@ -38,6 +38,8 @@ interface MondialRelayInitial {
   senderCountry: string;
   senderPhone: string;
   senderEmail: string;
+  collectMode: string;
+  collectRelayId: string;
   deliveryMode: string;
   defaultWeightG: string;
 }
@@ -516,30 +518,68 @@ export function SettingsForm({ initialValues, inpost, mondialRelay }: Props) {
               </div>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-3">
-              <div>
-                <label className="label" htmlFor="mrDeliveryMode">
-                  Modo de entrega por defecto
-                </label>
-                <select
-                  id="mrDeliveryMode"
-                  name="mrDeliveryMode"
-                  defaultValue={mondialRelay.deliveryMode}
-                  className="input"
-                >
-                  <option value="24R">24R — Punto Pack / Locker (lo más común)</option>
-                  <option value="LD1">LD1 — Domicilio (sin firma)</option>
-                  <option value="LDS">LDS — Domicilio con firma</option>
-                </select>
+            <div className="border-t border-ink-100 pt-3">
+              <div className="text-sm font-semibold text-ink-900 mb-2">
+                🚚 Modos de envío
               </div>
-              <Field
-                label="Peso por defecto (gramos)"
-                name="mrDefaultWeightG"
-                type="number"
-                defaultValue={mondialRelay.defaultWeightG}
-                min={50}
-                max={70000}
-              />
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="label" htmlFor="mrCollectMode">
+                    Cómo entrego YO el paquete a Mondial Relay
+                  </label>
+                  <select
+                    id="mrCollectMode"
+                    name="mrCollectMode"
+                    defaultValue={mondialRelay.collectMode}
+                    className="input"
+                  >
+                    <option value="CDR">CDR — Yo lo dejo en un locker cerca de mí (recomendado)</option>
+                    <option value="CCC">CCC — MR pasa a recoger a mi domicilio (requiere contrato)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="label" htmlFor="mrDeliveryMode">
+                    Cómo se entrega al cliente final
+                  </label>
+                  <select
+                    id="mrDeliveryMode"
+                    name="mrDeliveryMode"
+                    defaultValue={mondialRelay.deliveryMode}
+                    className="input"
+                  >
+                    <option value="LDS">LDS — A domicilio de la farmacia con firma (recomendado)</option>
+                    <option value="LD1">LD1 — A domicilio de la farmacia sin firma</option>
+                    <option value="24R">24R — Locker (el cliente va a recogerlo)</option>
+                  </select>
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="label" htmlFor="mrCollectRelayId">
+                    Tu locker habitual de drop-off (opcional · solo si modo CDR)
+                  </label>
+                  <input
+                    id="mrCollectRelayId"
+                    name="mrCollectRelayId"
+                    type="text"
+                    defaultValue={mondialRelay.collectRelayId}
+                    placeholder="dejar vacío para que el sistema busque el más cercano a tu CP"
+                    className="input font-mono text-sm"
+                  />
+                  <p className="text-[11px] text-ink-500 mt-1 leading-relaxed">
+                    Si siempre dejas los paquetes en el MISMO locker, pega aquí su ID
+                    de Mondial Relay (lo ves en su panel cuando consultas un punto).
+                    Si lo dejas vacío, el sistema busca automáticamente el más cercano
+                    a tu código postal en cada envío.
+                  </p>
+                </div>
+                <Field
+                  label="Peso por defecto (gramos)"
+                  name="mrDefaultWeightG"
+                  type="number"
+                  defaultValue={mondialRelay.defaultWeightG}
+                  min={50}
+                  max={70000}
+                />
+              </div>
             </div>
 
             <label className="flex items-start gap-3 cursor-pointer select-none p-3 rounded-lg bg-emerald-50/40 border border-emerald-200">

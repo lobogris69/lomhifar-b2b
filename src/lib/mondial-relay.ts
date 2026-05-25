@@ -46,7 +46,13 @@ export interface MondialRelayConfig {
     phone: string;
     email: string;
   };
-  deliveryMode: string;     // '24R' (punto/locker), 'LD1' (domicilio), etc.
+  // Cómo entregamos el paquete a MR: 'CDR' (yo lo dejo en locker) | 'CCC' (MR recoge a domicilio)
+  collectMode: string;
+  // Si collectMode='CDR' y el admin tiene un locker habitual fijo, su ID
+  // (si vacío → se auto-busca el más cercano al CP del remitente en cada envío)
+  collectRelayId: string;
+  // Cómo MR entrega al cliente: 'LDS' (domicilio firma) | 'LD1' (domicilio sin firma) | '24R' (locker destino)
+  deliveryMode: string;
   defaultWeightG: number;
 }
 
@@ -66,7 +72,9 @@ export async function getMondialRelayConfig(): Promise<MondialRelayConfig> {
       phone: s[SETTING_KEYS.SHIPPING_MR_SENDER_PHONE] ?? '',
       email: s[SETTING_KEYS.SHIPPING_MR_SENDER_EMAIL] ?? '',
     },
-    deliveryMode: s[SETTING_KEYS.SHIPPING_MR_DELIVERY_MODE] ?? '24R',
+    collectMode: s[SETTING_KEYS.SHIPPING_MR_COLLECT_MODE] ?? 'CDR',
+    collectRelayId: s[SETTING_KEYS.SHIPPING_MR_COLLECT_RELAY_ID] ?? '',
+    deliveryMode: s[SETTING_KEYS.SHIPPING_MR_DELIVERY_MODE] ?? 'LDS',
     defaultWeightG: Number(s[SETTING_KEYS.SHIPPING_MR_DEFAULT_WEIGHT_G] ?? '100') || 100,
   };
 }
@@ -302,6 +310,70 @@ export async function createShipment(input: CreateShipmentInput): Promise<Create
   const modeLiv = input.modeLiv ?? cfg.deliveryMode;
   const weight = input.weightG ?? cfg.defaultWeightG;
 
+  // Resolver datos de Punto Pack/Locker según los modos elegidos:
+  //
+  //  ORIGEN (ModeCol = cómo entrego YO el paquete a Mondial Relay)
+  //    'CDR' = yo lo dejo en un Punto Pack cerca de mí → necesita COL_Rel
+  //    'CCC' = MR pasa a recoger a mi domicilio (requiere contrato)
+  //
+  //  DESTINO (ModeLiv = cómo entrega MR al destinatario)
+  //    'LDS' / 'LD1' = entrega a domicilio del cliente → LIV_Rel vacío
+  //    '24R'         = entrega en Punto Pack para que el cliente lo recoja
+  //                    → necesita LIV_Rel cerca del destinatario
+  //
+  // Si no se especifica relay ID manualmente, lo auto-buscamos.
+
+  let resolvedRelayCountry = input.relayCountry ?? input.destCountry ?? 'ES';
+
+  // LIV_Rel (Punto en DESTINO) — solo si modo 24R
+  let resolvedLivRel = input.relayId ?? '';
+  if (modeLiv === '24R' && !resolvedLivRel) {
+    try {
+      const points = await findPickupPoints(input.destCP, resolvedRelayCountry, 1);
+      if (points.length === 0) {
+        return {
+          ok: false,
+          errorMessage: `No hay Punto Pack/Locker cercano al CP destino ${input.destCP}. Cambia el modo a LDS (domicilio) o pasa un relay ID manual.`,
+        };
+      }
+      resolvedLivRel = points[0].id;
+    } catch (e) {
+      return {
+        ok: false,
+        errorMessage: `Error buscando punto de destino: ${e instanceof Error ? e.message : 'desconocido'}`,
+      };
+    }
+  }
+
+  // COL_Rel (Punto en ORIGEN) — solo si modo CDR (yo dejo en locker)
+  let resolvedColRel = '';
+  let resolvedColRelPays = '';
+  if (cfg.collectMode === 'CDR') {
+    if (cfg.collectRelayId) {
+      // El admin ya tiene su locker habitual configurado
+      resolvedColRel = cfg.collectRelayId;
+      resolvedColRelPays = cfg.sender.country;
+    } else {
+      // Auto-buscar el más cercano al CP del remitente
+      try {
+        const points = await findPickupPoints(cfg.sender.cp, cfg.sender.country, 1);
+        if (points.length === 0) {
+          return {
+            ok: false,
+            errorMessage: `No hay Punto Pack/Locker cercano a tu CP ${cfg.sender.cp}. Indica uno manualmente en /admin/configuracion.`,
+          };
+        }
+        resolvedColRel = points[0].id;
+        resolvedColRelPays = cfg.sender.country;
+      } catch (e) {
+        return {
+          ok: false,
+          errorMessage: `Error buscando tu punto de origen: ${e instanceof Error ? e.message : 'desconocido'}`,
+        };
+      }
+    }
+  }
+
   // ORDEN IMPORTANTE: Mondial Relay calcula la firma MD5 concatenando los
   // VALORES en el ORDEN EXACTO definido por el WSDL. NO CAMBIAR.
   // Lista oficial de WSI2_CreationExpedition (46 parámetros + Security):
@@ -314,8 +386,8 @@ export async function createShipment(input: CreateShipmentInput): Promise<Create
   //   TAvisage, TReprise, Montage, TRDV, Assurance, Instructions, Security
   const params: Record<string, string> = {
     Enseigne: cfg.enseigne,
-    ModeCol: 'CCC',                 // CCC = colecta en domicilio del remitente
-    ModeLiv: modeLiv,               // 24R | LD1 | LDS
+    ModeCol: cfg.collectMode,       // CDR = yo lo dejo en locker | CCC = MR recoge a domicilio (contrato)
+    ModeLiv: modeLiv,               // LDS/LD1 = a domicilio del cliente | 24R = locker en destino
     NDossier: input.reference.slice(0, 15),
     NClient: '',
     Expe_Langage: 'ES',
@@ -348,10 +420,10 @@ export async function createShipment(input: CreateShipmentInput): Promise<Create
     CRT_Devise: 'EUR',
     Exp_Valeur: '0',
     Exp_Devise: 'EUR',
-    COL_Rel_Pays: '',
-    COL_Rel: '',
-    LIV_Rel_Pays: modeLiv === '24R' ? (input.relayCountry ?? 'ES') : '',
-    LIV_Rel: modeLiv === '24R' ? (input.relayId ?? '') : '',
+    COL_Rel_Pays: resolvedColRelPays,
+    COL_Rel: resolvedColRel,
+    LIV_Rel_Pays: modeLiv === '24R' ? resolvedRelayCountry : '',
+    LIV_Rel: modeLiv === '24R' ? resolvedLivRel : '',
     TAvisage: '',
     TReprise: '',
     Montage: '',
@@ -449,8 +521,9 @@ function mondialRelayStatusText(code: string): string {
     '13': 'Teléfono del destinatario incorrecto',
     '24': 'Peso inválido (50g - 70kg)',
     '26': 'Número de paquetes inválido',
+    '29': 'Modo de entrega (ModeLiv) inválido — verifica que tu cuenta tenga ese modo activo y que para 24R haya un LIV_Rel',
     '30': 'Modo de entrega no permitido para esta enseigne',
-    '31': 'Modo de recogida inválido',
+    '31': 'Modo de recogida inválido (ModeCol)',
     '33': 'Punto de recogida (LIV_Rel) inválido',
     '34': 'País del punto (LIV_Rel_Pays) inválido',
     '60': 'Acción no autorizada (consultar Mondial Relay)',

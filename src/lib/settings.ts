@@ -47,7 +47,16 @@ export const SETTING_KEYS = {
   SHIPPING_MR_SENDER_COUNTRY: 'shipping.mr.sender_country',
   SHIPPING_MR_SENDER_PHONE: 'shipping.mr.sender_phone',
   SHIPPING_MR_SENDER_EMAIL: 'shipping.mr.sender_email',
-  // Modo de entrega por defecto (24R=Punto Pack/Locker · LD1=domicilio · LDS=domicilio firma)
+  // Modo de COLECTA: cómo entrego YO el paquete a MR
+  //   'CDR' = yo lo dejo en un Punto Pack/Locker cerca de mí (lo más común)
+  //   'CCC' = MR pasa a recoger a mi domicilio (requiere contrato comercial)
+  SHIPPING_MR_COLLECT_MODE: 'shipping.mr.collect_mode',
+  // Si CollectMode=CDR y tienes SIEMPRE el mismo locker de drop-off, su ID
+  SHIPPING_MR_COLLECT_RELAY_ID: 'shipping.mr.collect_relay_id',
+  // Modo de ENTREGA: cómo MR entrega al cliente final
+  //   'LDS' = entrega a domicilio con firma (recomendado)
+  //   'LD1' = entrega a domicilio sin firma
+  //   '24R' = entrega en Punto Pack/Locker (el cliente va a recogerlo)
   SHIPPING_MR_DELIVERY_MODE: 'shipping.mr.delivery_mode',
   // Peso por defecto del pedido en gramos (las pulseras pesan poco)
   SHIPPING_MR_DEFAULT_WEIGHT_G: 'shipping.mr.default_weight_g',
@@ -120,7 +129,9 @@ export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
   [SETTING_KEYS.SHIPPING_MR_SENDER_COUNTRY]: 'ES',
   [SETTING_KEYS.SHIPPING_MR_SENDER_PHONE]: '',
   [SETTING_KEYS.SHIPPING_MR_SENDER_EMAIL]: '',
-  [SETTING_KEYS.SHIPPING_MR_DELIVERY_MODE]: '24R',
+  [SETTING_KEYS.SHIPPING_MR_COLLECT_MODE]: 'CDR',         // por defecto yo dejo en locker
+  [SETTING_KEYS.SHIPPING_MR_COLLECT_RELAY_ID]: '',        // vacío = auto-buscar más cercano al CP origen
+  [SETTING_KEYS.SHIPPING_MR_DELIVERY_MODE]: 'LDS',        // por defecto: entrega a domicilio del cliente con firma
   [SETTING_KEYS.SHIPPING_MR_DEFAULT_WEIGHT_G]: '100',
 };
 

@@ -91,7 +91,9 @@ export async function saveSettings(
   const mrSenderCountry = String(formData.get('mrSenderCountry') ?? 'ES').trim().toUpperCase();
   const mrSenderPhone = String(formData.get('mrSenderPhone') ?? '').trim();
   const mrSenderEmail = String(formData.get('mrSenderEmail') ?? '').trim();
-  const mrDeliveryMode = String(formData.get('mrDeliveryMode') ?? '24R').trim().toUpperCase();
+  const mrCollectMode = String(formData.get('mrCollectMode') ?? 'CDR').trim().toUpperCase();
+  const mrCollectRelayId = String(formData.get('mrCollectRelayId') ?? '').trim().toUpperCase();
+  const mrDeliveryMode = String(formData.get('mrDeliveryMode') ?? 'LDS').trim().toUpperCase();
   const mrDefaultWeightG = String(Math.max(50, Math.min(70000, Number(formData.get('mrDefaultWeightG') ?? '100') || 100)));
 
   const parsed = settingsSchema.safeParse(raw);
@@ -136,6 +138,8 @@ export async function saveSettings(
     setSetting(SETTING_KEYS.SHIPPING_MR_SENDER_COUNTRY, mrSenderCountry),
     setSetting(SETTING_KEYS.SHIPPING_MR_SENDER_PHONE, mrSenderPhone),
     setSetting(SETTING_KEYS.SHIPPING_MR_SENDER_EMAIL, mrSenderEmail),
+    setSetting(SETTING_KEYS.SHIPPING_MR_COLLECT_MODE, mrCollectMode),
+    setSetting(SETTING_KEYS.SHIPPING_MR_COLLECT_RELAY_ID, mrCollectRelayId),
     setSetting(SETTING_KEYS.SHIPPING_MR_DELIVERY_MODE, mrDeliveryMode),
     setSetting(SETTING_KEYS.SHIPPING_MR_DEFAULT_WEIGHT_G, mrDefaultWeightG),
   ]);

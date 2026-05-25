@@ -65,7 +65,9 @@ export default async function SettingsPage() {
           senderCountry: s[SETTING_KEYS.SHIPPING_MR_SENDER_COUNTRY] ?? 'ES',
           senderPhone: s[SETTING_KEYS.SHIPPING_MR_SENDER_PHONE] ?? '',
           senderEmail: s[SETTING_KEYS.SHIPPING_MR_SENDER_EMAIL] ?? '',
-          deliveryMode: s[SETTING_KEYS.SHIPPING_MR_DELIVERY_MODE] ?? '24R',
+          collectMode: s[SETTING_KEYS.SHIPPING_MR_COLLECT_MODE] ?? 'CDR',
+          collectRelayId: s[SETTING_KEYS.SHIPPING_MR_COLLECT_RELAY_ID] ?? '',
+          deliveryMode: s[SETTING_KEYS.SHIPPING_MR_DELIVERY_MODE] ?? 'LDS',
           defaultWeightG: s[SETTING_KEYS.SHIPPING_MR_DEFAULT_WEIGHT_G] ?? '100',
         }}
       />
