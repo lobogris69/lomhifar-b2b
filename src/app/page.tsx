@@ -20,11 +20,22 @@ import { AwarenessStats } from '@/components/marketing/AwarenessStats';
 import { PharmacistGuide } from '@/components/marketing/PharmacistGuide';
 import { getAllSiteTexts } from '@/lib/site-texts';
 import { getSettings, SETTING_KEYS } from '@/lib/settings';
+import { getSiteImageMeta } from '@/lib/site-images';
 import { formatEuros } from '@/lib/utils';
 
 export default async function LandingPage() {
-  const [t, settings] = await Promise.all([getAllSiteTexts(), getSettings()]);
+  const [t, settings, heroBraceletMeta] = await Promise.all([
+    getAllSiteTexts(),
+    getSettings(),
+    getSiteImageMeta('acceso-bracelet'),
+  ]);
   const pvprCents = Number(settings[SETTING_KEYS.PVPR_CENTS]);
+  // La misma foto del slot "acceso-bracelet" se reutiliza en el hero de la
+  // landing (es la pulsera publicitaria principal). Si no hay foto custom,
+  // se sigue mostrando el preview SVG en vivo.
+  const heroBraceletUrl = heroBraceletMeta.isCustom && heroBraceletMeta.hasImage
+    ? `/api/images/acceso-bracelet?v=${heroBraceletMeta.updatedAt?.getTime() ?? 0}`
+    : null;
   return (
     <div className="flex min-h-screen flex-col">
       <PublicHeader />
@@ -91,20 +102,34 @@ export default async function LandingPage() {
               <div className="relative bg-white rounded-2xl p-6 shadow-soft">
                 <div className="flex items-center justify-between mb-4">
                   <div className="text-xs font-medium uppercase tracking-wider text-ink-500">
-                    Vista previa del grabado
+                    {heroBraceletUrl ? 'Pulseras Lomhifar' : 'Vista previa del grabado'}
                   </div>
-                  <span className="badge-brand">en vivo</span>
+                  <span className="badge-brand">
+                    {heroBraceletUrl ? 'negra · roja' : 'en vivo'}
+                  </span>
                 </div>
-                <BraceletPreview color="BLACK" line1="DIABETES TIPO 1" line2="TFNO 666 123 456" />
+                {heroBraceletUrl ? (
+                  <img
+                    src={heroBraceletUrl}
+                    alt="Pulseras Lomhifar — negra y roja"
+                    className="w-full h-auto rounded-lg"
+                  />
+                ) : (
+                  <BraceletPreview color="BLACK" line1="DIABETES TIPO 1" line2="TFNO 666 123 456" />
+                )}
                 <div className="mt-5 grid grid-cols-3 gap-3 text-xs">
-                  <KV k="Color" v="Negra" />
-                  <KV k="Unidades" v="25" />
-                  <KV k="Total" v="87,50 €" />
+                  <KV k="Material" v="Aluminio" />
+                  <KV k="Grabado" v="Láser" />
+                  <KV k="Colores" v="Negra/Roja" />
                 </div>
               </div>
-              <div className="absolute -bottom-6 -right-6 hidden md:block rotate-3 bg-white rounded-xl p-3 shadow-card border border-ink-100">
-                <BraceletPreview color="RED" line1="EPILEPSIA" line2="" size="sm" />
-              </div>
+              {/* Pulsera secundaria decorativa: solo si NO hay foto custom (la foto ya
+                  muestra ambas pulseras). */}
+              {!heroBraceletUrl && (
+                <div className="absolute -bottom-6 -right-6 hidden md:block rotate-3 bg-white rounded-xl p-3 shadow-card border border-ink-100">
+                  <BraceletPreview color="RED" line1="EPILEPSIA" line2="" size="sm" />
+                </div>
+              )}
             </div>
           </div>
         </section>
