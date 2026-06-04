@@ -82,13 +82,15 @@ export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
   // Área de impresión en % (left, top, width, height) + rotación grados + color del láser
   // Default pensado para placa típica con SÍMBOLO médico a la izquierda y
   // hueco de grabado a la derecha (formato más común de las pulseras médicas).
-  // textColor = tono típico del grabado láser sobre aluminio pulido sin pintar:
-  // un gris frostado similar al de la propia "Estrella de la Vida" estampada.
+  // textColor = tono típico del grabado láser sobre aluminio natural pulido:
+  // el láser quema la superficie y deja una marca GRIS OSCURA (antracita /
+  // grafito), no clara. Con mix-blend-mode: multiply sobre la placa
+  // plateada da una apariencia realista de grabado físico.
   [SETTING_KEYS.CONFIGURATOR_AREA_BLACK]: JSON.stringify({
-    leftPct: 50, topPct: 42, widthPct: 22, heightPct: 14, rotationDeg: 0, textColor: '#7d7d80',
+    leftPct: 50, topPct: 42, widthPct: 22, heightPct: 14, rotationDeg: 0, textColor: '#1f1f24',
   }),
   [SETTING_KEYS.CONFIGURATOR_AREA_RED]: JSON.stringify({
-    leftPct: 50, topPct: 42, widthPct: 22, heightPct: 14, rotationDeg: 0, textColor: '#7d7d80',
+    leftPct: 50, topPct: 42, widthPct: 22, heightPct: 14, rotationDeg: 0, textColor: '#1f1f24',
   }),
   // Personas/casos de uso (editables desde /admin/personas)
   [SETTING_KEYS.MARKETING_PERSONAS_JSON]: '', // vacío = usar DEFAULT_PERSONAS
@@ -231,7 +233,7 @@ export interface PrintArea {
 }
 
 export const DEFAULT_PRINT_AREA: PrintArea = {
-  leftPct: 50, topPct: 42, widthPct: 22, heightPct: 14, rotationDeg: 0, textColor: '#7d7d80',
+  leftPct: 50, topPct: 42, widthPct: 22, heightPct: 14, rotationDeg: 0, textColor: '#1f1f24',
 };
 
 /**
@@ -371,19 +373,32 @@ export const ENGRAVING_PRESETS = [
   { label: 'Grabado profundo', value: '#5e5e62', description: 'Para placas con más pase de láser' },
 ] as const;
 
+// Lista de tonos antiguos de grabado que se quedaron demasiado claros sobre
+// la placa con mix-blend-mode: multiply. Se sustituyen en lectura por el
+// nuevo default (#1f1f24, grafito) sin necesidad de tocar la BD. Si el
+// admin ha elegido un color custom DIFERENTE a estos, se respeta.
+const LEGACY_LASER_COLORS = new Set([
+  '#7d7d80', '#7D7D80',
+  '#3a3a3e', '#3A3A3E',
+]);
+
 export function parsePrintArea(raw: string | undefined): PrintArea {
   if (!raw) return DEFAULT_PRINT_AREA;
   try {
     const obj = JSON.parse(raw);
+    let textColor = DEFAULT_PRINT_AREA.textColor;
+    if (typeof obj.textColor === 'string' && /^#[0-9a-fA-F]{6}$/.test(obj.textColor)) {
+      textColor = LEGACY_LASER_COLORS.has(obj.textColor)
+        ? DEFAULT_PRINT_AREA.textColor
+        : obj.textColor;
+    }
     return {
       leftPct: clampNum(obj.leftPct, 0, 100, DEFAULT_PRINT_AREA.leftPct),
       topPct: clampNum(obj.topPct, 0, 100, DEFAULT_PRINT_AREA.topPct),
       widthPct: clampNum(obj.widthPct, 1, 100, DEFAULT_PRINT_AREA.widthPct),
       heightPct: clampNum(obj.heightPct, 1, 100, DEFAULT_PRINT_AREA.heightPct),
       rotationDeg: clampNum(obj.rotationDeg, -180, 180, DEFAULT_PRINT_AREA.rotationDeg),
-      textColor: typeof obj.textColor === 'string' && /^#[0-9a-fA-F]{6}$/.test(obj.textColor)
-        ? obj.textColor
-        : DEFAULT_PRINT_AREA.textColor,
+      textColor,
     };
   } catch {
     return DEFAULT_PRINT_AREA;

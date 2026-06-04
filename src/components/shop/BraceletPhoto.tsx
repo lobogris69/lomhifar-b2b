@@ -94,25 +94,31 @@ export function BraceletPhoto({
 
         {/*
           Texto del grabado láser.
-          Para que NO parezca "pintado" sobre la placa sino realmente grabado:
-          - mix-blend-mode: multiply hace que el color del texto se "multiplique"
-            con la textura metálica de debajo, igual que un grabado físico que
-            simplemente oscurece la superficie sin añadir pigmento opaco.
-          - Color: gris frostado (#7d7d80 default) similar al símbolo médico
-            ya estampado, NO negro. El láser sobre aluminio sin pintar produce
-            ese tono mate gris/plateado.
-          - Peso de fuente 600 (no 700/bold full): un grabado tiene grosor pero
-            no es tan denso como una tipografía bold.
-          - letter-spacing un pelín mayor (los grabados láser sobre placa
-            pequeña suelen llevar separación para legibilidad).
-          - text-shadow MUY sutil para suavizar bordes (el haz láser tiene un
-            tamaño físico, no es matemáticamente perfecto).
+          Realismo: en un grabado láser sobre aluminio natural, el haz quema
+          la superficie y la oscurece. La marca es GRIS OSCURO / ANTRACITA,
+          NO blanco ni transparente. Para conseguir ese aspecto:
+          - mix-blend-mode: multiply: el color del texto se "multiplica" con
+            la textura metálica de debajo, así sigue las luces y sombras de
+            la foto en lugar de quedar pintado encima.
+          - Color base #1f1f24 (grafito): suficientemente oscuro para que
+            multiply NO lo aclare a un gris pálido — verás texto firme,
+            no fantasmagórico.
+          - 2 text-shadow apilados:
+              · un leve halo blanco de 0.5px arriba simulando el reflejo
+                de luz en el borde superior del surco grabado,
+              · una sombra oscura de 0.6px abajo simulando la profundidad
+                del surco.
+          - filter: contrast leve para que NO pierda definición sobre
+            placas muy brillantes.
+          - Peso 600 + letter-spacing 0.04em: los grabados láser sobre
+            placa pequeña llevan algo de separación para legibilidad.
         */}
         <div
           className="absolute inset-0 flex flex-col items-center justify-center text-center overflow-hidden"
           style={{
             padding: '1% 3%',
             mixBlendMode: 'multiply',
+            filter: 'contrast(1.1)',
           }}
         >
           {lines.map((line, i) => (
@@ -126,8 +132,8 @@ export function BraceletPhoto({
                 fontSize,
                 lineHeight: '1.02',
                 letterSpacing: '0.04em',
-                textShadow: '0 0 0.4px rgba(0,0,0,0.25)',
-                opacity: 0.95,
+                textShadow:
+                  '0 0.5px 0 rgba(255,255,255,0.18), 0 -0.4px 0 rgba(0,0,0,0.35), 0 0 0.4px rgba(0,0,0,0.2)',
                 WebkitFontSmoothing: 'antialiased',
               }}
             >

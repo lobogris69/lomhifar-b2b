@@ -41,7 +41,7 @@ function readArea(form: FormData, prefix: string): PrintArea {
     return Math.min(max, Math.max(min, n));
   };
   const colorRaw = String(form.get(`${prefix}_textColor`) ?? '').trim();
-  const textColor = /^#[0-9a-fA-F]{6}$/.test(colorRaw) ? colorRaw : '#3a3a3e';
+  const textColor = /^#[0-9a-fA-F]{6}$/.test(colorRaw) ? colorRaw : '#1f1f24';
   return {
     leftPct: num('leftPct', 38, 0, 100),
     topPct: num('topPct', 44, 0, 100),
