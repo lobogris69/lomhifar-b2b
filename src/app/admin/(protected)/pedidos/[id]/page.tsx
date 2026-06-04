@@ -7,7 +7,7 @@ import { colorLabel } from '@/lib/cart';
 import { OrderStatusBadge, ORDER_STATUS_LABEL } from '@/components/shop/OrderStatusBadge';
 import { BraceletPreview } from '@/components/shop/BraceletPreview';
 import { PrintButton } from '@/components/admin/PrintButton';
-import { CARRIERS } from '@/lib/shipping';
+import { CARRIERS, DEFAULT_CARRIER } from '@/lib/shipping';
 import { isMondialRelayEnabled } from '@/lib/mondial-relay';
 import { saveAdminNotes, saveTracking, updateOrderStatus } from '../actions';
 import { Truck, ExternalLink } from 'lucide-react';
@@ -193,7 +193,7 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
               <input type="hidden" name="id" value={order.id} />
               <div>
                 <label className="label text-xs" htmlFor="carrier">Transportista</label>
-                <select id="carrier" name="carrier" defaultValue="inpost" className="input">
+                <select id="carrier" name="carrier" defaultValue={DEFAULT_CARRIER} className="input">
                   {CARRIERS.map((c) => (
                     <option key={c.key} value={c.key}>{c.label}</option>
                   ))}

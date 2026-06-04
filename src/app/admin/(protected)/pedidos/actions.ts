@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/auth';
 import { emailLayout, sendEmail } from '@/lib/email';
 import { ORDER_STATUS_LABEL } from '@/components/shop/OrderStatusBadge';
-import { buildTrackingUrl } from '@/lib/shipping';
+import { buildTrackingUrl, getCarrierLabel } from '@/lib/shipping';
 import {
   createShipment as mrCreateShipment,
   buildPublicTrackingUrl as mrTrackingUrl,
@@ -99,7 +99,7 @@ export async function saveTracking(formData: FormData) {
   // Email al cliente con tracking
   if (notify && trackingNumber) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
-    const carrierLabel = carrier === 'inpost' ? 'InPost' : carrier.toUpperCase();
+    const carrierLabel = getCarrierLabel(carrier);
     await sendEmail({
       to: updated.email,
       subject: `Su pedido #${updated.number} está en camino · Lomhifar`,
