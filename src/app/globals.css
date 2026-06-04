@@ -5,6 +5,10 @@
 :root {
   --background: 247 247 248;
   --foreground: 26 26 32;
+  /* Le dice al navegador que esta app está pensada para fondo claro.
+     Evita que Samsung Internet / Chrome con "dark mode forzado" inviertan
+     colores y rompan el contraste sobre fotos de pulsera, emails, etc. */
+  color-scheme: light;
 }
 
 html,

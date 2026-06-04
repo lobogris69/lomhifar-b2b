@@ -22,6 +22,15 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+// Forzamos light mode SIEMPRE — la app está diseñada con fondos blancos
+// (fotos de pulseras, fidelidad del grabado láser, emails y PDFs blancos).
+// Esto le dice al navegador (Samsung Internet, Chrome Android, etc.) que NO
+// aplique su modo oscuro forzado, que rompía contrastes en /tienda y /acceso.
+export const viewport = {
+  colorScheme: 'light' as const,
+  themeColor: '#ffffff',
+};
+
 export default function RootLayout({
   children,
 }: {
