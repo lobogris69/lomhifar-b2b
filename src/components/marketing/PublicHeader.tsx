@@ -10,11 +10,14 @@ export async function PublicHeader() {
         <Link href="/" aria-label="Lomhifar">
           <Logo showTagline size="md" />
         </Link>
-        <nav className="flex items-center gap-2 text-sm">
-          <Link href="/acceso" className="btn-ghost">
+        <nav className="flex items-center gap-1.5 sm:gap-2 text-sm shrink-0">
+          <Link href="/acceso" className="btn-ghost px-3 py-2 sm:px-3 whitespace-nowrap">
             {t['header.cta_acceder']}
           </Link>
-          <Link href="/solicitud" className="btn-primary">
+          {/* El CTA secundario se oculta en móvil pequeño: el botón grande
+              del hero (más abajo) ya invita a /solicitud con el mismo copy
+              y no se sale del viewport. */}
+          <Link href="/solicitud" className="hidden sm:inline-flex btn-primary whitespace-nowrap">
             {t['header.cta_alta']}
           </Link>
         </nav>

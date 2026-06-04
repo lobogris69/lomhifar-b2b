@@ -126,7 +126,7 @@ export default async function LandingPage() {
 
             {/* HERO VISUAL */}
             <div className="relative">
-              <div className="relative bg-white rounded-2xl p-6 shadow-soft">
+              <div className="relative bg-white rounded-2xl p-4 sm:p-6 shadow-soft">
                 <div className="flex items-center justify-between mb-4">
                   <div className="text-xs font-medium uppercase tracking-wider text-ink-500">
                     {heroBraceletUrl ? t['landing.hero_card_titulo'] : 'Vista previa del grabado'}
@@ -144,7 +144,7 @@ export default async function LandingPage() {
                 ) : (
                   <BraceletPreview color="BLACK" line1="DIABETES TIPO 1" line2="TFNO 666 123 456" />
                 )}
-                <div className="mt-5 grid grid-cols-3 gap-3 text-xs">
+                <div className="mt-5 grid grid-cols-3 gap-2 sm:gap-3 text-xs">
                   <KV k={t['landing.hero_kv1_label']} v={t['landing.hero_kv1_valor']} />
                   <KV k={t['landing.hero_kv2_label']} v={t['landing.hero_kv2_valor']} />
                   <KV k={t['landing.hero_kv3_label']} v={t['landing.hero_kv3_valor']} />
@@ -362,9 +362,9 @@ export default async function LandingPage() {
 
 function KV({ k, v }: { k: string; v: string }) {
   return (
-    <div className="rounded-lg border border-ink-100 p-3">
-      <div className="text-ink-500 text-[10px] uppercase tracking-wider">{k}</div>
-      <div className="font-semibold text-ink-900 mt-0.5">{v}</div>
+    <div className="rounded-lg border border-ink-100 px-2 py-2.5 sm:p-3 text-center min-w-0">
+      <div className="text-ink-500 text-[10px] uppercase tracking-wider truncate">{k}</div>
+      <div className="font-semibold text-ink-900 mt-0.5 text-[13px] sm:text-sm break-words leading-tight">{v}</div>
     </div>
   );
 }
