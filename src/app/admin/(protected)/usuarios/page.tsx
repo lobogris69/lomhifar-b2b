@@ -1,4 +1,4 @@
-import { Users2, ShieldAlert, Power, Trash2, KeyRound } from 'lucide-react';
+﻿import { Users2, ShieldAlert, Power, Trash2, KeyRound } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { getAdminSession } from '@/lib/auth';
@@ -14,7 +14,7 @@ import {
 } from './actions';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Usuarios admin · Lomhifar' };
+export const metadata = { title: 'Usuarios admin Â· Lomhifar' };
 
 const ROLE_BADGE: Record<AdminRole, string> = {
   SUPER_ADMIN: 'bg-brand-100 text-brand-800',
@@ -28,7 +28,7 @@ export default async function UsersPage() {
   if (!session) redirect('/admin/login');
   if (session.role !== 'SUPER_ADMIN') {
     return (
-      <div className="p-6 lg:p-10 max-w-3xl">
+      <div className="p-4 sm:p-6 lg:p-10 max-w-3xl">
         <Alert variant="danger" title="Acceso restringido">
           Solo el rol <strong>SUPER_ADMIN</strong> puede gestionar usuarios administradores.
           Tu rol actual es <strong>{ADMIN_ROLE_LABEL[(session.role as AdminRole) ?? 'ADMIN']}</strong>.
@@ -43,7 +43,7 @@ export default async function UsersPage() {
   });
 
   return (
-    <div className="p-6 lg:p-10 max-w-5xl space-y-8">
+    <div className="p-4 sm:p-6 lg:p-10 max-w-5xl space-y-8">
       <div className="flex items-center gap-3">
         <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
           <Users2 className="h-5 w-5" />
@@ -56,10 +56,10 @@ export default async function UsersPage() {
 
       <Alert variant="info" title="Roles disponibles">
         <ul className="text-sm space-y-0.5 mt-1">
-          <li>· <strong>Super-Admin:</strong> acceso total + gestión de usuarios admin (este panel)</li>
-          <li>· <strong>Administrador:</strong> acceso total excepto crear/borrar usuarios admin</li>
-          <li>· <strong>Gestor de pedidos:</strong> solo puede ver pedidos y cambiar su estado</li>
-          <li>· <strong>Supervisor (solo lectura):</strong> ve todo el panel pero NO puede modificar nada — ideal para auditores o socios</li>
+          <li>Â· <strong>Super-Admin:</strong> acceso total + gestiÃ³n de usuarios admin (este panel)</li>
+          <li>Â· <strong>Administrador:</strong> acceso total excepto crear/borrar usuarios admin</li>
+          <li>Â· <strong>Gestor de pedidos:</strong> solo puede ver pedidos y cambiar su estado</li>
+          <li>Â· <strong>Supervisor (solo lectura):</strong> ve todo el panel pero NO puede modificar nada â€” ideal para auditores o socios</li>
         </ul>
       </Alert>
 
@@ -74,7 +74,8 @@ export default async function UsersPage() {
             Usuarios actuales ({users.length})
           </h2>
         </div>
-        <table className="table-pro">
+        <div className="overflow-x-auto">
+        <table className="table-pro min-w-[640px]">
           <thead>
             <tr>
               <th>Email</th>
@@ -92,9 +93,9 @@ export default async function UsersPage() {
                 <tr key={u.id} className={isMe ? 'bg-brand-50/40' : ''}>
                   <td className="font-medium">
                     {u.email}
-                    {isMe && <span className="ml-2 text-[10px] uppercase tracking-wider text-brand-700">(tú)</span>}
+                    {isMe && <span className="ml-2 text-[10px] uppercase tracking-wider text-brand-700">(tÃº)</span>}
                   </td>
-                  <td>{u.name ?? '—'}</td>
+                  <td>{u.name ?? 'â€”'}</td>
                   <td>
                     <RoleSelect
                       userId={u.id}
@@ -114,15 +115,15 @@ export default async function UsersPage() {
                   <td>
                     <div className="flex justify-end gap-1">
                       <details className="relative">
-                        <summary className="btn-ghost cursor-pointer list-none" title="Resetear contraseña">
+                        <summary className="btn-ghost cursor-pointer list-none" title="Resetear contraseÃ±a">
                           <KeyRound className="h-3.5 w-3.5" />
                         </summary>
                         <form
                           action={resetAdminPassword}
-                          className="absolute right-0 mt-2 w-72 card p-3 z-10 space-y-2"
+                          className="absolute right-0 mt-2 w-[min(18rem,calc(100vw-2rem))] card p-3 z-10 space-y-2"
                         >
                           <input type="hidden" name="id" value={u.id} />
-                          <label className="text-xs text-ink-700">Nueva contraseña (mín 8):</label>
+                          <label className="text-xs text-ink-700">Nueva contraseÃ±a (mÃ­n 8):</label>
                           <input
                             type="text"
                             name="newPassword"
@@ -132,7 +133,7 @@ export default async function UsersPage() {
                             autoComplete="off"
                           />
                           <button type="submit" className="btn-primary text-xs w-full">
-                            Cambiar contraseña
+                            Cambiar contraseÃ±a
                           </button>
                         </form>
                       </details>
@@ -167,6 +168,7 @@ export default async function UsersPage() {
             })}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

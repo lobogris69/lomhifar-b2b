@@ -1,11 +1,11 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import { ClipboardList, Search, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { formatDate, formatEuros } from '@/lib/utils';
 import { OrderStatusBadge, ORDER_STATUS_LABEL } from '@/components/shop/OrderStatusBadge';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Pedidos · Admin Lomhifar' };
+export const metadata = { title: 'Pedidos Â· Admin Lomhifar' };
 
 const PAGE_SIZE = 50;
 
@@ -77,7 +77,7 @@ export default async function OrdersPage({
   }
 
   return (
-    <div className="p-6 lg:p-10">
+    <div className="p-4 sm:p-6 lg:p-10">
       <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="section-title flex items-center gap-2">
@@ -85,9 +85,9 @@ export default async function OrdersPage({
             <span className="text-ink-500 font-normal text-base">({totalAll.toLocaleString('es-ES')})</span>
           </h1>
           <p className="section-subtitle">
-            Histórico completo de pedidos B2B.
+            HistÃ³rico completo de pedidos B2B.
             {totalFiltered !== totalAll && (
-              <> · <strong>{totalFiltered.toLocaleString('es-ES')}</strong> coinciden con los filtros.</>
+              <> Â· <strong>{totalFiltered.toLocaleString('es-ES')}</strong> coinciden con los filtros.</>
             )}
           </p>
         </div>
@@ -97,29 +97,29 @@ export default async function OrdersPage({
       </div>
 
       <form className="card p-4 mb-4 flex flex-wrap items-end gap-3">
-        <div className="flex-1 min-w-[200px]">
+        <div className="w-full sm:flex-1 sm:min-w-[200px]">
           <label className="label" htmlFor="q">Buscar</label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
-            <input id="q" name="q" defaultValue={q} placeholder="Nº pedido, farmacia, CIF…" className="input pl-9" />
+            <input id="q" name="q" defaultValue={q} placeholder="NÂº pedido, farmacia, CIFâ€¦" className="input pl-9" />
           </div>
         </div>
-        <div>
+        <div className="w-full sm:w-auto">
           <label className="label" htmlFor="status">Estado</label>
-          <select id="status" name="status" defaultValue={status ?? ''} className="input">
+          <select id="status" name="status" defaultValue={status ?? ''} className="input w-full">
             <option value="">Todos</option>
             {Object.entries(ORDER_STATUS_LABEL).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
             ))}
           </select>
         </div>
-        <div>
+        <div className="flex-1 sm:flex-initial min-w-[140px]">
           <label className="label" htmlFor="from">Desde</label>
-          <input id="from" name="from" type="date" defaultValue={from} className="input" />
+          <input id="from" name="from" type="date" defaultValue={from} className="input w-full" />
         </div>
-        <div>
+        <div className="flex-1 sm:flex-initial min-w-[140px]">
           <label className="label" htmlFor="to">Hasta</label>
-          <input id="to" name="to" type="date" defaultValue={to} className="input" />
+          <input id="to" name="to" type="date" defaultValue={to} className="input w-full" />
         </div>
         <button type="submit" className="btn-primary">Filtrar</button>
         {(q || status || from || to) && (
@@ -133,7 +133,7 @@ export default async function OrdersPage({
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="table-pro">
+              <table className="table-pro min-w-[720px]">
                 <thead>
                   <tr>
                     <th>#</th>
@@ -158,7 +158,7 @@ export default async function OrdersPage({
                         <td>{formatDate(o.createdAt)}</td>
                         <td>{o.pharmacyName}</td>
                         <td className="font-mono">{o.cif}</td>
-                        <td>{o.items.length} líneas · {units} ud</td>
+                        <td>{o.items.length} lÃ­neas Â· {units} ud</td>
                         <td><OrderStatusBadge status={o.status} /></td>
                         <td className="text-right font-medium">{formatEuros(o.totalCents)}</td>
                       </tr>
@@ -214,7 +214,7 @@ function Pagination({
       )}
       {sorted.map((p, idx) => (
         <span key={p} className="flex items-center gap-1">
-          {idx > 0 && p - sorted[idx - 1] > 1 && <span className="text-ink-400 px-1">…</span>}
+          {idx > 0 && p - sorted[idx - 1] > 1 && <span className="text-ink-400 px-1">â€¦</span>}
           {p === currentPage ? (
             <span className="inline-flex h-7 min-w-[28px] items-center justify-center rounded bg-brand-700 text-white text-xs font-semibold px-2">
               {p}

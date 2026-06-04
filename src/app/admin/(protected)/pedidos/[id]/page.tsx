@@ -27,7 +27,7 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
   if (!order) notFound();
 
   return (
-    <div className="p-6 lg:p-10 max-w-5xl">
+    <div className="p-4 sm:p-6 lg:p-10 max-w-5xl">
       <Link href="/admin/pedidos" className="inline-flex items-center text-sm text-ink-500 hover:text-ink-800 mb-4 no-print">
         <ArrowLeft className="h-4 w-4 mr-1" /> Volver a pedidos
       </Link>

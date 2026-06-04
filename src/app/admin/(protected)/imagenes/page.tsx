@@ -1,42 +1,42 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import { Images, Crosshair, ArrowRight } from 'lucide-react';
 import { getAllSiteImageMeta, GROUP_LABELS, SLOTS } from '@/lib/site-images';
 import { Alert } from '@/components/ui/Alert';
 import { SlotCard } from './SlotCard';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Imágenes del sitio · Admin Lomhifar' };
+export const metadata = { title: 'ImÃ¡genes del sitio Â· Admin Lomhifar' };
 
 export default async function ImagesPage() {
   const metas = await getAllSiteImageMeta();
   const metaBySlot = new Map(metas.map((m) => [m.slot, m]));
 
-  // Agrupar slots por categoría
+  // Agrupar slots por categorÃ­a
   const byGroup = SLOTS.reduce<Record<string, typeof SLOTS>>((acc, s) => {
     (acc[s.group] ||= []).push(s);
     return acc;
   }, {});
 
   return (
-    <div className="p-6 lg:p-10 max-w-7xl">
+    <div className="p-4 sm:p-6 lg:p-10 max-w-7xl">
       <div className="mb-6 flex items-center gap-3">
         <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
           <Images className="h-5 w-5" />
         </span>
         <div>
-          <h1 className="section-title">Imágenes del sitio</h1>
+          <h1 className="section-title">ImÃ¡genes del sitio</h1>
           <p className="section-subtitle">
-            Sube tus propias imágenes para reemplazar cualquier gráfico del sitio.
-            El cambio es inmediato. Puedes restaurar la versión por defecto en cualquier
+            Sube tus propias imÃ¡genes para reemplazar cualquier grÃ¡fico del sitio.
+            El cambio es inmediato. Puedes restaurar la versiÃ³n por defecto en cualquier
             momento.
           </p>
         </div>
       </div>
 
       <Alert variant="info" className="mb-4">
-        Las imágenes se almacenan en la base de datos (no en el sistema de archivos),
-        por lo que son persistentes incluso en despliegues efímeros como Railway.
-        Tamaño máximo por imagen: 6 MB.
+        Las imÃ¡genes se almacenan en la base de datos (no en el sistema de archivos),
+        por lo que son persistentes incluso en despliegues efÃ­meros como Railway.
+        TamaÃ±o mÃ¡ximo por imagen: 6 MB.
       </Alert>
 
       <Link
@@ -48,11 +48,11 @@ export default async function ImagesPage() {
         </span>
         <div className="flex-1 min-w-0">
           <div className="text-sm font-semibold text-ink-900">
-            Configurar área de grabado del configurador
+            Configurar Ã¡rea de grabado del configurador
           </div>
           <div className="text-xs text-ink-600">
             Tras subir las fotos &laquo;Pulsera NEGRA&raquo; y &laquo;Pulsera ROJA&raquo;,
-            define en qué zona de cada foto se superpondrá el texto que escriba el cliente.
+            define en quÃ© zona de cada foto se superpondrÃ¡ el texto que escriba el cliente.
           </div>
         </div>
         <ArrowRight className="h-4 w-4 text-brand-700 shrink-0" />
@@ -65,7 +65,7 @@ export default async function ImagesPage() {
               {GROUP_LABELS[groupKey as keyof typeof GROUP_LABELS]}
             </h2>
             <p className="text-sm text-ink-500 mb-4">
-              {slots.length} {slots.length === 1 ? 'imagen' : 'imágenes'}
+              {slots.length} {slots.length === 1 ? 'imagen' : 'imÃ¡genes'}
             </p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {slots.map((def) => {

@@ -1,10 +1,10 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import { Plus, Search, Users, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { BulkSelectTable } from './BulkSelectTable';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Clientes · Admin Lomhifar' };
+export const metadata = { title: 'Clientes Â· Admin Lomhifar' };
 
 const PAGE_SIZE = 50;
 
@@ -29,7 +29,7 @@ export default async function CustomersPage({
   if (status === 'active') where.active = true;
   if (status === 'inactive') where.active = false;
 
-  // Total real + página actual en paralelo
+  // Total real + pÃ¡gina actual en paralelo
   const [totalFiltered, totalAll, customers] = await Promise.all([
     prisma.customer.count({ where }),
     prisma.customer.count({}),
@@ -50,7 +50,7 @@ export default async function CustomersPage({
   if (status) exportParams.set('status', status);
   const exportUrl = `/api/admin/clientes/export${exportParams.toString() ? '?' + exportParams.toString() : ''}`;
 
-  // Helper para construir links de paginación preservando filtros
+  // Helper para construir links de paginaciÃ³n preservando filtros
   function pageHref(p: number): string {
     const sp = new URLSearchParams();
     if (q) sp.set('q', q);
@@ -61,7 +61,7 @@ export default async function CustomersPage({
   }
 
   return (
-    <div className="p-6 lg:p-10">
+    <div className="p-4 sm:p-6 lg:p-10">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
         <div>
           <h1 className="section-title flex items-center gap-2">
@@ -71,7 +71,7 @@ export default async function CustomersPage({
           <p className="section-subtitle">
             Base de farmacias activas e inactivas.
             {totalFiltered !== totalAll && (
-              <> · <strong>{totalFiltered.toLocaleString('es-ES')}</strong> coinciden con los filtros.</>
+              <> Â· <strong>{totalFiltered.toLocaleString('es-ES')}</strong> coinciden con los filtros.</>
             )}
           </p>
         </div>
@@ -80,13 +80,13 @@ export default async function CustomersPage({
             <Download className="h-4 w-4" /> Exportar Excel
           </a>
           <Link href="/admin/clientes/nuevo" className="btn-primary">
-            <Plus className="h-4 w-4" /> Añadir cliente
+            <Plus className="h-4 w-4" /> AÃ±adir cliente
           </Link>
         </div>
       </div>
 
       <form className="card p-4 mb-4 flex flex-wrap items-end gap-3">
-        <div className="flex-1 min-w-[200px]">
+        <div className="w-full sm:flex-1 sm:min-w-[200px]">
           <label className="label" htmlFor="q">Buscar</label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
@@ -94,14 +94,14 @@ export default async function CustomersPage({
               id="q"
               name="q"
               defaultValue={q}
-              placeholder="CIF, email, farmacia, localidad…"
+              placeholder="CIF, email, farmacia, localidadâ€¦"
               className="input pl-9"
             />
           </div>
         </div>
-        <div>
+        <div className="w-full sm:w-auto">
           <label className="label" htmlFor="status">Estado</label>
-          <select id="status" name="status" defaultValue={status} className="input">
+          <select id="status" name="status" defaultValue={status} className="input w-full">
             <option value="">Todos</option>
             <option value="active">Activos</option>
             <option value="inactive">Inactivos</option>
@@ -120,7 +120,7 @@ export default async function CustomersPage({
           <>
             <BulkSelectTable customers={customers} />
 
-            {/* Paginación */}
+            {/* PaginaciÃ³n */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between px-5 py-3 border-t border-ink-100 bg-ink-50/40">
                 <div className="text-xs text-ink-500">
@@ -146,7 +146,7 @@ function Pagination({
   totalPages: number;
   pageHref: (p: number) => string;
 }) {
-  // Mostrar siempre primera, última, actual y ±2 alrededor
+  // Mostrar siempre primera, Ãºltima, actual y Â±2 alrededor
   const pages = new Set<number>();
   pages.add(1);
   pages.add(totalPages);
@@ -170,7 +170,7 @@ function Pagination({
       {sorted.map((p, idx) => (
         <span key={p} className="flex items-center gap-1">
           {idx > 0 && p - sorted[idx - 1] > 1 && (
-            <span className="text-ink-400 px-1">…</span>
+            <span className="text-ink-400 px-1">â€¦</span>
           )}
           {p === currentPage ? (
             <span className="inline-flex h-7 min-w-[28px] items-center justify-center rounded bg-brand-700 text-white text-xs font-semibold px-2">

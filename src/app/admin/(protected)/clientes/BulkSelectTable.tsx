@@ -90,7 +90,7 @@ export function BulkSelectTable({ customers }: { customers: Customer[] }) {
               {selected.size.toLocaleString('es-ES')} cliente{selected.size === 1 ? '' : 's'} seleccionado{selected.size === 1 ? '' : 's'}
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => setConfirmMode('deactivate')}

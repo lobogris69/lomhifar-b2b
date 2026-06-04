@@ -1,4 +1,4 @@
-import { Users, RotateCcw } from 'lucide-react';
+﻿import { Users, RotateCcw } from 'lucide-react';
 import { getSettings, SETTING_KEYS, parsePersonas } from '@/lib/settings';
 import { getAllSiteImageMeta } from '@/lib/site-images';
 import { Alert } from '@/components/ui/Alert';
@@ -6,7 +6,7 @@ import { PersonasEditor } from './PersonasEditor';
 import { resetPersonasAction } from './actions';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Personas / casos de uso · Admin Lomhifar' };
+export const metadata = { title: 'Personas / casos de uso Â· Admin Lomhifar' };
 
 export default async function PersonasAdminPage() {
   const [settings, imageMetas] = await Promise.all([
@@ -26,7 +26,7 @@ export default async function PersonasAdminPage() {
   });
 
   return (
-    <div className="p-6 lg:p-10 max-w-6xl">
+    <div className="p-4 sm:p-6 lg:p-10 max-w-6xl">
       <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
           <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
@@ -35,7 +35,7 @@ export default async function PersonasAdminPage() {
           <div>
             <h1 className="section-title">Personas / casos de uso</h1>
             <p className="section-subtitle">
-              Edita las 8 tarjetas de la sección &laquo;Para todos los pacientes&raquo;
+              Edita las 8 tarjetas de la secciÃ³n &laquo;Para todos los pacientes&raquo;
               en la landing. Textos, grabado de la pulsera demo y foto opcional.
             </p>
           </div>
@@ -54,12 +54,12 @@ export default async function PersonasAdminPage() {
       </div>
 
       <Alert variant="info" className="mb-8">
-        <strong>Cómo funciona:</strong> los textos se guardan en la base de datos.
+        <strong>CÃ³mo funciona:</strong> los textos se guardan en la base de datos.
         Cada persona muestra por defecto un dibujo SVG de la pulsera con su grabado.
-        Si quieres mostrar una <strong>foto real</strong> en lugar del dibujo, súbela
+        Si quieres mostrar una <strong>foto real</strong> en lugar del dibujo, sÃºbela
         en{' '}
         <a href="/admin/imagenes" className="text-brand-700 underline font-medium">
-          Imágenes del sitio
+          ImÃ¡genes del sitio
         </a>{' '}
         en el slot correspondiente (persona-1 ... persona-8).
       </Alert>

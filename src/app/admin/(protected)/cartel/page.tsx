@@ -1,4 +1,4 @@
-import { Download, Eye, FileText, Megaphone, Trash2 } from 'lucide-react';
+﻿import { Download, Eye, FileText, Megaphone, Trash2 } from 'lucide-react';
 import { getCurrentPosterMeta } from '@/lib/poster';
 import { formatDate } from '@/lib/utils';
 import { Alert } from '@/components/ui/Alert';
@@ -6,7 +6,7 @@ import { deletePoster } from './actions';
 import { UploadForm } from './UploadForm';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Cartel promocional · Admin Lomhifar' };
+export const metadata = { title: 'Cartel promocional Â· Admin Lomhifar' };
 
 function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
@@ -18,7 +18,7 @@ export default async function PosterPage() {
   const meta = await getCurrentPosterMeta();
 
   return (
-    <div className="p-6 lg:p-10 max-w-5xl">
+    <div className="p-4 sm:p-6 lg:p-10 max-w-5xl">
       <div className="mb-6 flex items-center gap-3">
         <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
           <Megaphone className="h-5 w-5" />
@@ -26,7 +26,7 @@ export default async function PosterPage() {
         <div>
           <h1 className="section-title">Cartel promocional para farmacias</h1>
           <p className="section-subtitle">
-            Cada farmacia descarga este cartel desde su área privada para imprimirlo
+            Cada farmacia descarga este cartel desde su Ã¡rea privada para imprimirlo
             y exponerlo en mostrador.
           </p>
         </div>
@@ -74,7 +74,7 @@ export default async function PosterPage() {
               <div className="text-sm space-y-2">
                 <Row k="Archivo" v={meta.filename} />
                 <Row k="Tipo" v={meta.mimeType} />
-                <Row k="Tamaño" v={formatBytes(meta.size)} />
+                <Row k="TamaÃ±o" v={formatBytes(meta.size)} />
                 {meta.uploadedAt && (
                   <Row k="Subido" v={formatDate(meta.uploadedAt)} />
                 )}
@@ -106,10 +106,10 @@ export default async function PosterPage() {
           <Alert variant="info">
             Las farmacias ven este cartel desde su panel y al finalizar cualquier
             pedido. Si subes uno nuevo, el cambio es inmediato para todas.{' '}
-            <strong>Importante:</strong> la miniatura que aparece junto al botón de
-            descarga es independiente — actualízala en{' '}
+            <strong>Importante:</strong> la miniatura que aparece junto al botÃ³n de
+            descarga es independiente â€” actualÃ­zala en{' '}
             <a href="/admin/imagenes" className="underline font-semibold">
-              Imágenes del sitio
+              ImÃ¡genes del sitio
             </a>{' '}
             (slot &laquo;Miniatura del cartel&raquo;) cuando cambies el cartel.
           </Alert>
@@ -120,8 +120,8 @@ export default async function PosterPage() {
           <div className="card p-5">
             <h2 className="text-sm font-semibold text-ink-900 mb-1">Subir cartel personalizado</h2>
             <p className="text-xs text-ink-500 mb-4">
-              Recomendado: PDF en A4 vertical (210×297 mm), peso bajo (&lt; 4 MB),
-              colores compatibles con impresión doméstica.
+              Recomendado: PDF en A4 vertical (210Ã—297 mm), peso bajo (&lt; 4 MB),
+              colores compatibles con impresiÃ³n domÃ©stica.
             </p>
             <UploadForm />
           </div>

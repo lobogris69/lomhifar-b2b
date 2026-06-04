@@ -1,4 +1,4 @@
-import { Settings } from 'lucide-react';
+﻿import { Settings } from 'lucide-react';
 import {
   getSettings,
   SETTING_KEYS,
@@ -7,19 +7,19 @@ import {
 } from '@/lib/settings';
 import { SettingsForm } from './SettingsForm';
 
-export const metadata = { title: 'Configuración · Admin Lomhifar' };
+export const metadata = { title: 'ConfiguraciÃ³n Â· Admin Lomhifar' };
 
 export default async function SettingsPage() {
   const s = await getSettings();
   const centsToEuro = (c: string) => (Number(c) / 100).toFixed(2).replace('.', ',');
   return (
-    <div className="p-6 lg:p-10 max-w-4xl">
+    <div className="p-4 sm:p-6 lg:p-10 max-w-4xl">
       <div className="mb-6 flex items-center gap-3">
         <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
           <Settings className="h-5 w-5" />
         </span>
         <div>
-          <h1 className="section-title">Configuración</h1>
+          <h1 className="section-title">ConfiguraciÃ³n</h1>
           <p className="section-subtitle">Precios, portes, plazos y datos de empresa.</p>
         </div>
       </div>

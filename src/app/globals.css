@@ -57,10 +57,10 @@ body {
   .badge-muted   { @apply badge bg-ink-100 text-ink-700; }
 
   .section-title {
-    @apply text-2xl font-semibold tracking-tight text-ink-900;
+    @apply text-xl sm:text-2xl font-semibold tracking-tight text-ink-900 break-words;
   }
   .section-subtitle {
-    @apply text-sm text-ink-500 mt-1;
+    @apply text-sm text-ink-500 mt-1 break-words;
   }
 
   .table-pro {

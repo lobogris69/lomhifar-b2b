@@ -34,7 +34,7 @@ export default async function EditCustomerPage({ params }: { params: { id: strin
   ]);
 
   return (
-    <div className="p-6 lg:p-10 max-w-5xl">
+    <div className="p-4 sm:p-6 lg:p-10 max-w-5xl">
       <Link href="/admin/clientes" className="inline-flex items-center text-sm text-ink-500 hover:text-ink-800 mb-4">
         <ArrowLeft className="h-4 w-4 mr-1" /> Volver a clientes
       </Link>

@@ -208,7 +208,7 @@ export function SettingsForm({ initialValues, inpost, mondialRelay }: Props) {
 
         <div className="space-y-2">
           {tiers.map((t, i) => (
-            <div key={i} className="flex items-center gap-3 p-3 rounded-lg border border-ink-200 bg-white">
+            <div key={i} className="flex flex-wrap items-center gap-2 sm:gap-3 p-3 rounded-lg border border-ink-200 bg-white">
               <span className="text-xs text-ink-500">A partir de</span>
               <input
                 type="number"

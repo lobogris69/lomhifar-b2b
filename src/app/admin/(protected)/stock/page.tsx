@@ -1,4 +1,4 @@
-import { Package, AlertTriangle, TrendingUp, TrendingDown, Settings2 } from 'lucide-react';
+﻿import { Package, AlertTriangle, TrendingUp, TrendingDown, Settings2 } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { getAdminSession } from '@/lib/auth';
@@ -10,7 +10,7 @@ import { AdjustStockForm } from './StockForms';
 import { updateMinAlert } from './actions';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Stock · Admin Lomhifar' };
+export const metadata = { title: 'Stock Â· Admin Lomhifar' };
 
 export default async function StockPage() {
   const session = await getAdminSession();
@@ -28,7 +28,7 @@ export default async function StockPage() {
   ]);
 
   return (
-    <div className="p-6 lg:p-10 max-w-6xl space-y-6">
+    <div className="p-4 sm:p-6 lg:p-10 max-w-6xl space-y-6">
       <div className="flex items-center gap-3">
         <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
           <Package className="h-5 w-5" />
@@ -36,8 +36,8 @@ export default async function StockPage() {
         <div>
           <h1 className="section-title">Stock de pulseras</h1>
           <p className="section-subtitle">
-            Inventario por color. Se decrementa automáticamente con cada pedido.
-            Se envía email al admin si baja del nivel de alerta.
+            Inventario por color. Se decrementa automÃ¡ticamente con cada pedido.
+            Se envÃ­a email al admin si baja del nivel de alerta.
           </p>
         </div>
       </div>
@@ -56,7 +56,7 @@ export default async function StockPage() {
                 <div className="flex-1">
                   <h2 className="text-xl font-semibold text-ink-900">Pulsera {colorLabel(s.color)}</h2>
                   <p className="text-xs text-ink-500">
-                    Nivel mínimo de alerta: {s.minAlertLevel} unidades
+                    Nivel mÃ­nimo de alerta: {s.minAlertLevel} unidades
                   </p>
                 </div>
                 <div className="text-right">
@@ -89,12 +89,12 @@ export default async function StockPage() {
 
               <details className="px-6 pb-4 border-t border-ink-100">
                 <summary className="text-xs text-ink-500 cursor-pointer py-2 hover:text-ink-700">
-                  Configurar nivel mínimo de alerta
+                  Configurar nivel mÃ­nimo de alerta
                 </summary>
                 <form action={updateMinAlert} className="mt-2 flex items-end gap-2">
                   <input type="hidden" name="color" value={color} />
                   <div className="flex-1">
-                    <label className="text-xs text-ink-500" htmlFor={`min-${color}`}>Nivel mínimo</label>
+                    <label className="text-xs text-ink-500" htmlFor={`min-${color}`}>Nivel mÃ­nimo</label>
                     <input
                       id={`min-${color}`}
                       name="minAlertLevel"
@@ -119,10 +119,11 @@ export default async function StockPage() {
         </div>
         {recentMovements.length === 0 ? (
           <div className="p-8 text-center text-sm text-ink-500">
-            Aún no hay movimientos. Registra una entrada arriba para empezar a llevar el control.
+            AÃºn no hay movimientos. Registra una entrada arriba para empezar a llevar el control.
           </div>
         ) : (
-          <table className="table-pro">
+          <div className="overflow-x-auto">
+          <table className="table-pro min-w-[720px]">
             <thead>
               <tr>
                 <th>Fecha</th>
@@ -147,14 +148,15 @@ export default async function StockPage() {
                   <td className="text-xs">
                     <span className="badge-muted">{m.reason}</span>
                   </td>
-                  <td className="text-xs text-ink-600 max-w-xs truncate">{m.note ?? '—'}</td>
+                  <td className="text-xs text-ink-600 max-w-xs truncate">{m.note ?? 'â€”'}</td>
                   <td className="text-xs text-ink-500">
-                    {m.reason === 'PEDIDO' ? 'Sistema' : m.createdBy ?? '—'}
+                    {m.reason === 'PEDIDO' ? 'Sistema' : m.createdBy ?? 'â€”'}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

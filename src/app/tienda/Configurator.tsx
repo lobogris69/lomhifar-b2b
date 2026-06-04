@@ -142,9 +142,11 @@ export function Configurator({
 
   return (
     <div className="grid lg:grid-cols-5 gap-8 relative">
-      {/* MÓVIL: preview sticky en la parte superior siempre visible mientras se escribe */}
-      <div className="lg:hidden sticky top-[88px] z-20 -mx-4 sm:-mx-6 mb-2">
-        <div className="bg-white border-y border-ink-100 shadow-card px-4 py-3">
+      {/* MÓVIL: preview sticky pegado al top — el header del shop NO es sticky en
+          móvil (sólo en desktop) así que la foto se queda visible arriba mientras
+          el usuario hace scroll por el formulario de abajo. */}
+      <div className="lg:hidden sticky top-0 z-20 -mx-4 sm:-mx-6 mb-2">
+        <div className="bg-white border-b border-ink-100 shadow-card px-4 py-3">
           {currentPhotoUrl ? (
             <div className="max-w-[280px] mx-auto">
               <BraceletPhoto

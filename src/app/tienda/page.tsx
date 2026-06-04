@@ -39,7 +39,7 @@ export default async function ShopPage() {
   const lowOrEmpty = stocks.filter((s) => s.isLow || s.isEmpty);
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10">
+    <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6 sm:py-10">
       <div className="mb-8">
         <span className="badge-muted">
           <Sparkles className="h-3 w-3" /> {t['tienda.badge']}

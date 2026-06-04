@@ -23,7 +23,7 @@ const NAV = [
 export function ShopHeader({ pharmacyName, cartCount, logo }: ShopHeaderProps) {
   const pathname = usePathname();
   return (
-    <header className="border-b border-ink-100 bg-white sticky top-0 z-30">
+    <header className="border-b border-ink-100 bg-white lg:sticky lg:top-0 z-30">
       <div className="mx-auto max-w-6xl px-6">
         <div className="flex items-center justify-between py-3">
           <Link href="/tienda" aria-label="Lomhifar">
