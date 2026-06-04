@@ -78,18 +78,36 @@ export default async function LandingPage() {
               <p className="mt-6 text-lg text-white/80 max-w-xl leading-relaxed">
                 {t['landing.hero_descripcion']}
               </p>
-              <div className="mt-8 flex flex-wrap items-center gap-3">
+              <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                {/* CTA principal: clientes existentes */}
                 <Link
                   href="/acceso"
-                  className="btn-primary bg-white text-ink-900 hover:bg-brand-50 hover:text-brand-800 px-6 py-3 text-base shadow-glow"
+                  className="group flex-1 inline-flex items-center justify-between gap-3 rounded-xl bg-white text-ink-900 hover:bg-brand-50 hover:text-brand-800 px-5 py-4 shadow-glow transition-colors text-left"
                 >
-                  {t['landing.hero_cta_principal']} <ArrowRight className="h-4 w-4" />
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-base sm:text-lg font-semibold leading-tight">
+                      {t['landing.hero_cta_principal']}
+                    </span>
+                    <span className="block text-xs sm:text-sm text-ink-500 mt-0.5">
+                      Ya soy cliente de Lomhifar
+                    </span>
+                  </span>
+                  <ArrowRight className="h-5 w-5 shrink-0 text-brand-700 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
+                {/* CTA secundaria: farmacias nuevas */}
                 <Link
                   href="/solicitud"
-                  className="btn-secondary bg-transparent text-white border-white/30 hover:bg-white/10 px-6 py-3 text-base"
+                  className="group flex-1 inline-flex items-center justify-between gap-3 rounded-xl bg-white/5 text-white border border-white/30 hover:bg-white/10 px-5 py-4 transition-colors text-left"
                 >
-                  {t['landing.hero_cta_secundario']}
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-base sm:text-lg font-semibold leading-tight">
+                      {t['landing.hero_cta_secundario']}
+                    </span>
+                    <span className="block text-xs sm:text-sm text-white/65 mt-0.5">
+                      Mi farmacia aún no está dada de alta
+                    </span>
+                  </span>
+                  <ArrowRight className="h-5 w-5 shrink-0 text-white/80 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
               </div>
               <div className="mt-8 grid grid-cols-3 gap-4 max-w-md">
@@ -322,13 +340,13 @@ export default async function LandingPage() {
                 {t['landing.cta_final_descripcion']}
               </p>
             </div>
-            <div className="flex gap-3 shrink-0">
-              <Link href="/acceso" className="btn bg-white text-brand-800 hover:bg-brand-50 px-6 py-3 text-base font-semibold shadow-md">
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+              <Link href="/acceso" className="btn bg-white text-brand-800 hover:bg-brand-50 w-full sm:w-auto justify-center px-6 py-3 text-base font-semibold shadow-md whitespace-nowrap">
                 Acceder
               </Link>
               <Link
                 href="/solicitud"
-                className="btn bg-transparent text-white border border-white/40 hover:bg-white/10 px-6 py-3 text-base"
+                className="btn bg-transparent text-white border border-white/40 hover:bg-white/10 w-full sm:w-auto justify-center px-6 py-3 text-base whitespace-nowrap"
               >
                 Soy nuevo
               </Link>

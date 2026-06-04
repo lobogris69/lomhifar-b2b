@@ -141,12 +141,12 @@ export function Configurator({
   const previewLine3 = line3Visible ? line3 : '';
 
   return (
-    <div className="grid lg:grid-cols-5 gap-8 relative">
+    <div className="grid lg:grid-cols-5 gap-8 relative min-w-0">
       {/* MÓVIL: preview sticky pegado al top — el header del shop NO es sticky en
           móvil (sólo en desktop) así que la foto se queda visible arriba mientras
           el usuario hace scroll por el formulario de abajo. */}
-      <div className="lg:hidden sticky top-0 z-20 -mx-4 sm:-mx-6 mb-2">
-        <div className="bg-white border-b border-ink-100 shadow-card px-4 py-3">
+      <div className="lg:hidden sticky top-0 z-20 -mx-4 sm:-mx-6 mb-2 min-w-0">
+        <div className="bg-white border-b border-ink-100 shadow-card px-3 py-3 overflow-hidden">
           {currentPhotoUrl ? (
             <div className="max-w-[280px] mx-auto">
               <BraceletPhoto
@@ -161,12 +161,12 @@ export function Configurator({
           ) : (
             <BraceletPreview color={color} line1={line1} line2={previewLine2} size="sm" />
           )}
-          <div className="mt-2 flex items-center justify-between text-xs">
-            <span className="text-ink-500">
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs">
+            <span className="text-ink-500 whitespace-nowrap">
               {formatEuros(unitPrice)} × {quantity} ud
             </span>
             {currentTier ? (
-              <span className="flex items-baseline gap-1.5">
+              <span className="flex items-baseline gap-1.5 whitespace-nowrap">
                 <span className="line-through text-[11px] text-ink-400">{formatEuros(lineTotal)}</span>
                 <span className="text-base font-bold text-brand-800">
                   {formatEuros(lineTotalAfterDiscount)}
@@ -176,7 +176,7 @@ export function Configurator({
                 </span>
               </span>
             ) : (
-              <span className="text-base font-semibold text-brand-800">
+              <span className="text-base font-semibold text-brand-800 whitespace-nowrap">
                 {formatEuros(lineTotal)}
               </span>
             )}
@@ -310,7 +310,7 @@ export function Configurator({
         {state.error && <Alert variant="danger">{state.error}</Alert>}
 
         {/* Color */}
-        <section className="card p-6">
+        <section className="card p-4 sm:p-6">
           <h3 className="text-sm font-semibold text-ink-900 mb-3">{texts.paso1}</h3>
           <div className="grid grid-cols-2 gap-3">
             <ColorOption
@@ -330,9 +330,9 @@ export function Configurator({
         </section>
 
         {/* Unidades */}
-        <section className="card p-6">
+        <section className="card p-4 sm:p-6">
           <h3 className="text-sm font-semibold text-ink-900 mb-3">{texts.paso2}</h3>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
               onClick={() => {
@@ -355,7 +355,7 @@ export function Configurator({
                 setQuantity(v);
                 setConfirmed(false);
               }}
-              className="input text-center w-28 text-lg font-semibold"
+              className="input text-center w-20 sm:w-28 text-lg font-semibold"
             />
             <button
               type="button"
@@ -368,13 +368,13 @@ export function Configurator({
             >
               +
             </button>
-            <span className="text-sm text-ink-500 ml-2">pulseras con este mismo texto</span>
+            <span className="text-sm text-ink-500 w-full sm:w-auto sm:ml-2">pulseras con este mismo texto</span>
           </div>
           {state.fieldErrors?.quantity && <p className="field-error">{state.fieldErrors.quantity}</p>}
         </section>
 
         {/* Grabado: 1, 2 o 3 líneas a elección del cliente */}
-        <section className="card p-6">
+        <section className="card p-4 sm:p-6">
           <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
             <h3 className="text-sm font-semibold text-ink-900">{texts.paso3}</h3>
             <span className="text-[11px] text-ink-500">

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ShieldCheck, Building2, Lock, HeartPulse, Sparkles, Mail } from 'lucide-react';
+import { ShieldCheck, Building2, Lock, HeartPulse, Sparkles, Mail, UserPlus, ArrowRight } from 'lucide-react';
 import { AccessForm } from './AccessForm';
 import { redirect } from 'next/navigation';
 import { getCustomerSession } from '@/lib/auth';
@@ -26,7 +26,7 @@ export default async function AccessPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-brand-50/50 flex flex-col">
       {/* Header mínimo */}
-      <header className="px-6 py-5 flex items-center justify-between">
+      <header className="px-4 sm:px-6 py-5 flex items-center justify-between gap-2">
         <Link href="/" className="hover:opacity-80 transition-opacity">
           <BrandLockup size="md" />
         </Link>
@@ -129,6 +129,29 @@ export default async function AccessPage() {
                   <span>Código de un solo uso al email registrado</span>
                 </div>
               </div>
+            </div>
+
+            {/* Bloque para farmacias que NO son cliente todavía */}
+            <div className="mt-5 rounded-2xl border border-brand-200 bg-gradient-to-br from-brand-50/80 to-white p-5 sm:p-6">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand-100 text-brand-700">
+                  <UserPlus className="h-4 w-4" />
+                </span>
+                <div className="text-sm font-semibold text-ink-900">
+                  ¿Aún no es cliente Lomhifar?
+                </div>
+              </div>
+              <p className="text-xs text-ink-600 leading-relaxed mb-3">
+                Damos de alta su farmacia en <strong>24-48 horas laborables</strong>.
+                Sin permanencia, sin coste inicial.
+              </p>
+              <Link
+                href="/solicitud"
+                className="group inline-flex items-center justify-between gap-2 w-full rounded-xl bg-white border border-brand-300 hover:bg-brand-50 px-4 py-3 text-sm font-semibold text-brand-800 transition-colors"
+              >
+                <span>Solicitar alta de farmacia</span>
+                <ArrowRight className="h-4 w-4 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
             </div>
 
             {/* Enlace admin discreto */}
