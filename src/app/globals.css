@@ -17,10 +17,12 @@ body {
   color: rgb(var(--foreground));
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  /* Garantía contra scroll horizontal residual en móvil: si algún elemento
-     decorativo (gradiente, blob absoluto, etc.) se sale unos pixeles, no
-     creará scroll horizontal en toda la página. */
-  overflow-x: hidden;
+  /* Garantía contra scroll horizontal residual sin romper position:sticky.
+     'overflow-x: clip' recorta lo que sobresalga (como hidden) pero NO crea
+     un contenedor de scroll, así el sticky del configurador SÍ se queda
+     pegado al top del viewport al hacer scroll (con 'hidden' se rompía en
+     móvil y la foto de la pulsera no se quedaba estática). */
+  overflow-x: clip;
 }
 
 @layer components {
