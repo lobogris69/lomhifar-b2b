@@ -54,19 +54,19 @@ export default async function LandingPage() {
         <section id="scroll-hero" className="relative overflow-hidden bg-ink-gradient text-white">
           <div className="absolute inset-0 bg-dots-light pointer-events-none" />
           <div
-            className="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full pointer-events-none"
+            className="hidden sm:block absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full pointer-events-none"
             style={{
               background:
                 'radial-gradient(circle, rgba(209,38,134,0.35) 0%, rgba(209,38,134,0) 70%)',
             }}
           />
-          <div className="relative mx-auto max-w-6xl px-6 py-20 lg:py-28 grid lg:grid-cols-2 gap-12 items-center">
+          <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-20 lg:py-28 grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.22em] text-brand-100 backdrop-blur border border-white/10">
                 <ShieldCheck className="h-3.5 w-3.5" />
                 {t['landing.hero_badge']}
               </span>
-              <h1 className="mt-6 text-4xl lg:text-[3.4rem] font-semibold tracking-tight leading-[1.05]">
+              <h1 className="mt-6 text-3xl sm:text-4xl lg:text-[3.4rem] font-semibold tracking-tight leading-[1.05] break-words">
                 {t['landing.hero_titulo_1']}
                 <br />
                 <span className="bg-gradient-to-r from-brand-300 via-brand-200 to-white bg-clip-text text-transparent">
@@ -258,7 +258,7 @@ export default async function LandingPage() {
 
         {/* CARACTERÍSTICAS DEL CANAL */}
         <section id="scroll-canal" className="bg-white py-20">
-          <div className="mx-auto max-w-6xl px-6">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12">
               <span className="badge-brand">{t['canal.badge']}</span>
               <h2 className="mt-4 section-title text-3xl">

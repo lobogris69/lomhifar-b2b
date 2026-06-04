@@ -6,7 +6,7 @@ export async function PublicHeader() {
   const t = await getAllSiteTexts();
   return (
     <header className="border-b border-ink-100 bg-white/85 backdrop-blur sticky top-0 z-30">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 sm:px-6 py-3">
         <Link href="/" aria-label="Lomhifar">
           <Logo showTagline size="md" />
         </Link>
@@ -27,7 +27,7 @@ export async function PublicFooter() {
   const t = await getAllSiteTexts();
   return (
     <footer className="border-t border-ink-100 bg-white">
-      <div className="mx-auto max-w-6xl px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Logo size="sm" />
         </div>

@@ -31,17 +31,17 @@ const STATS = [
 export async function AwarenessStats() {
   const t = await getAllSiteTexts();
   return (
-    <section className="bg-ink-gradient text-white py-20 relative overflow-hidden">
+    <section className="bg-ink-gradient text-white py-16 sm:py-20 relative overflow-hidden">
       <div className="absolute inset-0 bg-dots-light opacity-50 pointer-events-none" />
       <div
-        className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full pointer-events-none"
+        className="hidden sm:block absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full pointer-events-none"
         style={{
           background:
             'radial-gradient(circle, rgba(209,38,134,0.25) 0%, rgba(209,38,134,0) 70%)',
         }}
       />
 
-      <div className="relative mx-auto max-w-6xl px-6">
+      <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
         <div className="text-center max-w-2xl mx-auto mb-12">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/15 px-3 py-1.5 text-[11px] uppercase tracking-[0.22em] text-brand-100 backdrop-blur">
             {t['stats.badge']}

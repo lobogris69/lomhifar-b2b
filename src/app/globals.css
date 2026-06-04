@@ -13,6 +13,10 @@ body {
   color: rgb(var(--foreground));
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Garantía contra scroll horizontal residual en móvil: si algún elemento
+     decorativo (gradiente, blob absoluto, etc.) se sale unos pixeles, no
+     creará scroll horizontal en toda la página. */
+  overflow-x: hidden;
 }
 
 @layer components {
