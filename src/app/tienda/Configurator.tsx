@@ -113,6 +113,36 @@ export function Configurator({
     if (confirmed) setConfirmed(false);
   }
 
+  /**
+   * Al pulsar uno de los chips de ejemplo (DIABETES TIPO 1, ALÉRGICO, etc.)
+   * insertamos en la PRIMERA línea VISIBLE y VACÍA en lugar de machacar
+   * siempre la línea 1. Comportamiento:
+   *  - Línea 1 vacía         → rellena Línea 1
+   *  - Línea 1 con texto + Línea 2 visible vacía  → rellena Línea 2
+   *  - Líneas 1 y 2 con texto + Línea 3 visible vacía  → rellena Línea 3
+   *  - Todas llenas          → reemplaza Línea 1 (fallback útil para
+   *    el usuario que quiere reusar el chip como "punto de partida")
+   *
+   * Antes este onClick estaba hardcodeado a setLine1, así que añadir un
+   * segundo ejemplo después de abrir la Línea 2 borraba el primer texto.
+   */
+  function handleExampleClick(text: string) {
+    if (!line1.trim()) {
+      handleLineChange(setLine1, text);
+      return;
+    }
+    if (line2Visible && !line2.trim()) {
+      handleLineChange(setLine2, text);
+      return;
+    }
+    if (line3Visible && !line3.trim()) {
+      handleLineChange(setLine3, text);
+      return;
+    }
+    // todas las visibles ya tienen texto: fallback al comportamiento anterior
+    handleLineChange(setLine1, text);
+  }
+
   function addLine2() {
     setShowLine2(true);
   }
@@ -513,7 +543,7 @@ export function Configurator({
                 <button
                   key={ex}
                   type="button"
-                  onClick={() => handleLineChange(setLine1, ex)}
+                  onClick={() => handleExampleClick(ex)}
                   className="text-[11px] px-2 py-0.5 rounded-full border border-ink-200 text-ink-600 hover:border-brand-400 hover:text-brand-700 transition-colors"
                 >
                   {ex}
