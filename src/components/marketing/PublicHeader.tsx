@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { LogIn } from 'lucide-react';
 import { Logo } from '../brand/Logo';
 import { getAllSiteTexts } from '@/lib/site-texts';
 
@@ -11,13 +12,24 @@ export async function PublicHeader() {
           <Logo showTagline size="md" />
         </Link>
         <nav className="flex items-center gap-1.5 sm:gap-2 text-sm shrink-0">
-          <Link href="/acceso" className="btn-ghost px-3 py-2 sm:px-3 whitespace-nowrap">
+          {/* 'Acceder' = botón secundario (borde + icono candado). Funcional,
+              no compite visualmente con el CTA principal magenta, pero queda
+              claramente identificable como zona de login para clientes ya
+              registrados gracias al icono. */}
+          <Link
+            href="/acceso"
+            className="btn-secondary px-3 py-2 sm:px-4 sm:py-2.5 whitespace-nowrap"
+          >
+            <LogIn className="h-4 w-4" />
             {t['header.cta_acceder']}
           </Link>
-          {/* El CTA secundario se oculta en móvil pequeño: el botón grande
-              del hero (más abajo) ya invita a /solicitud con el mismo copy
-              y no se sale del viewport. */}
-          <Link href="/solicitud" className="hidden sm:inline-flex btn-primary whitespace-nowrap">
+          {/* El CTA primario (captar farmacias nuevas) se oculta en móvil
+              pequeño: el botón grande del hero más abajo ya invita a /solicitud
+              con el mismo copy y no se sale del viewport. */}
+          <Link
+            href="/solicitud"
+            className="hidden sm:inline-flex btn-primary whitespace-nowrap"
+          >
             {t['header.cta_alta']}
           </Link>
         </nav>
