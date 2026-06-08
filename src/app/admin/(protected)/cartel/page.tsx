@@ -1,4 +1,4 @@
-﻿import { Download, Eye, FileText, Megaphone, Trash2 } from 'lucide-react';
+﻿import { Download, Eye, FileText, Megaphone, Trash2, Image as ImageIcon, QrCode, MessageCircle } from 'lucide-react';
 import { getCurrentPosterMeta } from '@/lib/poster';
 import { formatDate } from '@/lib/utils';
 import { Alert } from '@/components/ui/Alert';
@@ -89,7 +89,7 @@ export default async function PosterPage() {
                     <Eye className="h-4 w-4" /> Previsualizar
                   </a>
                   <a href="/api/cartel" className="btn-secondary">
-                    <Download className="h-4 w-4" /> Descargar
+                    <Download className="h-4 w-4" /> Descargar PDF
                   </a>
                   {meta.isCustom && (
                     <form action={deletePoster}>
@@ -103,15 +103,56 @@ export default async function PosterPage() {
             </div>
           </div>
 
+          {/* Descargas extras (solo para el cartel por defecto que lleva QR
+              generado por scripts/regenerate-poster-with-qr.mjs).
+              Para PNG hay que mostrar el bloque siempre — la versión por
+              defecto siempre tiene PNG aunque el admin haya subido un PDF
+              personalizado, porque sirve como recurso de marketing fijo. */}
+          {!meta.isCustom && (
+            <div className="card p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <MessageCircle className="h-4 w-4 text-emerald-600" />
+                <h3 className="text-sm font-semibold text-ink-900">
+                  Compartir por WhatsApp / redes
+                </h3>
+              </div>
+              <p className="text-xs text-ink-500 mb-4">
+                El PDF de arriba es para imprimir. Para enviar por WhatsApp
+                (que se previsualice en el chat) usa el PNG. El QR independiente
+                es útil cuando solo quieres enviar el enlace al catálogo.
+              </p>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <DownloadCard
+                  href="/api/cartel/png"
+                  preview="/api/cartel/png?inline=1"
+                  title="Cartel completo (PNG)"
+                  desc="Imagen para WhatsApp · 1323 × 2043 px"
+                  icon={ImageIcon}
+                />
+                <DownloadCard
+                  href="/api/cartel/qr"
+                  preview="/api/cartel/qr?inline=1"
+                  title="Sólo el QR + URL"
+                  desc="Para enviar solo el código de acceso · 800 × 800 px"
+                  icon={QrCode}
+                />
+              </div>
+              <p className="mt-3 text-[11px] text-ink-400">
+                Si en algún momento cambia el dominio público, regenera estos
+                archivos con <code className="bg-ink-100 px-1.5 py-0.5 rounded text-[10px]">node scripts/regenerate-poster-with-qr.mjs</code>.
+              </p>
+            </div>
+          )}
+
           <Alert variant="info">
             Las farmacias ven este cartel desde su panel y al finalizar cualquier
             pedido. Si subes uno nuevo, el cambio es inmediato para todas.{' '}
-            <strong>Importante:</strong> la miniatura que aparece junto al botÃ³n de
-            descarga es independiente â€” actualÃ­zala en{' '}
+            <strong>Importante:</strong> la miniatura que aparece junto al botón de
+            descarga es independiente — actualízala en{' '}
             <a href="/admin/imagenes" className="underline font-semibold">
-              ImÃ¡genes del sitio
+              Imágenes del sitio
             </a>{' '}
-            (slot &laquo;Miniatura del cartel&raquo;) cuando cambies el cartel.
+            (slot «Miniatura del cartel») cuando cambies el cartel.
           </Alert>
         </div>
 
@@ -136,6 +177,45 @@ function Row({ k, v }: { k: string; v: string }) {
     <div className="flex items-baseline gap-3">
       <span className="text-[11px] uppercase tracking-wider text-ink-400 w-16 shrink-0">{k}</span>
       <span className="text-ink-800 break-all">{v}</span>
+    </div>
+  );
+}
+
+function DownloadCard({
+  href,
+  preview,
+  title,
+  desc,
+  icon: Icon,
+}: {
+  href: string;
+  preview: string;
+  title: string;
+  desc: string;
+  icon: React.ElementType;
+}) {
+  return (
+    <div className="rounded-xl border border-ink-200 bg-white overflow-hidden">
+      <div className="bg-ink-50/40 p-3 flex items-center justify-center min-h-[120px]">
+        <img
+          src={preview}
+          alt={title}
+          className="max-h-[110px] w-auto rounded-md shadow-sm"
+        />
+      </div>
+      <div className="p-3">
+        <div className="flex items-center gap-1.5 text-sm font-semibold text-ink-900">
+          <Icon className="h-3.5 w-3.5 text-brand-700" />
+          {title}
+        </div>
+        <div className="text-[11px] text-ink-500 mt-0.5">{desc}</div>
+        <a
+          href={href}
+          className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-brand-700 hover:underline"
+        >
+          <Download className="h-3 w-3" /> Descargar
+        </a>
+      </div>
     </div>
   );
 }
