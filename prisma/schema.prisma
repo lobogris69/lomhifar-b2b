@@ -190,6 +190,17 @@ model Order {
   adminNotes      String?
   customerNote    String?
 
+  // Origen del pedido: 'WEB' (cliente lo hizo desde /tienda) o
+  // 'ADMIN' (creado manualmente desde el admin por pedidos que
+  // llegan por otras vías: teléfono, visita comercial, nota escrita…).
+  source          String   @default("WEB")
+  // Solo se rellena cuando source=ADMIN. Valores sugeridos:
+  // 'PHONE' | 'EMAIL' | 'WHATSAPP' | 'VISIT' | 'NOTE' | 'OTHER'.
+  // Sirve para estadísticas ("qué canales me traen más pedidos").
+  channel         String?
+  // Quién creó el pedido manual (email del admin). null si source=WEB.
+  createdByAdmin  String?
+
   // Tracking de envío (InPost u otros)
   trackingNumber  String?
   trackingUrl     String?
@@ -205,9 +216,11 @@ model Order {
 
   items           OrderItem[]
   trackingEvents  TrackingEvent[]
+  laserFiles      LaserFile[]
 
   @@index([customerId])
   @@index([status])
+  @@index([source])
 }
 
 model OrderItem {
@@ -337,6 +350,49 @@ model PosterFile {
   size        Int
   uploadedBy  String?
   createdAt   DateTime @default(now())
+}
+
+// ------------------------------------------------------------
+// Archivos DXF de grabado láser generados desde el admin.
+// Cada vez que se descarga un DXF por un pedido, se guarda aquí
+// para trazabilidad completa (qué se grabó, cuándo, para quién).
+// Se muestran organizados por fecha en /admin/laser/archivo.
+// ------------------------------------------------------------
+model LaserFile {
+  id           String   @id @default(cuid())
+  orderId      String
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // Snapshot del contexto en el momento de la descarga (no depende
+  // de que el pedido cambie después).
+  orderNumber  Int
+  pharmacyName String
+  cif          String?
+
+  // Contenido y metadatos del DXF
+  filename     String   // ej: 2026-08-03_Pedido-00042_FarmaciaLopez_L1_DIABETES.dxf
+  data         Bytes    // el DXF completo
+  size         Int      // bytes
+
+  // Texto grabado (línea por línea, para búsqueda rápida sin abrir el DXF)
+  line1        String
+  line2        String?
+  line3        String?
+  linesJoined  String   // "DIABETES TIPO 1 · TFNO 666 123 456" — para GRAY
+
+  // Color y nº de unidades del grabado (info denormalizada)
+  color        String   // BLACK | RED
+  totalUnits   Int      // cuántas pulseras se grabarán con este DXF
+
+  // Fecha en formato YYYY-MM-DD zona Europe/Madrid → carpetas del archivo
+  dateFolder   String   // "2026-08-03"
+
+  createdBy    String?  // email del admin que descargó
+  createdAt    DateTime @default(now())
+
+  @@index([dateFolder])
+  @@index([orderId])
+  @@index([pharmacyName])
 }
 
 // ============================================================

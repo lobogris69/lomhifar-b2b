@@ -1,0 +1,300 @@
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+import { z } from 'zod';
+import { prisma } from '@/lib/prisma';
+import { requireAdmin } from '@/lib/auth';
+import { priceCart } from '@/lib/pricing';
+import { getSetting, getSettings, parseRecipients, SETTING_KEYS } from '@/lib/settings';
+import { emailLayout, sendEmail } from '@/lib/email';
+import { formatEuros, normalizeCif, normalizeEmail } from '@/lib/utils';
+import { isValidSpanishTaxId } from '@/lib/validations';
+import { decrementStockForOrder } from '@/lib/stock';
+
+export interface QuickCustomerState {
+  ok?: boolean;
+  error?: string;
+  fieldErrors?: Record<string, string>;
+  customerId?: string;
+}
+
+/**
+ * Alta rápida de cliente desde el formulario de pedido manual.
+ * Datos mínimos obligatorios. El admin puede completar el resto más
+ * tarde desde /admin/clientes.
+ */
+export async function quickCreateCustomer(
+  _prev: QuickCustomerState,
+  formData: FormData,
+): Promise<QuickCustomerState> {
+  await requireAdmin({ write: true });
+
+  const cif = normalizeCif(String(formData.get('cif') ?? ''));
+  const email = normalizeEmail(String(formData.get('email') ?? ''));
+  const pharmacyName = String(formData.get('pharmacyName') ?? '').trim();
+  const contactName = String(formData.get('contactName') ?? '').trim() || null;
+  const phone = String(formData.get('phone') ?? '').trim() || null;
+  const address = String(formData.get('address') ?? '').trim() || null;
+  const city = String(formData.get('city') ?? '').trim() || null;
+  const postalCode = String(formData.get('postalCode') ?? '').trim() || null;
+  const province = String(formData.get('province') ?? '').trim() || null;
+
+  const fe: Record<string, string> = {};
+  if (!isValidSpanishTaxId(cif)) fe.cif = 'CIF/NIF/NIE no válido';
+  if (!email.includes('@')) fe.email = 'Email no válido';
+  if (pharmacyName.length < 2) fe.pharmacyName = 'Nombre obligatorio';
+  if (Object.keys(fe).length) return { fieldErrors: fe };
+
+  const existing = await prisma.customer.findUnique({ where: { cif } });
+  if (existing) {
+    return { ok: true, customerId: existing.id };
+  }
+
+  const created = await prisma.customer.create({
+    data: {
+      cif, email, pharmacyName, contactName, phone,
+      address, city, postalCode, province,
+      active: true,
+      source: 'MANUAL',
+    },
+  });
+  revalidatePath('/admin/clientes');
+  return { ok: true, customerId: created.id };
+}
+
+// ============================================================
+// Crear pedido manual
+// ============================================================
+
+const CHANNEL_VALUES = ['PHONE', 'EMAIL', 'WHATSAPP', 'VISIT', 'NOTE', 'OTHER'] as const;
+type Channel = (typeof CHANNEL_VALUES)[number];
+
+export const CHANNEL_LABEL: Record<Channel, string> = {
+  PHONE: 'Teléfono',
+  EMAIL: 'Email',
+  WHATSAPP: 'WhatsApp',
+  VISIT: 'Visita comercial',
+  NOTE: 'Nota escrita',
+  OTHER: 'Otro',
+};
+
+const itemSchema = z.object({
+  color: z.enum(['BLACK', 'RED']),
+  quantity: z.coerce.number().int().min(1).max(9999),
+  line1: z.string().min(1, 'Línea 1 obligatoria').max(40),
+  line2: z.string().max(40).optional().default(''),
+  line3: z.string().max(40).optional().default(''),
+});
+
+const createOrderSchema = z.object({
+  customerId: z.string().min(1, 'Selecciona un cliente'),
+  channel: z.enum(CHANNEL_VALUES),
+  notify: z.string().optional(), // 'on' | undefined
+  adminNote: z.string().max(500).optional().default(''),
+  itemsJson: z.string().min(2, 'Añade al menos una pulsera'),
+});
+
+export interface CreateManualOrderState {
+  ok?: boolean;
+  error?: string;
+  fieldErrors?: Record<string, string>;
+  orderId?: string;
+  orderNumber?: number;
+}
+
+/**
+ * Crea un pedido en nombre de un cliente registrado, tal como si el
+ * cliente lo hubiese hecho desde la web. Se marca con source='ADMIN'
+ * y el canal (PHONE, VISIT, etc.) para estadísticas.
+ *
+ * Si 'notify' está marcado, envía email de confirmación al cliente.
+ * En cualquier caso envía email interno a la cuenta de Lomhifar (para
+ * la trazabilidad habitual).
+ */
+export async function createManualOrder(
+  _prev: CreateManualOrderState,
+  formData: FormData,
+): Promise<CreateManualOrderState> {
+  const session = await requireAdmin({ write: true });
+
+  const parsed = createOrderSchema.safeParse({
+    customerId: String(formData.get('customerId') ?? ''),
+    channel: String(formData.get('channel') ?? ''),
+    notify: formData.get('notify') ? 'on' : undefined,
+    adminNote: String(formData.get('adminNote') ?? ''),
+    itemsJson: String(formData.get('itemsJson') ?? '[]'),
+  });
+  if (!parsed.success) {
+    const fe: Record<string, string> = {};
+    for (const i of parsed.error.issues) fe[String(i.path[0])] = i.message;
+    return { fieldErrors: fe };
+  }
+
+  const customer = await prisma.customer.findUnique({ where: { id: parsed.data.customerId } });
+  if (!customer) return { error: 'Cliente no encontrado' };
+  if (!customer.active) return { error: 'Este cliente está desactivado. Actívalo antes de crear un pedido.' };
+
+  let rawItems: unknown[];
+  try {
+    rawItems = JSON.parse(parsed.data.itemsJson);
+    if (!Array.isArray(rawItems)) throw new Error('bad');
+  } catch {
+    return { error: 'Datos de las pulseras inválidos.' };
+  }
+
+  const parsedItems: Array<z.infer<typeof itemSchema>> = [];
+  for (let i = 0; i < rawItems.length; i++) {
+    const it = itemSchema.safeParse(rawItems[i]);
+    if (!it.success) {
+      return { error: `Pulsera #${i + 1}: ${it.error.issues[0].message}` };
+    }
+    parsedItems.push(it.data);
+  }
+  if (parsedItems.length === 0) return { error: 'Añade al menos una pulsera al pedido' };
+
+  // Reutilizamos el mismo motor de precios de la tienda para que los
+  // pedidos manuales lleven exactamente los mismos importes que los web.
+  const cartInput = parsedItems.map((it, idx) => ({
+    id: `manual-${idx}`,
+    color: it.color,
+    quantity: it.quantity,
+    line1: it.line1,
+    line2: it.line2 ?? '',
+    line3: it.line3 ?? '',
+  }));
+
+  const { items, totals } = await priceCart(cartInput);
+
+  const last = await prisma.order.findFirst({
+    orderBy: { number: 'desc' },
+    select: { number: true },
+  });
+  const nextNumber = (last?.number ?? 1000) + 1;
+
+  const order = await prisma.order.create({
+    data: {
+      number: nextNumber,
+      customerId: customer.id,
+      pharmacyName: customer.pharmacyName,
+      cif: customer.cif,
+      email: customer.email,
+      contactName: customer.contactName,
+      phone: customer.phone,
+      address: customer.address,
+      city: customer.city,
+      postalCode: customer.postalCode,
+      province: customer.province,
+      subtotalCents: totals.subtotalCents,
+      discountCents: totals.discountCents,
+      discountPct: totals.discountTier?.discountPct ?? null,
+      shippingCents: totals.shippingCents,
+      taxableBaseCents: totals.taxableBaseCents,
+      vatPct: totals.vatPct,
+      vatCents: totals.vatCents,
+      equivSurchargePct: totals.equivSurchargeEnabled ? totals.equivSurchargePct : 0,
+      equivSurchargeCents: totals.equivSurchargeCents,
+      totalCents: totals.totalCents,
+      adminNotes: parsed.data.adminNote || null,
+      source: 'ADMIN',
+      channel: parsed.data.channel,
+      createdByAdmin: session.email,
+      items: {
+        create: items.map((it) => ({
+          color: it.color,
+          quantity: it.quantity,
+          line1: it.line1,
+          line2: it.line2,
+          line3: it.line3 ?? '',
+          unitPriceCents: it.unitPriceCents,
+          lineTotalCents: it.lineTotalCents,
+        })),
+      },
+    },
+    include: { items: true },
+  });
+
+  await decrementStockForOrder(
+    order.id,
+    order.items.map((it) => ({ color: it.color, quantity: it.quantity })),
+  ).catch(() => null);
+
+  // Emails: siempre al equipo Lomhifar, opcional al cliente
+  const recipients = parseRecipients(await getSetting(SETTING_KEYS.ORDERS_RECIPIENT_EMAILS));
+  const settings = await getSettings();
+  const deliveryDays = settings[SETTING_KEYS.DELIVERY_DAYS];
+
+  const channelLabel = CHANNEL_LABEL[parsed.data.channel];
+
+  const itemsTable = order.items.map((it) => {
+    const c = it.color === 'BLACK' ? 'Negra' : 'Roja';
+    const eng = [it.line1, it.line2, it.line3].filter((l) => l && l.trim().length > 0).join('<br/>');
+    return `<tr>
+      <td style="padding:8px;border:1px solid #ebeef0;">${c}</td>
+      <td style="padding:8px;border:1px solid #ebeef0;text-align:center;">${it.quantity}</td>
+      <td style="padding:8px;border:1px solid #ebeef0;font-family:monospace;line-height:1.5;">${eng}</td>
+      <td style="padding:8px;border:1px solid #ebeef0;text-align:right;">${formatEuros(it.lineTotalCents)}</td>
+    </tr>`;
+  }).join('');
+
+  const totalsBlock = `
+    <table style="margin-top:16px;width:100%;font-size:14px;">
+      <tr><td style="padding:4px 0;color:#637787;">Subtotal (${totals.totalUnits} uds)</td><td style="text-align:right;">${formatEuros(order.subtotalCents)}</td></tr>
+      ${order.discountCents > 0 ? `<tr><td style="padding:4px 0;color:#16a34a;">Descuento (${order.discountPct}%)</td><td style="text-align:right;color:#16a34a;">−${formatEuros(order.discountCents)}</td></tr>` : ''}
+      <tr><td style="padding:4px 0;color:#637787;border-top:1px solid #ebeef0;">Base imponible</td><td style="text-align:right;border-top:1px solid #ebeef0;">${formatEuros(order.taxableBaseCents)}</td></tr>
+      <tr><td style="padding:4px 0;color:#637787;">IVA (${order.vatPct}%)</td><td style="text-align:right;">${formatEuros(order.vatCents)}</td></tr>
+      ${order.equivSurchargeCents > 0 ? `<tr><td style="padding:4px 0;color:#637787;">Recargo equivalencia (${order.equivSurchargePct}%)</td><td style="text-align:right;">${formatEuros(order.equivSurchargeCents)}</td></tr>` : ''}
+      <tr><td style="padding:8px 0 0;font-weight:700;border-top:1px solid #ebeef0;">TOTAL</td><td style="text-align:right;padding-top:8px;font-weight:700;border-top:1px solid #ebeef0;">${formatEuros(order.totalCents)}</td></tr>
+    </table>`;
+
+  await sendEmail({
+    to: recipients,
+    subject: `Pedido MANUAL #${order.number} · ${customer.pharmacyName} (${channelLabel})`,
+    html: emailLayout(`
+      <h2 style="margin:0 0 4px;font-size:22px;color:#14503b;">Pedido manual #${order.number}</h2>
+      <p style="margin:0 0 16px;color:#637787;font-size:13px;">
+        Creado desde admin por <strong>${session.email}</strong> · Canal: <strong>${channelLabel}</strong>
+      </p>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead><tr style="background:#f0faf5;">
+          <th align="left" style="padding:8px;border:1px solid #b7e6cf;">Color</th>
+          <th align="center" style="padding:8px;border:1px solid #b7e6cf;width:70px;">Uds</th>
+          <th align="left" style="padding:8px;border:1px solid #b7e6cf;">Texto grabado</th>
+          <th align="right" style="padding:8px;border:1px solid #b7e6cf;width:90px;">Total</th>
+        </tr></thead>
+        <tbody>${itemsTable}</tbody>
+      </table>
+      ${totalsBlock}
+      ${parsed.data.adminNote ? `<div style="margin-top:16px;padding:12px;background:#f6f7f8;border-left:3px solid #2a9b6e;border-radius:6px;"><strong>Nota interna:</strong><br/>${parsed.data.adminNote.replace(/</g, '&lt;')}</div>` : ''}
+    `),
+  });
+
+  if (parsed.data.notify) {
+    await sendEmail({
+      to: customer.email,
+      subject: `Confirmación de pedido #${order.number} · Lomhifar`,
+      html: emailLayout(`
+        <h2 style="margin:0 0 4px;font-size:22px;color:#921a5e;">Confirmación de su pedido</h2>
+        <p style="margin:0 0 16px;color:#54545f;font-size:14px;">Referencia <strong>#${order.number}</strong></p>
+        <p style="margin:0 0 16px;line-height:1.6;">
+          Hemos registrado su pedido. A continuación encontrará el detalle. Nuestro equipo
+          lo procesará en las próximas horas hábiles. Plazo estimado de entrega:
+          <strong>${deliveryDays} días laborables</strong>.
+        </p>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="background:#fce7f4;">
+            <th align="left" style="padding:8px;border:1px solid #f8a8d4;">Color</th>
+            <th align="center" style="padding:8px;border:1px solid #f8a8d4;width:70px;">Uds</th>
+            <th align="left" style="padding:8px;border:1px solid #f8a8d4;">Texto grabado</th>
+            <th align="right" style="padding:8px;border:1px solid #f8a8d4;width:90px;">Total</th>
+          </tr></thead>
+          <tbody>${itemsTable}</tbody>
+        </table>
+        ${totalsBlock}
+      `),
+    });
+  }
+
+  revalidatePath('/admin/pedidos');
+  redirect(`/admin/pedidos/${order.id}?creado=1`);
+}

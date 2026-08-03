@@ -6,6 +6,7 @@ import {
   extractUniqueEngravings,
   generateDxfForLines,
   generateSvgPreview,
+  todayMadridYmd,
 } from '@/lib/laser';
 
 export const dynamic = 'force-dynamic';
@@ -75,7 +76,39 @@ export async function GET(
       lineText: eng.lines[0],
     });
 
-    return new NextResponse(dxf, {
+    const dxfBuffer = Buffer.from(dxf, 'utf-8');
+
+    // Guardar en LaserFile para el histórico (Fase 2A). Si falla la
+    // persistencia por cualquier motivo, seguimos sirviendo el DXF
+    // igualmente — la descarga siempre debe funcionar aunque el
+    // archivado falle.
+    try {
+      const session = await requireAdmin();
+      await prisma.laserFile.create({
+        data: {
+          orderId: order.id,
+          orderNumber: order.number,
+          pharmacyName: order.pharmacyName,
+          cif: order.cif,
+          filename,
+          data: dxfBuffer,
+          size: dxfBuffer.length,
+          line1: eng.lines[0] ?? '',
+          line2: eng.lines[1] ?? null,
+          line3: eng.lines[2] ?? null,
+          linesJoined: eng.lines.join(' · '),
+          color: eng.color,
+          totalUnits: eng.totalUnits,
+          dateFolder: todayMadridYmd(),
+          createdBy: session.email,
+        },
+      });
+    } catch (persistErr) {
+      // eslint-disable-next-line no-console
+      console.error('[laser] no se pudo archivar el DXF:', persistErr);
+    }
+
+    return new NextResponse(new Uint8Array(dxfBuffer), {
       headers: {
         'Content-Type': 'application/dxf; charset=utf-8',
         'Content-Disposition': `${inline ? 'inline' : 'attachment'}; filename="${encodeURIComponent(filename)}"`,

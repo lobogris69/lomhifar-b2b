@@ -1,5 +1,5 @@
 ﻿import Link from 'next/link';
-import { ClipboardList, Search, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ClipboardList, Search, Download, ChevronLeft, ChevronRight, ClipboardPlus, Phone } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { formatDate, formatEuros } from '@/lib/utils';
 import { OrderStatusBadge, ORDER_STATUS_LABEL } from '@/components/shop/OrderStatusBadge';
@@ -91,9 +91,14 @@ export default async function OrdersPage({
             )}
           </p>
         </div>
-        <a href={exportUrl} className="btn-secondary" download>
-          <Download className="h-4 w-4" /> Exportar a Excel (CSV)
-        </a>
+        <div className="flex flex-wrap gap-2 shrink-0">
+          <a href="/admin/pedidos/nuevo" className="btn-primary">
+            <ClipboardPlus className="h-4 w-4" /> Nuevo pedido manual
+          </a>
+          <a href={exportUrl} className="btn-secondary" download>
+            <Download className="h-4 w-4" /> Exportar a Excel (CSV)
+          </a>
+        </div>
       </div>
 
       <form className="card p-4 mb-4 flex flex-wrap items-end gap-3">
@@ -151,9 +156,19 @@ export default async function OrdersPage({
                     return (
                       <tr key={o.id} className="cursor-pointer">
                         <td>
-                          <Link href={`/admin/pedidos/${o.id}`} className="font-semibold text-brand-700 hover:underline">
-                            #{o.number}
-                          </Link>
+                          <div className="flex items-center gap-1.5">
+                            <Link href={`/admin/pedidos/${o.id}`} className="font-semibold text-brand-700 hover:underline">
+                              #{o.number}
+                            </Link>
+                            {o.source === 'ADMIN' && (
+                              <span
+                                title={`Pedido manual · Canal: ${o.channel ?? 'sin especificar'}`}
+                                className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-200 rounded px-1 py-0.5"
+                              >
+                                <Phone className="h-2.5 w-2.5" /> manual
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td>{formatDate(o.createdAt)}</td>
                         <td>{o.pharmacyName}</td>

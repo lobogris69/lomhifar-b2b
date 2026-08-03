@@ -1,17 +1,59 @@
 import Link from 'next/link';
-import { ArrowLeft, FolderClock, Info } from 'lucide-react';
+import { ArrowLeft, FolderOpen, Download, FileArchive, Search } from 'lucide-react';
+import { prisma } from '@/lib/prisma';
 import { Alert } from '@/components/ui/Alert';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Histórico DXF · Admin Lomhifar' };
 
-/**
- * Placeholder de la FASE 2: histórico de DXF generados, agrupado en
- * carpetas por fecha. Requiere modelo `LaserFile` en Prisma y guardar
- * cada DXF descargado desde /admin/pedidos/[id]. Se activará en el
- * siguiente incremento tras validar la Fase 1 (generador + descarga).
- */
-export default async function LaserArchivePage() {
+interface PageProps {
+  searchParams: { q?: string };
+}
+
+/** Formatea "2026-08-03" a "Lunes 3 de agosto de 2026" en español. */
+function humanDate(ymd: string): string {
+  const [y, m, d] = ymd.split('-').map((n) => Number(n));
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return new Intl.DateTimeFormat('es-ES', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    timeZone: 'UTC',
+  }).format(dt).replace(/^./, (c) => c.toUpperCase());
+}
+
+export default async function LaserArchivePage({ searchParams }: PageProps) {
+  const q = (searchParams.q ?? '').trim();
+
+  // Filtro opcional por texto grabado / cliente
+  const where = q
+    ? {
+        OR: [
+          { linesJoined: { contains: q, mode: 'insensitive' as const } },
+          { pharmacyName: { contains: q, mode: 'insensitive' as const } },
+          { filename: { contains: q, mode: 'insensitive' as const } },
+        ],
+      }
+    : {};
+
+  const files = await prisma.laserFile.findMany({
+    where,
+    orderBy: [{ dateFolder: 'desc' }, { createdAt: 'desc' }],
+    select: {
+      id: true, orderId: true, orderNumber: true, pharmacyName: true,
+      filename: true, size: true, line1: true, line2: true, line3: true,
+      color: true, totalUnits: true, dateFolder: true, createdBy: true, createdAt: true,
+    },
+    take: 500,
+  });
+
+  // Agrupar por fecha (dateFolder ya viene ordenado desc)
+  const byDate = new Map<string, typeof files>();
+  for (const f of files) {
+    if (!byDate.has(f.dateFolder)) byDate.set(f.dateFolder, []);
+    byDate.get(f.dateFolder)!.push(f);
+  }
+  const dates = Array.from(byDate.entries());
+  const totalFiles = files.length;
+
   return (
     <div className="p-4 sm:p-6 lg:p-10 max-w-6xl space-y-6">
       <div>
@@ -23,33 +65,150 @@ export default async function LaserArchivePage() {
         </Link>
         <div className="flex items-center gap-3">
           <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
-            <FolderClock className="h-5 w-5" />
+            <FolderOpen className="h-5 w-5" />
           </span>
           <div>
             <h1 className="section-title">Histórico de archivos láser</h1>
-            <p className="section-subtitle">Todos los DXF generados, ordenados por fecha.</p>
+            <p className="section-subtitle">
+              Todos los DXF descargados desde los pedidos, agrupados por fecha.
+            </p>
           </div>
         </div>
       </div>
 
-      <Alert variant="info" title="En desarrollo (Fase 2)">
-        <p className="text-sm">
-          Esta pantalla mostrará <strong>todos los DXF que hayas generado</strong>,
-          agrupados en carpetas por fecha (📁 2026-08-03, 📁 2026-08-04…), con búsqueda por
-          cliente y por texto grabado, y descarga individual o ZIP del día entero.
-        </p>
-        <ul className="mt-2 text-sm space-y-1 list-disc list-inside">
-          <li>Requiere modelo <code className="bg-ink-100 px-1 rounded text-xs">LaserFile</code> en base de datos</li>
-          <li>Cada descarga desde <code className="bg-ink-100 px-1 rounded text-xs">/admin/pedidos/[id]</code> queda registrada aquí</li>
-          <li>Se activa en el próximo incremento tras validar el generador de la Fase 1</li>
-        </ul>
-        <p className="mt-2 text-sm">
-          <Info className="h-3 w-3 inline mr-1" />
-          Mientras tanto, cuando descargues un DXF desde un pedido, el nombre del archivo
-          incluye la fecha y el nombre del cliente para que puedas organizarlo en carpetas
-          tú mismo en tu PC.
-        </p>
-      </Alert>
+      {/* Buscador */}
+      <form className="card p-4 flex flex-wrap items-end gap-3" action="/admin/laser/archivo">
+        <div className="w-full sm:flex-1 sm:min-w-[240px]">
+          <label className="label" htmlFor="q">Buscar por texto, farmacia o nombre de archivo</label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
+            <input
+              id="q"
+              name="q"
+              defaultValue={q}
+              placeholder="ej. DIABETES, Farmacia López, 00042…"
+              className="input pl-9"
+            />
+          </div>
+        </div>
+        <button type="submit" className="btn-primary">Buscar</button>
+        {q && (
+          <Link href="/admin/laser/archivo" className="btn-ghost text-xs">Limpiar</Link>
+        )}
+      </form>
+
+      {files.length === 0 ? (
+        <Alert variant="info" title={q ? 'Sin resultados' : 'Aún no hay archivos'}>
+          {q ? (
+            <p className="text-sm">
+              No hay ningún DXF que coincida con &laquo;{q}&raquo;. Prueba con menos texto o quita el filtro.
+            </p>
+          ) : (
+            <p className="text-sm">
+              Cuando descargues DXF de un pedido desde{' '}
+              <code className="bg-ink-100 px-1 rounded text-xs">/admin/pedidos/[id]</code>,
+              se irán acumulando aquí ordenados por fecha para que tengas control total
+              de lo que has grabado y cuándo.
+            </p>
+          )}
+        </Alert>
+      ) : (
+        <>
+          <div className="text-xs text-ink-500">
+            {totalFiles} archivo{totalFiles === 1 ? '' : 's'} en {dates.length}{' '}
+            {dates.length === 1 ? 'día' : 'días'}{q ? ` que coinciden con «${q}»` : ''}.
+          </div>
+
+          <div className="space-y-4">
+            {dates.map(([date, list]) => (
+              <details key={date} open className="card overflow-hidden">
+                <summary className="px-5 py-3 border-b border-ink-100 bg-ink-50/40 cursor-pointer flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-3">
+                    <FolderOpen className="h-4 w-4 text-brand-700 shrink-0" />
+                    <div>
+                      <div className="text-sm font-semibold text-ink-900">📁 {date}</div>
+                      <div className="text-[11px] text-ink-500">
+                        {humanDate(date)} · {list.length} archivo{list.length === 1 ? '' : 's'}
+                      </div>
+                    </div>
+                  </div>
+                  <a
+                    href={`/api/admin/laser/zip/${date}`}
+                    className="btn-secondary text-xs"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <FileArchive className="h-3.5 w-3.5" /> ZIP del día
+                  </a>
+                </summary>
+                <div className="overflow-x-auto">
+                  <table className="table-pro min-w-[720px]">
+                    <thead>
+                      <tr>
+                        <th>Hora</th>
+                        <th>Pedido</th>
+                        <th>Farmacia</th>
+                        <th>Texto grabado</th>
+                        <th>Color</th>
+                        <th className="text-right">Uds</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {list.map((f) => {
+                        const time = new Intl.DateTimeFormat('es-ES', {
+                          hour: '2-digit', minute: '2-digit',
+                          timeZone: 'Europe/Madrid',
+                        }).format(f.createdAt);
+                        return (
+                          <tr key={f.id}>
+                            <td className="text-xs text-ink-500 font-mono">{time}</td>
+                            <td>
+                              <Link
+                                href={`/admin/pedidos/${f.orderId}`}
+                                className="text-brand-700 hover:underline font-semibold text-sm"
+                              >
+                                #{f.orderNumber}
+                              </Link>
+                            </td>
+                            <td className="text-sm">{f.pharmacyName}</td>
+                            <td className="text-xs font-mono text-ink-700">
+                              {f.line1}
+                              {f.line2 && <div className="text-ink-500">{f.line2}</div>}
+                              {f.line3 && <div className="text-ink-500">{f.line3}</div>}
+                            </td>
+                            <td>
+                              <span className={`badge ${f.color === 'RED' ? 'bg-red-100 text-red-800' : 'bg-ink-100 text-ink-800'}`}>
+                                {f.color === 'RED' ? 'Roja' : 'Negra'}
+                              </span>
+                            </td>
+                            <td className="text-right font-semibold text-sm">{f.totalUnits}</td>
+                            <td className="text-right">
+                              <a
+                                href={`/api/admin/laser/file/${f.id}`}
+                                className="btn-ghost text-xs"
+                                title={`Descargar ${f.filename}`}
+                              >
+                                <Download className="h-3.5 w-3.5" />
+                              </a>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </details>
+            ))}
+          </div>
+
+          {totalFiles === 500 && (
+            <Alert variant="info">
+              Mostrando los 500 archivos más recientes. Usa el buscador para acotar por texto
+              o farmacia si necesitas ver más antiguos.
+            </Alert>
+          )}
+        </>
+      )}
     </div>
   );
 }
