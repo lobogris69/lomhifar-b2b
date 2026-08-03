@@ -72,12 +72,14 @@ export const ROLE_ALLOWED_PATHS: Record<AdminRole, RegExp[]> = {
     /^\/admin\/configuracion/,
     /^\/admin\/laser/,
     /^\/admin\/perfil/,
+    /^\/admin\/ayuda/,
   ],
   ORDER_MANAGER: [
     /^\/admin$/,
     /^\/admin\/pedidos/,
     /^\/admin\/laser/,
     /^\/admin\/perfil/,
+    /^\/admin\/ayuda/,
   ],
   // VIEWER puede ver TODO lo que ve un ADMIN normal (incluido usuarios
   // admin para que pueda auditar quién tiene acceso) EXCEPTO la zona
@@ -98,6 +100,7 @@ export const ROLE_ALLOWED_PATHS: Record<AdminRole, RegExp[]> = {
     /^\/admin\/laser/,
     /^\/admin\/usuarios/,    // ve la lista de usuarios pero no puede editar
     /^\/admin\/perfil/,
+    /^\/admin\/ayuda/,
   ],
 };
 

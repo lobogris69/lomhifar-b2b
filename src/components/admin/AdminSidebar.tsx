@@ -21,6 +21,7 @@ import {
   Type,
   Wrench,
   Zap,
+  HelpCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ADMIN_ROLE_LABEL, type AdminRole, canAccessPath } from '@/lib/admin-roles';
@@ -40,6 +41,7 @@ const NAV = [
   { href: '/admin/laser', label: 'Grabado láser', icon: Zap },
   { href: '/admin/usuarios', label: 'Usuarios admin', icon: Users2 },
   { href: '/admin/sistema', label: 'Sistema / Reset', icon: Wrench },
+  { href: '/admin/ayuda', label: 'Ayuda', icon: HelpCircle },
 ];
 
 export interface SidebarBadges {
