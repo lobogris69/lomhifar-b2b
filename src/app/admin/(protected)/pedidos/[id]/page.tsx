@@ -10,8 +10,9 @@ import { PrintButton } from '@/components/admin/PrintButton';
 import { CARRIERS, DEFAULT_CARRIER } from '@/lib/shipping';
 import { isMondialRelayEnabled } from '@/lib/mondial-relay';
 import { saveAdminNotes, saveTracking, updateOrderStatus } from '../actions';
-import { Truck, ExternalLink } from 'lucide-react';
+import { Truck, ExternalLink, Zap, Download } from 'lucide-react';
 import { GenerateMondialRelayLabel } from './GenerateMondialRelayLabel';
+import { extractUniqueEngravings, slugForFilename } from '@/lib/laser';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Pedido · Admin Lomhifar' };
@@ -160,6 +161,96 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
           {mrEnabled && !order.trackingNumber && order.postalCode && (
             <GenerateMondialRelayLabel orderId={order.id} destCP={order.postalCode} />
           )}
+
+          {/* Archivos DXF para EZCAD (grabado láser) */}
+          <div className="card p-6 no-print">
+            <div className="flex items-center gap-2 mb-3">
+              <Zap className="h-4 w-4 text-brand-700" />
+              <h3 className="text-sm font-semibold text-ink-900">Archivos láser para EZCAD</h3>
+            </div>
+            {(() => {
+              const engravings = extractUniqueEngravings(order.items);
+              if (engravings.length === 0) {
+                return (
+                  <p className="text-xs text-ink-500">
+                    Este pedido no tiene texto para grabar.
+                  </p>
+                );
+              }
+              return (
+                <>
+                  <p className="text-xs text-ink-500 mb-4">
+                    Este pedido tiene <strong>{engravings.length}</strong>{' '}
+                    {engravings.length === 1 ? 'texto único' : 'textos únicos'} para grabar.
+                    Descarga el DXF de cada uno → doble-click abre EZCAD → pulsa F2 y graba
+                    tantas veces como unidades pedidas.
+                  </p>
+                  <div className="space-y-3">
+                    {engravings.map((e, idx) => {
+                      const linePreview = e.lines.join(' · ');
+                      const previewUrl = `/api/admin/pedidos/${order.id}/laser?line=${idx}&format=svg&inline=1`;
+                      const dxfUrl = `/api/admin/pedidos/${order.id}/laser?line=${idx}`;
+                      return (
+                        <div
+                          key={e.key}
+                          className="rounded-lg border border-ink-200 bg-white overflow-hidden"
+                        >
+                          <div className="p-3 flex items-start gap-3 flex-wrap sm:flex-nowrap">
+                            <div className="w-full sm:w-[220px] shrink-0 rounded border border-ink-100 bg-ink-50/40 flex items-center justify-center p-1 min-h-[70px]">
+                              {/* Preview SVG del texto sobre la placa */}
+                              <object
+                                type="image/svg+xml"
+                                data={previewUrl}
+                                className="w-full h-auto max-h-[80px] pointer-events-none"
+                                aria-label={`Preview grabado ${idx + 1}`}
+                              >
+                                <span className="text-[10px] text-ink-400">Preview</span>
+                              </object>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-[10px] uppercase tracking-wider text-ink-500">
+                                Grabado {idx + 1} · {e.color === 'RED' ? 'Roja' : 'Negra'} · {e.totalUnits} ud{e.totalUnits === 1 ? '' : 's'}
+                              </div>
+                              <div className="mt-0.5 text-sm font-semibold text-ink-900 break-words">
+                                {e.lines.map((l, i) => (
+                                  <div key={i} className="font-mono text-[13px]">{l}</div>
+                                ))}
+                              </div>
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                <a
+                                  href={dxfUrl}
+                                  className="btn-primary text-xs"
+                                  download
+                                >
+                                  <Download className="h-3.5 w-3.5" /> Descargar DXF
+                                </a>
+                                <a
+                                  href={previewUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="btn-ghost text-xs"
+                                >
+                                  <ExternalLink className="h-3 w-3" /> Ver preview
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="mt-3 text-[11px] text-ink-400">
+                    El nombre del archivo se genera automáticamente:{' '}
+                    <code className="bg-ink-100 px-1 rounded text-[10px]">
+                      YYYY-MM-DD_Pedido-{order.number}_{slugForFilename(order.pharmacyName, 12)}_L1_...dxf
+                    </code>
+                    . La configuración del área imprimible se edita en{' '}
+                    <Link href="/admin/laser" className="underline">Grabado láser</Link>.
+                  </p>
+                </>
+              );
+            })()}
+          </div>
 
           <div className="card p-6">
             <div className="flex items-center gap-2 mb-3">

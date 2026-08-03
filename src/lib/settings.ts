@@ -60,6 +60,19 @@ export const SETTING_KEYS = {
   SHIPPING_MR_DELIVERY_MODE: 'shipping.mr.delivery_mode',
   // Peso por defecto del pedido en gramos (las pulseras pesan poco)
   SHIPPING_MR_DEFAULT_WEIGHT_G: 'shipping.mr.default_weight_g',
+  // === LÁSER (generación de archivos DXF para EZCAD) ===
+  // Dimensiones y márgenes en MILÍMETROS del área imprimible de la placa.
+  // El origen (0,0) del DXF queda en la ESQUINA INFERIOR IZQUIERDA de la
+  // placa (misma convención que EZCAD/JCZ). El generador respeta márgenes
+  // y centra el texto dentro del área útil (ancho − izq − der / alto − sup − inf).
+  LASER_PLATE_WIDTH_MM: 'laser.plate_width_mm',
+  LASER_PLATE_HEIGHT_MM: 'laser.plate_height_mm',
+  LASER_MARGIN_LEFT_MM: 'laser.margin_left_mm',
+  LASER_MARGIN_RIGHT_MM: 'laser.margin_right_mm',
+  LASER_MARGIN_TOP_MM: 'laser.margin_top_mm',
+  LASER_MARGIN_BOTTOM_MM: 'laser.margin_bottom_mm',
+  LASER_LINE_HEIGHT_FACTOR: 'laser.line_height_factor', // 1.0 = pegadas, 1.2 = holgadas
+  LASER_CURVE_STEPS: 'laser.curve_steps',               // resolución de curvas Bézier (10-60)
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
@@ -135,6 +148,16 @@ export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
   [SETTING_KEYS.SHIPPING_MR_COLLECT_RELAY_ID]: '',        // vacío = auto-buscar más cercano al CP origen
   [SETTING_KEYS.SHIPPING_MR_DELIVERY_MODE]: 'LDS',        // por defecto: entrega a domicilio del cliente con firma
   [SETTING_KEYS.SHIPPING_MR_DEFAULT_WEIGHT_G]: '100',
+  // === Láser (defaults conservadores para placa 4x1 cm típica).
+  // El admin edita todos estos desde /admin/laser sin tocar código.
+  [SETTING_KEYS.LASER_PLATE_WIDTH_MM]: '40',
+  [SETTING_KEYS.LASER_PLATE_HEIGHT_MM]: '10',
+  [SETTING_KEYS.LASER_MARGIN_LEFT_MM]: '1.5',
+  [SETTING_KEYS.LASER_MARGIN_RIGHT_MM]: '1.5',
+  [SETTING_KEYS.LASER_MARGIN_TOP_MM]: '0.7',
+  [SETTING_KEYS.LASER_MARGIN_BOTTOM_MM]: '0.7',
+  [SETTING_KEYS.LASER_LINE_HEIGHT_FACTOR]: '1.05',
+  [SETTING_KEYS.LASER_CURVE_STEPS]: '24',
 };
 
 // ============================================================

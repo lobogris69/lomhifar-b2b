@@ -1,0 +1,89 @@
+import { NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import {
+  buildDxfFilename,
+  extractUniqueEngravings,
+  generateDxfForLines,
+  generateSvgPreview,
+} from '@/lib/laser';
+
+export const dynamic = 'force-dynamic';
+
+/**
+ * GET /api/admin/pedidos/[id]/laser
+ *
+ * Query params:
+ *   line     = índice (0-based) del grabado único a generar (0 = primero)
+ *   format   = 'dxf' (default) | 'svg' (preview)
+ *   inline   = '1' para abrir en el navegador en vez de descargar
+ *
+ * Ejemplos:
+ *   /api/admin/pedidos/xxx/laser?line=0            → DXF descarga
+ *   /api/admin/pedidos/xxx/laser?line=0&format=svg → SVG preview inline
+ */
+export async function GET(
+  req: Request,
+  { params }: { params: { id: string } },
+) {
+  // Solo admin (VIEWER incluido — es solo lectura de un archivo)
+  await requireAdmin();
+
+  const order = await prisma.order.findUnique({
+    where: { id: params.id },
+    include: { items: true },
+  });
+  if (!order) {
+    return new NextResponse('Pedido no encontrado', { status: 404 });
+  }
+
+  const engravings = extractUniqueEngravings(order.items);
+  if (engravings.length === 0) {
+    return new NextResponse('El pedido no tiene textos para grabar', { status: 400 });
+  }
+
+  const url = new URL(req.url);
+  const lineIdx = Number(url.searchParams.get('line') ?? '0');
+  const format = (url.searchParams.get('format') ?? 'dxf').toLowerCase();
+  const inline = url.searchParams.get('inline') === '1';
+
+  if (lineIdx < 0 || lineIdx >= engravings.length) {
+    return new NextResponse(
+      `Índice fuera de rango. Este pedido tiene ${engravings.length} grabado(s) único(s).`,
+      { status: 400 },
+    );
+  }
+
+  const eng = engravings[lineIdx];
+
+  try {
+    if (format === 'svg') {
+      const svg = await generateSvgPreview(eng.lines);
+      return new NextResponse(svg, {
+        headers: {
+          'Content-Type': 'image/svg+xml; charset=utf-8',
+          'Cache-Control': 'no-store',
+        },
+      });
+    }
+
+    const dxf = await generateDxfForLines(eng.lines);
+    const filename = buildDxfFilename({
+      orderNumber: order.number,
+      pharmacyName: order.pharmacyName,
+      lineIndex: lineIdx + 1,
+      lineText: eng.lines[0],
+    });
+
+    return new NextResponse(dxf, {
+      headers: {
+        'Content-Type': 'application/dxf; charset=utf-8',
+        'Content-Disposition': `${inline ? 'inline' : 'attachment'}; filename="${encodeURIComponent(filename)}"`,
+        'Cache-Control': 'no-store',
+      },
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Error al generar el archivo láser';
+    return new NextResponse(msg, { status: 500 });
+  }
+}
