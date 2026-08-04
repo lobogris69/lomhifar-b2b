@@ -160,7 +160,15 @@ export default async function OrdersPage({
                             <Link href={`/admin/pedidos/${o.id}`} className="font-semibold text-brand-700 hover:underline">
                               #{o.number}
                             </Link>
-                            {o.source === 'ADMIN' && (
+                            {o.isTest && (
+                              <span
+                                title="Pedido de prueba (no descuenta stock)"
+                                className="inline-flex items-center text-[9px] uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200 rounded px-1 py-0.5"
+                              >
+                                🧪 prueba
+                              </span>
+                            )}
+                            {o.source === 'ADMIN' && !o.isTest && (
                               <span
                                 title={`Pedido manual · Canal: ${o.channel ?? 'sin especificar'}`}
                                 className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-200 rounded px-1 py-0.5"

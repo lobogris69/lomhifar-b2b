@@ -91,6 +91,7 @@ const createOrderSchema = z.object({
   customerId: z.string().min(1, 'Selecciona un cliente'),
   channel: z.enum(CHANNEL_VALUES),
   notify: z.string().optional(), // 'on' | undefined
+  isTest: z.string().optional(), // 'on' | undefined
   adminNote: z.string().max(500).optional().default(''),
   itemsJson: z.string().min(2, 'Añade al menos una pulsera'),
 });
@@ -122,6 +123,7 @@ export async function createManualOrder(
     customerId: String(formData.get('customerId') ?? ''),
     channel: String(formData.get('channel') ?? ''),
     notify: formData.get('notify') ? 'on' : undefined,
+    isTest: formData.get('isTest') ? 'on' : undefined,
     adminNote: String(formData.get('adminNote') ?? ''),
     itemsJson: String(formData.get('itemsJson') ?? '[]'),
   });
@@ -131,9 +133,15 @@ export async function createManualOrder(
     return { fieldErrors: fe };
   }
 
+  const isTest = parsed.data.isTest === 'on';
+
   const customer = await prisma.customer.findUnique({ where: { id: parsed.data.customerId } });
   if (!customer) return { error: 'Cliente no encontrado' };
-  if (!customer.active) return { error: 'Este cliente está desactivado. Actívalo antes de crear un pedido.' };
+  // Los pedidos de prueba pueden usar clientes desactivados (p.ej. un
+  // cliente demo que no quieres que aparezca en descubrir/tienda real).
+  if (!customer.active && !isTest) {
+    return { error: 'Este cliente está desactivado. Actívalo antes de crear un pedido.' };
+  }
 
   let rawItems: unknown[];
   try {
@@ -199,6 +207,7 @@ export async function createManualOrder(
       source: 'ADMIN',
       channel: parsed.data.channel,
       createdByAdmin: session.email,
+      isTest,
       items: {
         create: items.map((it) => ({
           color: it.color,
@@ -214,17 +223,24 @@ export async function createManualOrder(
     include: { items: true },
   });
 
-  await decrementStockForOrder(
-    order.id,
-    order.items.map((it) => ({ color: it.color, quantity: it.quantity })),
-  ).catch(() => null);
+  // Los pedidos de PRUEBA NO tocan el stock real.
+  if (!isTest) {
+    await decrementStockForOrder(
+      order.id,
+      order.items.map((it) => ({ color: it.color, quantity: it.quantity })),
+    ).catch(() => null);
+  }
 
-  // Emails: siempre al equipo Lomhifar, opcional al cliente
-  const recipients = parseRecipients(await getSetting(SETTING_KEYS.ORDERS_RECIPIENT_EMAILS));
+  // Emails. En modo prueba, TODO va al admin que lo crea (para verificar
+  // que llega sin molestar al cliente ni al buzón de pedidos real).
+  const recipients = isTest
+    ? [session.email]
+    : parseRecipients(await getSetting(SETTING_KEYS.ORDERS_RECIPIENT_EMAILS));
   const settings = await getSettings();
   const deliveryDays = settings[SETTING_KEYS.DELIVERY_DAYS];
 
   const channelLabel = CHANNEL_LABEL[parsed.data.channel];
+  const testTag = isTest ? '[PRUEBA] ' : '';
 
   const itemsTable = order.items.map((it) => {
     const c = it.color === 'BLACK' ? 'Negra' : 'Roja';
@@ -249,8 +265,9 @@ export async function createManualOrder(
 
   await sendEmail({
     to: recipients,
-    subject: `Pedido MANUAL #${order.number} · ${customer.pharmacyName} (${channelLabel})`,
+    subject: `${testTag}Pedido MANUAL #${order.number} · ${customer.pharmacyName} (${channelLabel})`,
     html: emailLayout(`
+      ${isTest ? '<div style="margin:0 0 12px;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;color:#92400e;font-size:13px;font-weight:600;">⚠️ PEDIDO DE PRUEBA — no descuenta stock, no notifica al cliente</div>' : ''}
       <h2 style="margin:0 0 4px;font-size:22px;color:#14503b;">Pedido manual #${order.number}</h2>
       <p style="margin:0 0 16px;color:#637787;font-size:13px;">
         Creado desde admin por <strong>${session.email}</strong> · Canal: <strong>${channelLabel}</strong>
@@ -269,10 +286,12 @@ export async function createManualOrder(
     `),
   });
 
+  // Email de confirmación "al cliente". En modo prueba se redirige al
+  // admin (mismo contenido que recibiría el cliente, pero a tu buzón).
   if (parsed.data.notify) {
     await sendEmail({
-      to: customer.email,
-      subject: `Confirmación de pedido #${order.number} · Lomhifar`,
+      to: isTest ? session.email : customer.email,
+      subject: `${testTag}Confirmación de pedido #${order.number} · Lomhifar`,
       html: emailLayout(`
         <h2 style="margin:0 0 4px;font-size:22px;color:#921a5e;">Confirmación de su pedido</h2>
         <p style="margin:0 0 16px;color:#54545f;font-size:14px;">Referencia <strong>#${order.number}</strong></p>

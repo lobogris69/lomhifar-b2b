@@ -74,6 +74,21 @@ export async function resetAllOrders(): Promise<ResetOrdersResult> {
   });
 }
 
+/**
+ * Borra SOLO los pedidos marcados como prueba (isTest=true). No toca
+ * el stock (los pedidos de prueba nunca lo descontaron) ni los pedidos
+ * reales. Los LaserFile asociados se borran en cascada (onDelete:Cascade).
+ * Operación segura para limpiar tras las pruebas antes del lanzamiento.
+ */
+export interface ResetTestOrdersResult {
+  deleted: number;
+}
+
+export async function deleteTestOrders(): Promise<ResetTestOrdersResult> {
+  const res = await prisma.order.deleteMany({ where: { isTest: true } });
+  return { deleted: res.count };
+}
+
 export interface ResetApplicationsResult {
   deleted: number;
 }

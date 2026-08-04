@@ -4,6 +4,7 @@ import { getAdminSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Alert } from '@/components/ui/Alert';
 import { ResetCard } from './ResetCard';
+import { TestOrdersCard } from './TestOrdersCard';
 import { resetOrdersAction, resetApplicationsAction, resetSessionsAction } from './actions';
 
 export const dynamic = 'force-dynamic';
@@ -26,17 +27,18 @@ export default async function SistemaPage() {
   }
 
   // Contar elementos actuales (resiliente a fallos)
-  let counts = { orders: 0, items: 0, applications: 0, sessions: 0, codes: 0, customers: 0 };
+  let counts = { orders: 0, items: 0, applications: 0, sessions: 0, codes: 0, customers: 0, testOrders: 0 };
   try {
-    const [orders, items, applications, sessions, codes, customers] = await Promise.all([
+    const [orders, items, applications, sessions, codes, customers, testOrders] = await Promise.all([
       prisma.order.count(),
       prisma.orderItem.count(),
       prisma.pharmacyApplication.count(),
       prisma.customerSession.count(),
       prisma.accessCode.count(),
       prisma.customer.count(),
+      prisma.order.count({ where: { isTest: true } }),
     ]);
-    counts = { orders, items, applications, sessions, codes, customers };
+    counts = { orders, items, applications, sessions, codes, customers, testOrders };
   } catch {
     // si falla, mostramos 0s
   }
@@ -91,6 +93,11 @@ export default async function SistemaPage() {
           </div>
         </div>
       </Alert>
+
+      {/* Borrado SEGURO de pedidos de prueba (sin escribir BORRAR) */}
+      <div className="mb-8">
+        <TestOrdersCard count={counts.testOrders} />
+      </div>
 
       <div className="space-y-5">
         {/* 1. Pedidos */}

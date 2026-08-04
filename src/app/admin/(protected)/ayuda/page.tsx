@@ -353,8 +353,26 @@ export default function HelpPage() {
 
       {/* FAQ */}
       <Section id="faq" icon={HelpCircle} title="Preguntas frecuentes">
-        <SubDetail title="¿Puedo probar un pedido sin cobrarlo?">
-          <p>Sí. Crea un pedido manual desde <A href="/admin/pedidos/nuevo">/admin/pedidos/nuevo</A> a tu propio CIF, con las cantidades que quieras. Puedes cancelarlo después.</p>
+        <SubDetail title="¿Puedo hacer pedidos de prueba sin efectos reales?">
+          <p>Sí, hay un <strong>modo prueba</strong> pensado justo para eso:</p>
+          <ol className="list-decimal list-inside text-sm space-y-1 mt-1">
+            <li>Ve a <A href="/admin/pedidos/nuevo">/admin/pedidos/nuevo</A>.</li>
+            <li>Rellena el pedido normalmente (cliente, pulseras, canal).</li>
+            <li>Marca la casilla <strong>«🧪 Pedido de PRUEBA»</strong>.</li>
+            <li>Guarda.</li>
+          </ol>
+          <p className="mt-2 text-sm">Un pedido de prueba:</p>
+          <ul className="list-disc list-inside text-sm space-y-1 mt-1">
+            <li><strong>No descuenta stock</strong> (el inventario real no se toca).</li>
+            <li>Los emails (interno y confirmación) van a <strong>tu correo de admin</strong>, no al cliente.</li>
+            <li>Aparece con etiqueta morada <strong>«🧪 PRUEBA»</strong> en la lista de pedidos.</li>
+            <li>Puedes generar y descargar su DXF igual que uno real, para comprobar que el archivo se crea bien.</li>
+            <li>Se pueden <strong>borrar todos de golpe</strong> desde <A href="/admin/sistema">/admin/sistema</A> → «Borrar pedidos de PRUEBA» (sin escribir BORRAR, es seguro).</li>
+          </ul>
+          <Tip>
+            Tu web <strong>no tiene pasarela de pago online</strong> — los pedidos B2B se pagan
+            por transferencia/albarán. Así que al probar no hay ningún cobro que se dispare.
+          </Tip>
         </SubDetail>
         <SubDetail title="Un cliente dice que no ha recibido el email de confirmación">
           <ul className="list-disc list-inside text-sm space-y-1">

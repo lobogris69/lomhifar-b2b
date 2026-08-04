@@ -59,6 +59,7 @@ export function ManualOrderForm({ customers, maxCharsPerLine }: Props) {
   ]);
   const [channel, setChannel] = useState<keyof typeof CHANNEL_LABEL>('PHONE');
   const [notify, setNotify] = useState(true);
+  const [isTest, setIsTest] = useState(false);
   const [adminNote, setAdminNote] = useState('');
 
   // Cuando el quick create tiene éxito, seleccionar automáticamente ese cliente
@@ -286,6 +287,27 @@ export function ManualOrderForm({ customers, maxCharsPerLine }: Props) {
 
         <input type="hidden" name="customerId" value={selectedCustomerId} />
         <input type="hidden" name="itemsJson" value={JSON.stringify(items)} />
+        {isTest && <input type="hidden" name="isTest" value="on" />}
+
+        {/* Modo prueba */}
+        <label className="flex items-start gap-2 cursor-pointer rounded-lg border border-amber-200 bg-amber-50/60 p-3">
+          <input
+            type="checkbox"
+            checked={isTest}
+            onChange={(e) => setIsTest(e.target.checked)}
+            className="mt-0.5 h-4 w-4"
+          />
+          <span className="text-sm">
+            <span className="font-semibold text-amber-900">🧪 Pedido de PRUEBA</span>
+            <br />
+            <span className="text-[11px] text-amber-800">
+              No descuenta stock y los emails (interno y confirmación) se envían
+              a <strong>tu correo de admin</strong>, no al cliente. Ideal para
+              comprobar que todo el flujo funciona y que el archivo láser se
+              genera bien. Se pueden borrar en bloque desde Sistema.
+            </span>
+          </span>
+        </label>
 
         <div className="grid sm:grid-cols-2 gap-3">
           <div>

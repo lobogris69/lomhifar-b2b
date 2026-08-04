@@ -200,6 +200,10 @@ model Order {
   channel         String?
   // Quién creó el pedido manual (email del admin). null si source=WEB.
   createdByAdmin  String?
+  // Pedido de PRUEBA: no descuenta stock y los emails van al admin que
+  // lo crea (no al cliente). Sirve para simular el flujo completo sin
+  // efectos reales. Se pueden borrar en bloque desde /admin/sistema.
+  isTest          Boolean  @default(false)
 
   // Tracking de envío (InPost u otros)
   trackingNumber  String?
@@ -221,6 +225,7 @@ model Order {
   @@index([customerId])
   @@index([status])
   @@index([source])
+  @@index([isTest])
 }
 
 model OrderItem {
