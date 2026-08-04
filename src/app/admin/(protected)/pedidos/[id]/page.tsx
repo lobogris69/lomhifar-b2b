@@ -7,10 +7,11 @@ import { colorLabel } from '@/lib/cart';
 import { OrderStatusBadge, ORDER_STATUS_LABEL } from '@/components/shop/OrderStatusBadge';
 import { BraceletPreview } from '@/components/shop/BraceletPreview';
 import { PrintButton } from '@/components/admin/PrintButton';
+import { OrderProgress } from '@/components/admin/OrderProgress';
 import { CARRIERS, DEFAULT_CARRIER } from '@/lib/shipping';
 import { isMondialRelayEnabled } from '@/lib/mondial-relay';
-import { saveAdminNotes, saveTracking, updateOrderStatus } from '../actions';
-import { Truck, ExternalLink, Zap, Download } from 'lucide-react';
+import { saveAdminNotes, saveTracking, updateOrderStatus, markAsEngraved, unmarkEngraved } from '../actions';
+import { Truck, ExternalLink, Zap, Download, Check, RotateCcw } from 'lucide-react';
 import { GenerateMondialRelayLabel } from './GenerateMondialRelayLabel';
 import { extractUniqueEngravings, slugForFilename } from '@/lib/laser';
 
@@ -44,6 +45,15 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
           <PrintButton />
           <OrderStatusBadge status={order.status} className="text-sm" />
         </div>
+      </div>
+
+      {/* Barra de progreso lineal del pedido */}
+      <div className="mb-6 no-print">
+        <OrderProgress
+          status={order.status}
+          engravedAt={order.engravedAt}
+          trackingNumber={order.trackingNumber}
+        />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -140,34 +150,14 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
         </div>
 
         <div className="space-y-6 no-print">
-          <div className="card p-6">
-            <h3 className="text-sm font-semibold text-ink-900 mb-3">Cambiar estado</h3>
-            <form action={updateOrderStatus} className="space-y-3">
-              <input type="hidden" name="id" value={order.id} />
-              <select name="status" defaultValue={order.status} className="input">
-                {Object.entries(ORDER_STATUS_LABEL).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
-                ))}
-              </select>
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" name="notify" defaultChecked className="h-4 w-4" />
-                Notificar al cliente por email
-              </label>
-              <button type="submit" className="btn-primary w-full">Actualizar estado</button>
-            </form>
-          </div>
-
-          {/* Generación automática de etiqueta via API Mondial Relay */}
-          {mrEnabled && !order.trackingNumber && order.postalCode && (
-            <GenerateMondialRelayLabel orderId={order.id} destCP={order.postalCode} />
-          )}
-
-          {/* Archivos DXF para EZCAD (grabado láser) */}
-          <div className="card p-6 no-print">
-            <div className="flex items-center gap-2 mb-3">
+          {/* PASO 2 · GRABAR — Archivos DXF para EZCAD */}
+          <div className="card p-6 no-print border-t-2 border-brand-500">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-white text-[11px] font-bold">2</span>
               <Zap className="h-4 w-4 text-brand-700" />
-              <h3 className="text-sm font-semibold text-ink-900">Archivos láser para EZCAD</h3>
+              <h3 className="text-sm font-semibold text-ink-900">Grabar la pulsera</h3>
             </div>
+            <div className="mb-3" />
             {(() => {
               const engravings = extractUniqueEngravings(order.items);
               if (engravings.length === 0) {
@@ -247,15 +237,59 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
                     . La configuración del área imprimible se edita en{' '}
                     <Link href="/admin/laser" className="underline">Grabado láser</Link>.
                   </p>
+
+                  {/* Confirmación de grabado → salta al paso de envío */}
+                  <div className="mt-4 pt-4 border-t border-ink-100">
+                    {order.engravedAt ? (
+                      <div className="flex items-center justify-between gap-3 flex-wrap">
+                        <div className="flex items-center gap-2 text-sm text-emerald-700">
+                          <Check className="h-4 w-4" />
+                          <span>
+                            <strong>Grabado hecho</strong> el {formatDate(order.engravedAt)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <a href="#paso-envio" className="btn-primary text-xs">
+                            <Truck className="h-3.5 w-3.5" /> Ir al envío
+                          </a>
+                          <form action={unmarkEngraved}>
+                            <input type="hidden" name="id" value={order.id} />
+                            <button type="submit" className="btn-ghost text-xs text-ink-400" title="Deshacer marcado de grabado">
+                              <RotateCcw className="h-3.5 w-3.5" />
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    ) : (
+                      <form action={markAsEngraved}>
+                        <input type="hidden" name="id" value={order.id} />
+                        <button type="submit" className="btn bg-emerald-600 hover:bg-emerald-700 text-white w-full py-2.5 text-sm">
+                          <Check className="h-4 w-4" /> Ya lo he grabado → pasar a envío
+                        </button>
+                        <p className="mt-1.5 text-[11px] text-ink-400 text-center">
+                          Marca el pedido como grabado (En preparación) y te lleva al paso de envío.
+                        </p>
+                      </form>
+                    )}
+                  </div>
                 </>
               );
             })()}
           </div>
 
-          <div className="card p-6">
+          {/* PASO 3 · ENVIAR */}
+          <div id="paso-envio" className="scroll-mt-6" />
+
+          {/* Generación automática de etiqueta via API Mondial Relay */}
+          {mrEnabled && !order.trackingNumber && order.postalCode && (
+            <GenerateMondialRelayLabel orderId={order.id} destCP={order.postalCode} />
+          )}
+
+          <div className="card p-6 border-t-2 border-brand-500">
             <div className="flex items-center gap-2 mb-3">
+              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-white text-[11px] font-bold">3</span>
               <Truck className="h-4 w-4 text-brand-700" />
-              <h3 className="text-sm font-semibold text-ink-900">Tracking del envío</h3>
+              <h3 className="text-sm font-semibold text-ink-900">Enviar (tracking)</h3>
             </div>
             {order.trackingNumber ? (
               <div className="mb-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-sm">
@@ -333,6 +367,32 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
               Ver ficha del cliente →
             </Link>
           </div>
+
+          {/* Cambio de estado MANUAL — secundario, para casos especiales
+              (cancelar, poner en espera, marcar entregado/facturado a mano). */}
+          <details className="card p-4">
+            <summary className="text-sm font-semibold text-ink-900 cursor-pointer">
+              Cambiar estado manualmente
+            </summary>
+            <p className="mt-2 text-[11px] text-ink-500">
+              Normalmente no necesitas esto: los botones «Ya lo he grabado» y
+              «Guardar tracking» ya cambian el estado solos. Úsalo para casos
+              especiales: cancelar, poner en espera, marcar entregado o facturado.
+            </p>
+            <form action={updateOrderStatus} className="space-y-3 mt-3">
+              <input type="hidden" name="id" value={order.id} />
+              <select name="status" defaultValue={order.status} className="input">
+                {Object.entries(ORDER_STATUS_LABEL).map(([k, v]) => (
+                  <option key={k} value={k}>{v}</option>
+                ))}
+              </select>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="notify" defaultChecked className="h-4 w-4" />
+                Notificar al cliente por email
+              </label>
+              <button type="submit" className="btn-secondary w-full">Actualizar estado</button>
+            </form>
+          </details>
         </div>
       </div>
     </div>

@@ -205,6 +205,11 @@ model Order {
   // efectos reales. Se pueden borrar en bloque desde /admin/sistema.
   isTest          Boolean  @default(false)
 
+  // Momento en que se marcó como GRABADO (láser hecho). Sirve para el
+  // flujo guiado: al pulsar «Ya lo he grabado» se rellena esto y el
+  // pedido pasa a EN PREPARACIÓN, quedando listo para el paso de envío.
+  engravedAt      DateTime?
+
   // Tracking de envío (InPost u otros)
   trackingNumber  String?
   trackingUrl     String?

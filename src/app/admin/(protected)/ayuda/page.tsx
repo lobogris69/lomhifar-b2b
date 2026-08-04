@@ -66,6 +66,19 @@ export default function HelpPage() {
 
       {/* PEDIDOS */}
       <Section id="pedidos" icon={ClipboardList} title="Gestión de pedidos">
+        <SubDetail title="El flujo de un pedido (de principio a fin)">
+          <p>Al abrir un pedido verás arriba una <strong>barra de progreso</strong> con 4 pasos:</p>
+          <p className="mt-1 text-center font-medium text-ink-800">
+            ① Recibido → ② Grabado → ③ Enviado → ④ Entregado
+          </p>
+          <p className="mt-2">La ficha está ordenada para seguir ese flujo sin buscar nada:</p>
+          <ol className="list-decimal list-inside text-sm space-y-1 mt-1">
+            <li><strong>Paso 2 · Grabar</strong>: descargas el DXF, grabas, y pulsas «✓ Ya lo he grabado».</li>
+            <li><strong>Paso 3 · Enviar</strong>: pegas el nº de Correos y guardas → cliente notificado.</li>
+          </ol>
+          <p className="mt-2 text-xs text-ink-600">Cada botón cambia el estado automáticamente, así que casi nunca tendrás que tocar «Cambiar estado manualmente» (queda abajo, plegado, solo para casos especiales como cancelar).</p>
+        </SubDetail>
+
         <SubDetail title="Ver un pedido">
           <p>En <A href="/admin/pedidos">/admin/pedidos</A> verás la lista completa. Filtros:</p>
           <ul className="list-disc list-inside text-sm space-y-1 mt-1">
@@ -150,12 +163,12 @@ export default function HelpPage() {
 
         <SubDetail title="Cómo grabar la pulsera (paso a paso)">
           <ol className="list-decimal list-inside space-y-1.5 text-sm">
-            <li>Descargas el DXF desde el pedido.</li>
+            <li>En el pedido, bloque <strong>«2 · Grabar la pulsera»</strong>, pulsa «Descargar DXF».</li>
             <li>Doble click al archivo → se abre EZCAD.</li>
             <li>Colocas la placa en la máquina.</li>
             <li>Pulsas <strong>F2</strong> → el láser dispara.</li>
             <li>Si son varias unidades del mismo texto: quitas la placa grabada, pones otra, F2 otra vez, repites.</li>
-            <li>Cuando termines todas las unidades del pedido, marca en el admin el pedido como <strong>EN PREPARACIÓN</strong>.</li>
+            <li>Cuando termines, pulsa el botón verde <strong>«✓ Ya lo he grabado → pasar a envío»</strong>. El pedido pasa solo a EN PREPARACIÓN y te lleva directo al paso de envío.</li>
           </ol>
           <Tip>
             El DXF ya tiene el texto CONVERTIDO A TRAZADO VECTORIAL — no depende de las fuentes que

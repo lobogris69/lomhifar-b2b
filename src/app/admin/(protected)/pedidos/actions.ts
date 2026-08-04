@@ -50,6 +50,47 @@ export async function updateOrderStatus(formData: FormData) {
   revalidatePath(`/admin/pedidos/${id}`);
 }
 
+/**
+ * Marca el pedido como GRABADO (láser hecho). Rellena engravedAt y, si el
+ * pedido aún estaba en RECIBIDO o EN ESPERA, lo pasa a EN PREPARACIÓN.
+ * No envía email al cliente (es un paso interno de producción).
+ * Parte del flujo guiado: tras grabar, el siguiente paso es el envío.
+ */
+export async function markAsEngraved(formData: FormData) {
+  await ensureAdmin();
+  const id = String(formData.get('id') ?? '');
+  const order = await prisma.order.findUnique({ where: { id } });
+  if (!order) return;
+
+  const newStatus =
+    order.status === 'RECEIVED' || order.status === 'ON_HOLD'
+      ? 'IN_PREPARATION'
+      : order.status;
+
+  await prisma.order.update({
+    where: { id },
+    data: {
+      engravedAt: order.engravedAt ?? new Date(),
+      status: newStatus,
+    },
+  });
+
+  revalidatePath('/admin/pedidos');
+  revalidatePath(`/admin/pedidos/${id}`);
+}
+
+/**
+ * Deshace el marcado de grabado (por si se pulsó por error). Solo limpia
+ * engravedAt; NO revierte el estado automáticamente (el admin lo ajusta a
+ * mano si quiere) para no crear efectos sorpresa.
+ */
+export async function unmarkEngraved(formData: FormData) {
+  await ensureAdmin();
+  const id = String(formData.get('id') ?? '');
+  await prisma.order.update({ where: { id }, data: { engravedAt: null } });
+  revalidatePath(`/admin/pedidos/${id}`);
+}
+
 export async function saveAdminNotes(formData: FormData) {
   await ensureAdmin();
   const id = String(formData.get('id') ?? '');
