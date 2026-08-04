@@ -108,13 +108,13 @@ export function LaserSettingsForm({ initialValues }: { initialValues: LaserIniti
           <h3 className="text-sm font-semibold text-ink-900 mb-2">Tipografía</h3>
           <div className="grid grid-cols-2 gap-3">
             <NumField
-              label="Interlineado ×"
+              label="Separación líneas ×"
               name="lineHeightFactor"
               value={factor}
               onChange={setFactor}
               step={0.05}
               err={state.fieldErrors?.lineHeightFactor}
-              hint="1.0 = pegadas · 1.2 = separadas"
+              hint="1.25 = 25% de aire entre las 2 filas"
             />
             <NumField
               label="Resolución curvas"

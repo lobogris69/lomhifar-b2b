@@ -92,9 +92,38 @@ interface RenderedLine {
 
 interface LayoutResult {
   fontSizeMm: number;
+  capHeightMm: number;
   lines: RenderedLine[];
   usableWidth: number;
   usableHeight: number;
+}
+
+/**
+ * Altura de las MAYÚSCULAS de la fuente en fracción del em (0-1).
+ * El grabado suele ser texto en mayúsculas, así que centrar y escalar
+ * por el capHeight (no por el em completo, que incluye ascendentes y
+ * descendentes fantasma) es lo que da el MÁXIMO aprovechamiento visual
+ * del área diminuta de la placa.
+ */
+function getCapRatio(font: opentype.Font): number {
+  const unitsPerEm = font.unitsPerEm || 2048;
+  // 1) OS/2 sCapHeight si existe (lo más fiable)
+  const os2 = (font.tables as { os2?: { sCapHeight?: number } }).os2;
+  if (os2?.sCapHeight && os2.sCapHeight > 0) {
+    return os2.sCapHeight / unitsPerEm;
+  }
+  // 2) Fallback: bounding box del glifo 'H'
+  try {
+    const gH = font.charToGlyph('H');
+    const bb = gH.getBoundingBox();
+    if (bb && Number.isFinite(bb.y2) && bb.y2 > 0) {
+      return bb.y2 / unitsPerEm;
+    }
+  } catch {
+    /* ignore */
+  }
+  // 3) Último recurso: ratio típico de una sans
+  return 0.71;
 }
 
 async function layoutLines(
@@ -113,57 +142,68 @@ async function layoutLines(
     throw new Error('Los márgenes exceden el tamaño de la placa');
   }
 
-  // Punto de partida: fontSize tal que N líneas + interlineado quepan
-  // exactamente en usableHeight. Luego reducimos si alguna línea
-  // (por ser más ancha que las demás) no cabe en usableWidth.
-  //
-  // En opentype.js, fontSize se interpreta en las mismas unidades que
-  // los métodos getAdvanceWidth y getPath. Como trabajamos en mm,
-  // fontSize resultante estará en mm.
   const N = valid.length;
-  let fontSizeMm = usableHeight / (N * s.lineHeightFactor);
+  const capRatio = getCapRatio(font);
 
-  // Comprobar ancho de la línea más larga y reducir si excede.
+  // ── PASO 1: máxima altura de mayúsculas que cabe verticalmente ──
+  //
+  // El separador entre líneas se expresa como fracción del capHeight:
+  //   gapFactor = lineHeightFactor - 1   (1.0 → sin gap; 1.25 → 25%)
+  //
+  // Altura total del bloque de N líneas de mayúsculas:
+  //   blockH = N·cap + (N-1)·cap·gapFactor
+  //          = cap · (N + (N-1)·gapFactor)
+  // Igualando a usableHeight → capHeight máximo por ALTURA:
+  const gapFactor = Math.max(0, s.lineHeightFactor - 1);
+  const capByHeight = usableHeight / (N + (N - 1) * gapFactor);
+
+  // fontSize que produce ese capHeight
+  let fontSizeMm = capByHeight / capRatio;
+
+  // ── PASO 2: limitar por ANCHO ──
+  // El advance escala lineal con el fontSize, así que basta medir a
+  // este fontSize y, si la línea más ancha excede el área, reducir
+  // TODAS las líneas por el mismo factor (misma altura de letra).
   let maxAdvance = 0;
   for (const line of valid) {
     const adv = font.getAdvanceWidth(line, fontSizeMm);
     if (adv > maxAdvance) maxAdvance = adv;
   }
-  if (maxAdvance > usableWidth) {
+  if (maxAdvance > usableWidth && maxAdvance > 0) {
     fontSizeMm = fontSizeMm * (usableWidth / maxAdvance);
   }
 
-  // TRABAJAMOS EN COORDENADAS SVG/opentype (Y crece hacia ABAJO), que
-  // es lo nativo de opentype.getPath y del SVG que devolvemos para
-  // preview. Solo al escribir el DXF invertimos Y para EZCAD (Y↑).
+  // capHeight real definitivo (puede haberse reducido por ancho)
+  const capHeightMm = fontSizeMm * capRatio;
+  const gapMm = capHeightMm * gapFactor;
+
+  // ── PASO 3: centrar el bloque EXACTAMENTE en el centro del área ──
   //
-  //   y=0 ................. borde SUPERIOR de la placa
-  //   y=marginTopMm ....... borde superior del área útil
-  //   ...
-  //   y=marginTop+usable .. borde inferior del área útil
-  //   y=plateHeightMm ..... borde inferior de la placa
+  // Coordenadas opentype/SVG: Y crece hacia ABAJO. getPath(text,x,y,size)
+  // dibuja con 'y' = baseline; las mayúsculas suben (Y menor) capHeightMm.
   //
-  // El bloque de texto se centra verticalmente dentro del área útil.
-  // Baseline de la primera línea = topArea + ascender aprox.
-  // Cada siguiente línea a distancia (fontSize * lineHeightFactor).
-  const totalTextHeight = N * fontSizeMm * s.lineHeightFactor;
-  const areaTopY = s.marginTopMm;
-  const blockTopY = areaTopY + (usableHeight - totalTextHeight) / 2;
-  // La baseline de la primera línea queda ~0.78 del fontSize por
-  // debajo del top del bloque (aprox. altura de las mayúsculas).
-  const firstBaselineY = blockTopY + fontSizeMm * 0.78;
+  //   centerYArea = mitad vertical del área útil = mitad de la placa
+  //                 (para 1 línea, esto es la "mitad de la pulsera" que
+  //                  pediste, p.ej. 0,5 cm si la placa mide 1 cm de alto).
+  const centerYArea = s.marginTopMm + usableHeight / 2;
+  const blockH = N * capHeightMm + (N - 1) * gapMm;
+  const blockTopY = centerYArea - blockH / 2; // top del bloque (Y menor)
 
   const rendered: RenderedLine[] = [];
   for (let i = 0; i < N; i++) {
     const text = valid[i];
-    const baselineY = firstBaselineY + i * fontSizeMm * s.lineHeightFactor;
+    // Top de las mayúsculas de la línea i
+    const lineTopY = blockTopY + i * (capHeightMm + gapMm);
+    // La baseline queda capHeightMm por debajo (Y mayor)
+    const baselineY = lineTopY + capHeightMm;
+    // Centrado horizontal exacto
     const advance = font.getAdvanceWidth(text, fontSizeMm);
     const x = s.marginLeftMm + (usableWidth - advance) / 2;
     const path = font.getPath(text, x, baselineY, fontSizeMm);
     rendered.push({ text, path, x, y: baselineY });
   }
 
-  return { fontSizeMm, lines: rendered, usableWidth, usableHeight };
+  return { fontSizeMm, capHeightMm, lines: rendered, usableWidth, usableHeight };
 }
 
 // ============================================================

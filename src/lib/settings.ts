@@ -148,15 +148,20 @@ export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
   [SETTING_KEYS.SHIPPING_MR_COLLECT_RELAY_ID]: '',        // vacío = auto-buscar más cercano al CP origen
   [SETTING_KEYS.SHIPPING_MR_DELIVERY_MODE]: 'LDS',        // por defecto: entrega a domicilio del cliente con firma
   [SETTING_KEYS.SHIPPING_MR_DEFAULT_WEIGHT_G]: '100',
-  // === Láser (defaults conservadores para placa 4x1 cm típica).
-  // El admin edita todos estos desde /admin/laser sin tocar código.
-  [SETTING_KEYS.LASER_PLATE_WIDTH_MM]: '40',
+  // === Láser (defaults medidos en la placa REAL: área de grabado
+  // 24 × 10 mm — medida del arco desarrollado, superficie ligeramente
+  // curva). Márgenes de seguridad 0,5 mm en las 4 esquinas → área útil
+  // efectiva 23 × 9 mm. El admin ajusta todo desde /admin/laser tras la
+  // primera prueba física (sin tocar código).
+  [SETTING_KEYS.LASER_PLATE_WIDTH_MM]: '24',
   [SETTING_KEYS.LASER_PLATE_HEIGHT_MM]: '10',
-  [SETTING_KEYS.LASER_MARGIN_LEFT_MM]: '1.5',
-  [SETTING_KEYS.LASER_MARGIN_RIGHT_MM]: '1.5',
-  [SETTING_KEYS.LASER_MARGIN_TOP_MM]: '0.7',
-  [SETTING_KEYS.LASER_MARGIN_BOTTOM_MM]: '0.7',
-  [SETTING_KEYS.LASER_LINE_HEIGHT_FACTOR]: '1.05',
+  [SETTING_KEYS.LASER_MARGIN_LEFT_MM]: '0.5',
+  [SETTING_KEYS.LASER_MARGIN_RIGHT_MM]: '0.5',
+  [SETTING_KEYS.LASER_MARGIN_TOP_MM]: '0.5',
+  [SETTING_KEYS.LASER_MARGIN_BOTTOM_MM]: '0.5',
+  // 1.25 = 25% de separación entre líneas (para 2 filas legibles);
+  // en 1 sola línea este factor no afecta (se usa toda la altura).
+  [SETTING_KEYS.LASER_LINE_HEIGHT_FACTOR]: '1.25',
   [SETTING_KEYS.LASER_CURVE_STEPS]: '24',
 };
 
