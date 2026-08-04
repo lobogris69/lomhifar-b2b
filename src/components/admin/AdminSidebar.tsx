@@ -22,6 +22,7 @@ import {
   Wrench,
   Zap,
   HelpCircle,
+  BarChart3,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ADMIN_ROLE_LABEL, type AdminRole, canAccessPath } from '@/lib/admin-roles';
@@ -37,6 +38,7 @@ const NAV = [
   { href: '/admin/imagenes', label: 'Imágenes del sitio', icon: Images },
   { href: '/admin/textos', label: 'Textos del sitio', icon: Type },
   { href: '/admin/personas', label: 'Personas / casos uso', icon: Users },
+  { href: '/admin/negocio', label: 'Control de negocio', icon: BarChart3 },
   { href: '/admin/configuracion', label: 'Configuración', icon: Settings },
   { href: '/admin/laser', label: 'Grabado láser', icon: Zap },
   { href: '/admin/usuarios', label: 'Usuarios admin', icon: Users2 },

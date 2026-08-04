@@ -71,6 +71,7 @@ export const ROLE_ALLOWED_PATHS: Record<AdminRole, RegExp[]> = {
     /^\/admin\/personas/,
     /^\/admin\/configuracion/,
     /^\/admin\/laser/,
+    /^\/admin\/negocio/,
     /^\/admin\/perfil/,
     /^\/admin\/ayuda/,
   ],
@@ -98,6 +99,7 @@ export const ROLE_ALLOWED_PATHS: Record<AdminRole, RegExp[]> = {
     /^\/admin\/personas/,
     /^\/admin\/configuracion/,
     /^\/admin\/laser/,
+    /^\/admin\/negocio/,     // socio/auditor puede ver el negocio (no editar)
     /^\/admin\/usuarios/,    // ve la lista de usuarios pero no puede editar
     /^\/admin\/perfil/,
     /^\/admin\/ayuda/,

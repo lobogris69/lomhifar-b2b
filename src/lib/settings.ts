@@ -73,6 +73,15 @@ export const SETTING_KEYS = {
   LASER_MARGIN_BOTTOM_MM: 'laser.margin_bottom_mm',
   LASER_LINE_HEIGHT_FACTOR: 'laser.line_height_factor', // 1.0 = pegadas, 1.2 = holgadas
   LASER_CURVE_STEPS: 'laser.curve_steps',               // resolución de curvas Bézier (10-60)
+  // === NEGOCIO (costes parametrizables para el panel de rentabilidad) ===
+  // Todos en CÉNTIMOS de € salvo BIZ_MACHINE_LIFE_UNITS (nº de pulseras).
+  BIZ_COST_BRACELET_BLACK_CENTS: 'biz.cost_bracelet_black_cents', // coste pulsera negra en blanco
+  BIZ_COST_BRACELET_RED_CENTS: 'biz.cost_bracelet_red_cents',     // coste pulsera roja en blanco
+  BIZ_COST_ENGRAVING_CENTS: 'biz.cost_engraving_cents',           // coste grabado por pulsera (luz+consumibles)
+  BIZ_COST_SHIPPING_REAL_CENTS: 'biz.cost_shipping_real_cents',   // coste real de envío por pedido enviado
+  BIZ_COMMISSION_PER_UNIT_CENTS: 'biz.commission_per_unit_cents', // tu comisión por pulsera grabada
+  BIZ_MACHINE_PRICE_CENTS: 'biz.machine_price_cents',             // precio de la máquina láser
+  BIZ_MACHINE_LIFE_UNITS: 'biz.machine_life_units',               // pulseras de vida útil estimada
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
@@ -163,6 +172,16 @@ export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
   // en 1 sola línea este factor no afecta (se usa toda la altura).
   [SETTING_KEYS.LASER_LINE_HEIGHT_FACTOR]: '1.25',
   [SETTING_KEYS.LASER_CURVE_STEPS]: '24',
+  // === Negocio (defaults a 0 → el admin los rellena en /admin/negocio.
+  // Vida de máquina 20.000 pulseras para evitar división por cero cuando
+  // el precio de máquina aún no está puesto).
+  [SETTING_KEYS.BIZ_COST_BRACELET_BLACK_CENTS]: '0',
+  [SETTING_KEYS.BIZ_COST_BRACELET_RED_CENTS]: '0',
+  [SETTING_KEYS.BIZ_COST_ENGRAVING_CENTS]: '0',
+  [SETTING_KEYS.BIZ_COST_SHIPPING_REAL_CENTS]: '0',
+  [SETTING_KEYS.BIZ_COMMISSION_PER_UNIT_CENTS]: '0',
+  [SETTING_KEYS.BIZ_MACHINE_PRICE_CENTS]: '0',
+  [SETTING_KEYS.BIZ_MACHINE_LIFE_UNITS]: '20000',
 };
 
 // ============================================================

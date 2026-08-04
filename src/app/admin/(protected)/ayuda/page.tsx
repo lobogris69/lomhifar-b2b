@@ -2,7 +2,7 @@ import Link from 'next/link';
 import {
   BookOpen, ClipboardList, Zap, Users, Building2, Megaphone, Package,
   Type, Image as ImageIcon, Users2, Settings, HelpCircle, Truck,
-  MessageCircle, Shield, Rocket, FileText, KeyRound,
+  MessageCircle, Shield, Rocket, FileText, KeyRound, BarChart3,
 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -43,6 +43,7 @@ export default function HelpPage() {
           <IndexLink href="#stock" icon={Package} label="Stock de pulseras" />
           <IndexLink href="#textos" icon={Type} label="Textos e imágenes editables" />
           <IndexLink href="#usuarios" icon={Users2} label="Usuarios admin y roles" />
+          <IndexLink href="#negocio" icon={BarChart3} label="Control de negocio y rentabilidad" />
           <IndexLink href="#config" icon={Settings} label="Configuración general" />
           <IndexLink href="#faq" icon={HelpCircle} label="Preguntas frecuentes (FAQ)" />
           <IndexLink href="#emergencias" icon={Shield} label="Emergencias" />
@@ -337,6 +338,41 @@ export default function HelpPage() {
         <SubDetail title="Recuperar contraseña si la olvidaste">
           <p>En la pantalla de login, enlace «¿Olvidó su contraseña?» → mete tu email → te llega un enlace válido 1 hora.</p>
         </SubDetail>
+      </Section>
+
+      {/* NEGOCIO */}
+      <Section id="negocio" icon={BarChart3} title="Control de negocio y rentabilidad">
+        <p className="text-sm mb-2">
+          En <A href="/admin/negocio">/admin/negocio</A> tienes la visión completa de cómo
+          va el negocio: ingresos, costes, tu comisión y cuándo se paga sola la máquina.
+        </p>
+        <SubDetail title="Primero: configura tus costes">
+          <p>Al final de la página, en <strong>«Parámetros de coste»</strong>, rellena:</p>
+          <ul className="list-disc list-inside text-sm space-y-1 mt-1">
+            <li>Coste de cada pulsera en blanco (negra y roja pueden costar distinto).</li>
+            <li>Coste de grabado por pulsera (luz + consumibles).</li>
+            <li>Coste real de envío (lo que pagas tú a Correos).</li>
+            <li>Tu comisión por pulsera grabada.</li>
+            <li>Precio de la máquina + pulseras de vida útil (para la amortización).</li>
+          </ul>
+          <p className="mt-1 text-xs text-ink-600">Mientras estén a cero, el margen es igual a los ingresos. Todo es editable en cualquier momento.</p>
+        </SubDetail>
+        <SubDetail title="Qué te muestra el panel">
+          <ul className="list-disc list-inside text-sm space-y-1">
+            <li><strong>KPIs</strong>: ingresos, costes, margen bruto, tu comisión, margen tras comisión, ticket medio.</li>
+            <li><strong>Amortización</strong>: barra visual de cuánto llevas recuperado de la máquina y cuándo se paga sola.</li>
+            <li><strong>Evolución mensual</strong>: ingresos vs costes vs margen, mes a mes.</li>
+            <li><strong>Desglose de costes</strong>: en qué se te va el dinero.</li>
+            <li><strong>Rentabilidad por cliente</strong>: qué farmacia te renta más, con el PVF medio que le aplicas.</li>
+          </ul>
+        </SubDetail>
+        <SubDetail title="¿Quién puede ver esto?">
+          <p>Solo <strong>Super-Admin</strong> y <strong>Administrador</strong> (y el Supervisor de solo lectura, para socios/auditores). El Gestor de pedidos NO ve datos financieros.</p>
+        </SubDetail>
+        <Tip>
+          Los pedidos de prueba y los cancelados NO cuentan en el panel. Los ingresos son
+          sin IVA (el IVA se paga a Hacienda, no es tuyo).
+        </Tip>
       </Section>
 
       {/* CONFIGURACIÓN */}
