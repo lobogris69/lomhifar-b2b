@@ -10,14 +10,34 @@ interface PageProps {
   searchParams: { q?: string };
 }
 
-/** Formatea "2026-08-03" a "Lunes 3 de agosto de 2026" en español. */
+/** Formatea "2026-08-03" a "Lunes 3 de agosto de 2026" en español.
+ * A prueba de fallos: si el valor no es una fecha válida, devuelve el
+ * texto tal cual en vez de lanzar (Intl.format con fecha inválida lanza
+ * RangeError y tumbaría toda la página). */
 function humanDate(ymd: string): string {
-  const [y, m, d] = ymd.split('-').map((n) => Number(n));
-  const dt = new Date(Date.UTC(y, m - 1, d));
-  return new Intl.DateTimeFormat('es-ES', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-    timeZone: 'UTC',
-  }).format(dt).replace(/^./, (c) => c.toUpperCase());
+  try {
+    const [y, m, d] = ymd.split('-').map((n) => Number(n));
+    if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) return ymd;
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    if (Number.isNaN(dt.getTime())) return ymd;
+    return new Intl.DateTimeFormat('es-ES', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+      timeZone: 'UTC',
+    }).format(dt).replace(/^./, (c) => c.toUpperCase());
+  } catch {
+    return ymd;
+  }
+}
+
+/** Hora HH:MM en Europe/Madrid, a prueba de fallos. */
+function humanTime(dt: Date): string {
+  try {
+    return new Intl.DateTimeFormat('es-ES', {
+      hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid',
+    }).format(dt);
+  } catch {
+    return '—';
+  }
 }
 
 export default async function LaserArchivePage({ searchParams }: PageProps) {
@@ -34,16 +54,24 @@ export default async function LaserArchivePage({ searchParams }: PageProps) {
       }
     : {};
 
-  const files = await prisma.laserFile.findMany({
-    where,
-    orderBy: [{ dateFolder: 'desc' }, { createdAt: 'desc' }],
-    select: {
-      id: true, orderId: true, orderNumber: true, pharmacyName: true,
-      filename: true, size: true, line1: true, line2: true, line3: true,
-      color: true, totalUnits: true, dateFolder: true, createdBy: true, createdAt: true,
-    },
-    take: 500,
-  });
+  let files: Awaited<ReturnType<typeof prisma.laserFile.findMany>> = [];
+  let loadError: string | null = null;
+  try {
+    files = await prisma.laserFile.findMany({
+      where,
+      orderBy: [{ dateFolder: 'desc' }, { createdAt: 'desc' }],
+      select: {
+        id: true, orderId: true, orderNumber: true, pharmacyName: true,
+        filename: true, size: true, line1: true, line2: true, line3: true,
+        color: true, totalUnits: true, dateFolder: true, createdBy: true, createdAt: true,
+      },
+      take: 500,
+    });
+  } catch (e) {
+    loadError = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+    // eslint-disable-next-line no-console
+    console.error('[laser/archivo] fallo al cargar el histórico:', e);
+  }
 
   // Agrupar por fecha (dateFolder ya viene ordenado desc)
   const byDate = new Map<string, typeof files>();
@@ -97,7 +125,12 @@ export default async function LaserArchivePage({ searchParams }: PageProps) {
         )}
       </form>
 
-      {files.length === 0 ? (
+      {loadError ? (
+        <Alert variant="danger" title="No se pudo cargar el histórico">
+          <p className="text-sm">Error técnico al leer los archivos láser:</p>
+          <pre className="mt-2 text-xs bg-red-50 border border-red-200 rounded p-2 overflow-x-auto whitespace-pre-wrap">{loadError}</pre>
+        </Alert>
+      ) : files.length === 0 ? (
         <Alert variant="info" title={q ? 'Sin resultados' : 'Aún no hay archivos'}>
           {q ? (
             <p className="text-sm">
@@ -155,10 +188,7 @@ export default async function LaserArchivePage({ searchParams }: PageProps) {
                     </thead>
                     <tbody>
                       {list.map((f) => {
-                        const time = new Intl.DateTimeFormat('es-ES', {
-                          hour: '2-digit', minute: '2-digit',
-                          timeZone: 'Europe/Madrid',
-                        }).format(f.createdAt);
+                        const time = humanTime(f.createdAt);
                         return (
                           <tr key={f.id}>
                             <td className="text-xs text-ink-500 font-mono">{time}</td>
