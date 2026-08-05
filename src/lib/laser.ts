@@ -210,8 +210,11 @@ async function layoutLines(
 // SVG (para preview visual del texto sobre la placa)
 // ============================================================
 
-export async function generateSvgPreview(lines: string[]): Promise<string> {
-  const s = await getLaserSettings();
+export async function generateSvgPreview(
+  lines: string[],
+  override?: LaserSettings,
+): Promise<string> {
+  const s = override ?? (await getLaserSettings());
   const layout = await layoutLines(lines, s);
 
   // viewBox en mm reales. Padding visual de 2mm alrededor para ver
@@ -371,8 +374,11 @@ function wrapDxf(entitiesContent: string, s: LaserSettings): string {
  * API pública principal: genera el DXF para una serie de líneas de texto.
  * Devuelve un string con el contenido del fichero .dxf listo para escribir.
  */
-export async function generateDxfForLines(lines: string[]): Promise<string> {
-  const s = await getLaserSettings();
+export async function generateDxfForLines(
+  lines: string[],
+  override?: LaserSettings,
+): Promise<string> {
+  const s = override ?? (await getLaserSettings());
   const layout = await layoutLines(lines, s);
 
   const entities: string[] = [];
