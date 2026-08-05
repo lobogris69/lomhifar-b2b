@@ -54,7 +54,24 @@ export default async function LaserArchivePage({ searchParams }: PageProps) {
       }
     : {};
 
-  let files: Awaited<ReturnType<typeof prisma.laserFile.findMany>> = [];
+  type FileRow = {
+    id: string;
+    orderId: string;
+    orderNumber: number;
+    pharmacyName: string;
+    filename: string;
+    size: number;
+    line1: string;
+    line2: string | null;
+    line3: string | null;
+    color: string;
+    totalUnits: number;
+    dateFolder: string;
+    createdBy: string | null;
+    createdAt: Date;
+  };
+
+  let files: FileRow[] = [];
   let loadError: string | null = null;
   try {
     files = await prisma.laserFile.findMany({
