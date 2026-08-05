@@ -3,6 +3,7 @@
 import { useFormState, useFormStatus } from 'react-dom';
 import { Loader2 } from 'lucide-react';
 import { Alert } from '@/components/ui/Alert';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import {
   changePassword,
   changeProfile,
@@ -32,47 +33,47 @@ export function ChangePasswordForm() {
 
       <div>
         <label className="label" htmlFor="currentPassword">Contraseña actual</label>
-        <input
+        <PasswordInput
           id="currentPassword"
           name="currentPassword"
-          type="password"
           required
-          autoComplete="current-password"
-          className="input"
+          autoComplete="off"
+          placeholder="Tu contraseña actual"
         />
         {state.fieldErrors?.currentPassword && (
           <p className="field-error">{state.fieldErrors.currentPassword}</p>
         )}
+        <p className="mt-1 text-xs text-ink-500">
+          Pulsa el ojo 👁 para ver lo que escribes y asegurarte de que es correcta.
+        </p>
       </div>
 
       <div>
         <label className="label" htmlFor="newPassword">Contraseña nueva</label>
-        <input
+        <PasswordInput
           id="newPassword"
           name="newPassword"
-          type="password"
           required
           minLength={8}
           autoComplete="new-password"
-          className="input"
+          placeholder="Nueva contraseña (mín. 8)"
         />
         {state.fieldErrors?.newPassword && (
           <p className="field-error">{state.fieldErrors.newPassword}</p>
         )}
         <p className="mt-1 text-xs text-ink-500">
-          Mínimo 8 caracteres. Evita caracteres especiales como $ y # si la quieres replicar en Railway.
+          Mínimo 8 caracteres. Mejor solo letras y números (sin símbolos raros).
         </p>
       </div>
 
       <div>
         <label className="label" htmlFor="confirmPassword">Repite la nueva</label>
-        <input
+        <PasswordInput
           id="confirmPassword"
           name="confirmPassword"
-          type="password"
           required
           autoComplete="new-password"
-          className="input"
+          placeholder="Repite la nueva contraseña"
         />
         {state.fieldErrors?.confirmPassword && (
           <p className="field-error">{state.fieldErrors.confirmPassword}</p>

@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useFormState, useFormStatus } from 'react-dom';
-import { Loader2, Mail, Lock, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Loader2, Mail, Lock, ArrowRight, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import { Alert } from '@/components/ui/Alert';
 import { adminLogin, type AdminLoginState } from './actions';
 
@@ -22,6 +23,7 @@ function Submit() {
 
 export function LoginForm() {
   const [state, action] = useFormState(adminLogin, initial);
+  const [showPass, setShowPass] = useState(false);
   const params = useSearchParams();
   const justReset = params.get('reset') === 'ok';
 
@@ -69,12 +71,22 @@ export function LoginForm() {
           <input
             id="password"
             name="password"
-            type="password"
+            type={showPass ? 'text' : 'password'}
             required
             autoComplete="current-password"
             placeholder="••••••••"
-            className="input pl-9"
+            className="input pl-9 pr-11"
           />
+          <button
+            type="button"
+            onClick={() => setShowPass((s) => !s)}
+            tabIndex={-1}
+            aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            title={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-700 p-1"
+          >
+            {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
         </div>
       </div>
 
