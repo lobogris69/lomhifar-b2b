@@ -14,7 +14,7 @@ import {
 } from './actions';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Usuarios admin Â· Lomhifar' };
+export const metadata = { title: 'Usuarios admin · Lomhifar' };
 
 const ROLE_BADGE: Record<AdminRole, string> = {
   SUPER_ADMIN: 'bg-brand-100 text-brand-800',
@@ -56,10 +56,10 @@ export default async function UsersPage() {
 
       <Alert variant="info" title="Roles disponibles">
         <ul className="text-sm space-y-0.5 mt-1">
-          <li>Â· <strong>Super-Admin:</strong> acceso total + gestiÃ³n de usuarios admin (este panel)</li>
-          <li>Â· <strong>Administrador:</strong> acceso total excepto crear/borrar usuarios admin</li>
-          <li>Â· <strong>Gestor de pedidos:</strong> solo puede ver pedidos y cambiar su estado</li>
-          <li>Â· <strong>Supervisor (solo lectura):</strong> ve todo el panel pero NO puede modificar nada â€” ideal para auditores o socios</li>
+          <li>· <strong>Super-Admin:</strong> acceso total + gestión de usuarios admin (este panel)</li>
+          <li>· <strong>Administrador:</strong> acceso total excepto crear/borrar usuarios admin</li>
+          <li>· <strong>Gestor de pedidos:</strong> solo puede ver pedidos y cambiar su estado</li>
+          <li>· <strong>Supervisor (solo lectura):</strong> ve todo el panel pero NO puede modificar nada — ideal para auditores o socios</li>
         </ul>
       </Alert>
 
@@ -93,9 +93,9 @@ export default async function UsersPage() {
                 <tr key={u.id} className={isMe ? 'bg-brand-50/40' : ''}>
                   <td className="font-medium">
                     {u.email}
-                    {isMe && <span className="ml-2 text-[10px] uppercase tracking-wider text-brand-700">(tÃº)</span>}
+                    {isMe && <span className="ml-2 text-[10px] uppercase tracking-wider text-brand-700">(tú)</span>}
                   </td>
-                  <td>{u.name ?? 'â€”'}</td>
+                  <td>{u.name ?? '—'}</td>
                   <td>
                     <RoleSelect
                       userId={u.id}
@@ -115,7 +115,7 @@ export default async function UsersPage() {
                   <td>
                     <div className="flex justify-end gap-1">
                       <details className="relative">
-                        <summary className="btn-ghost cursor-pointer list-none" title="Resetear contraseÃ±a">
+                        <summary className="btn-ghost cursor-pointer list-none" title="Resetear contraseña">
                           <KeyRound className="h-3.5 w-3.5" />
                         </summary>
                         <form
@@ -123,7 +123,7 @@ export default async function UsersPage() {
                           className="absolute right-0 mt-2 w-[min(18rem,calc(100vw-2rem))] card p-3 z-10 space-y-2"
                         >
                           <input type="hidden" name="id" value={u.id} />
-                          <label className="text-xs text-ink-700">Nueva contraseÃ±a (mÃ­n 8):</label>
+                          <label className="text-xs text-ink-700">Nueva contraseña (mín 8):</label>
                           <input
                             type="text"
                             name="newPassword"
@@ -133,7 +133,7 @@ export default async function UsersPage() {
                             autoComplete="off"
                           />
                           <button type="submit" className="btn-primary text-xs w-full">
-                            Cambiar contraseÃ±a
+                            Cambiar contraseña
                           </button>
                         </form>
                       </details>

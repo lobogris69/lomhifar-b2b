@@ -51,7 +51,7 @@ export default async function AdminDashboardPage() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="section-title">Resumen</h1>
-          <p className="section-subtitle">PanorÃ¡mica de la actividad B2B Lomhifar</p>
+          <p className="section-subtitle">Panorámica de la actividad B2B Lomhifar</p>
         </div>
         <Link href="/admin/importar" className="btn-primary">
           <FileSpreadsheet className="h-4 w-4" /> Importar Excel de clientes
@@ -95,7 +95,7 @@ export default async function AdminDashboardPage() {
             <h3 className="text-base font-semibold text-ink-900">Top 5 farmacias</h3>
           </div>
           {topCustomers.length === 0 ? (
-            <p className="text-sm text-ink-500">AÃºn no hay pedidos.</p>
+            <p className="text-sm text-ink-500">Aún no hay pedidos.</p>
           ) : (
             <ol className="space-y-3">
               {topCustomers.map((c, i) => (
@@ -111,7 +111,7 @@ export default async function AdminDashboardPage() {
                       {c.pharmacyName}
                     </Link>
                     <div className="text-xs text-ink-500">
-                      {c.orderCount} pedidos Â· {formatEuros(c.totalCents)}
+                      {c.orderCount} pedidos · {formatEuros(c.totalCents)}
                     </div>
                   </div>
                 </li>
@@ -129,7 +129,7 @@ export default async function AdminDashboardPage() {
           </Link>
         </div>
         {recentOrders.length === 0 ? (
-          <div className="p-10 text-center text-ink-500">AÃºn no hay pedidos.</div>
+          <div className="p-10 text-center text-ink-500">Aún no hay pedidos.</div>
         ) : (
           <div className="overflow-x-auto">
           <table className="table-pro min-w-[640px]">

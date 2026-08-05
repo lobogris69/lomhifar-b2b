@@ -4,7 +4,7 @@ import { formatDate } from '@/lib/utils';
 import { approveApplication, rejectApplication } from './actions';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Solicitudes Â· Admin Lomhifar' };
+export const metadata = { title: 'Solicitudes · Admin Lomhifar' };
 
 export default async function ApplicationsPage({
   searchParams,
@@ -44,10 +44,10 @@ export default async function ApplicationsPage({
                 <div className="space-y-1">
                   <h3 className="font-semibold text-ink-900 text-lg">{a.pharmacyName}</h3>
                   <p className="text-sm text-ink-500">
-                    CIF <span className="font-mono">{a.cif}</span> Â· {a.contactName} Â· {a.email} Â· {a.phone}
+                    CIF <span className="font-mono">{a.cif}</span> · {a.contactName} · {a.email} · {a.phone}
                   </p>
                   <p className="text-sm text-ink-700">
-                    {a.address}, {a.city} ({a.postalCode}) Â· {a.province}
+                    {a.address}, {a.city} ({a.postalCode}) · {a.province}
                   </p>
                   <p className="text-sm text-ink-700 mt-1">
                     <span className="text-ink-400 text-xs uppercase tracking-wider mr-2">IBAN</span>
@@ -66,7 +66,7 @@ export default async function ApplicationsPage({
                   )}
                   <p className="text-xs text-ink-400 mt-1">
                     Recibida el {formatDate(a.createdAt)}
-                    {a.reviewedAt && <> Â· Revisada el {formatDate(a.reviewedAt)}</>}
+                    {a.reviewedAt && <> · Revisada el {formatDate(a.reviewedAt)}</>}
                   </p>
                 </div>
                 {status === 'PENDING' && (
@@ -86,7 +86,7 @@ export default async function ApplicationsPage({
                         className="absolute right-0 mt-2 w-[min(20rem,calc(100vw-2rem))] card p-4 z-10 space-y-2"
                       >
                         <input type="hidden" name="id" value={a.id} />
-                        <label className="label">Motivo (opcional, se envÃ­a por email)</label>
+                        <label className="label">Motivo (opcional, se envía por email)</label>
                         <textarea name="notes" rows={3} className="input" />
                         <button type="submit" className="btn-danger w-full">
                           Confirmar rechazo

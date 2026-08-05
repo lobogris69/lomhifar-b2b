@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { BulkSelectTable } from './BulkSelectTable';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Clientes Â· Admin Lomhifar' };
+export const metadata = { title: 'Clientes · Admin Lomhifar' };
 
 const PAGE_SIZE = 50;
 
@@ -29,7 +29,7 @@ export default async function CustomersPage({
   if (status === 'active') where.active = true;
   if (status === 'inactive') where.active = false;
 
-  // Total real + pÃ¡gina actual en paralelo
+  // Total real + página actual en paralelo
   const [totalFiltered, totalAll, customers] = await Promise.all([
     prisma.customer.count({ where }),
     prisma.customer.count({}),
@@ -50,7 +50,7 @@ export default async function CustomersPage({
   if (status) exportParams.set('status', status);
   const exportUrl = `/api/admin/clientes/export${exportParams.toString() ? '?' + exportParams.toString() : ''}`;
 
-  // Helper para construir links de paginaciÃ³n preservando filtros
+  // Helper para construir links de paginación preservando filtros
   function pageHref(p: number): string {
     const sp = new URLSearchParams();
     if (q) sp.set('q', q);
@@ -71,7 +71,7 @@ export default async function CustomersPage({
           <p className="section-subtitle">
             Base de farmacias activas e inactivas.
             {totalFiltered !== totalAll && (
-              <> Â· <strong>{totalFiltered.toLocaleString('es-ES')}</strong> coinciden con los filtros.</>
+              <> · <strong>{totalFiltered.toLocaleString('es-ES')}</strong> coinciden con los filtros.</>
             )}
           </p>
         </div>
@@ -80,7 +80,7 @@ export default async function CustomersPage({
             <Download className="h-4 w-4" /> Exportar Excel
           </a>
           <Link href="/admin/clientes/nuevo" className="btn-primary">
-            <Plus className="h-4 w-4" /> AÃ±adir cliente
+            <Plus className="h-4 w-4" /> Añadir cliente
           </Link>
         </div>
       </div>
@@ -94,7 +94,7 @@ export default async function CustomersPage({
               id="q"
               name="q"
               defaultValue={q}
-              placeholder="CIF, email, farmacia, localidadâ€¦"
+              placeholder="CIF, email, farmacia, localidad…"
               className="input pl-9"
             />
           </div>
@@ -120,7 +120,7 @@ export default async function CustomersPage({
           <>
             <BulkSelectTable customers={customers} />
 
-            {/* PaginaciÃ³n */}
+            {/* Paginación */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between px-5 py-3 border-t border-ink-100 bg-ink-50/40">
                 <div className="text-xs text-ink-500">
@@ -146,7 +146,7 @@ function Pagination({
   totalPages: number;
   pageHref: (p: number) => string;
 }) {
-  // Mostrar siempre primera, Ãºltima, actual y Â±2 alrededor
+  // Mostrar siempre primera, última, actual y ±2 alrededor
   const pages = new Set<number>();
   pages.add(1);
   pages.add(totalPages);
@@ -170,7 +170,7 @@ function Pagination({
       {sorted.map((p, idx) => (
         <span key={p} className="flex items-center gap-1">
           {idx > 0 && p - sorted[idx - 1] > 1 && (
-            <span className="text-ink-400 px-1">â€¦</span>
+            <span className="text-ink-400 px-1">…</span>
           )}
           {p === currentPage ? (
             <span className="inline-flex h-7 min-w-[28px] items-center justify-center rounded bg-brand-700 text-white text-xs font-semibold px-2">

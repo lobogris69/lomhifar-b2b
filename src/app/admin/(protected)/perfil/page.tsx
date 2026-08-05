@@ -5,7 +5,7 @@ import { getAdminSession } from '@/lib/auth';
 import { ChangePasswordForm, ChangeProfileForm } from './ProfileForms';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Mi perfil Â· Admin Lomhifar' };
+export const metadata = { title: 'Mi perfil · Admin Lomhifar' };
 
 export default async function ProfilePage() {
   const session = await getAdminSession();
@@ -37,7 +37,7 @@ export default async function ProfilePage() {
         <div className="card p-6">
           <div className="flex items-center gap-2 mb-4">
             <Lock className="h-4 w-4 text-brand-700" />
-            <h2 className="text-sm font-semibold text-ink-900">Cambiar contraseÃ±a</h2>
+            <h2 className="text-sm font-semibold text-ink-900">Cambiar contraseña</h2>
           </div>
           <ChangePasswordForm />
         </div>

@@ -5,7 +5,7 @@ import { getSiteImageMeta } from '@/lib/site-images';
 import { AreaEditor } from './AreaEditor';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Pulseras del configurador Â· Admin Lomhifar' };
+export const metadata = { title: 'Pulseras del configurador · Admin Lomhifar' };
 
 export default async function ConfiguratorBraceletsPage() {
   const [settings, photoBlack, photoRed] = await Promise.all([
@@ -31,7 +31,7 @@ export default async function ConfiguratorBraceletsPage() {
           href="/admin/imagenes"
           className="inline-flex items-center text-sm text-ink-500 hover:text-ink-800 mb-3"
         >
-          <ArrowLeft className="h-4 w-4 mr-1" /> Volver a ImÃ¡genes del sitio
+          <ArrowLeft className="h-4 w-4 mr-1" /> Volver a Imágenes del sitio
         </Link>
         <div className="flex items-center gap-3">
           <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
@@ -40,30 +40,30 @@ export default async function ConfiguratorBraceletsPage() {
           <div>
             <h1 className="section-title">Pulseras del configurador</h1>
             <p className="section-subtitle">
-              Define el Ã¡rea exacta donde se graba el texto en cada foto real de pulsera.
+              Define el área exacta donde se graba el texto en cada foto real de pulsera.
             </p>
           </div>
         </div>
       </div>
 
       <div className="card p-5 mb-8 bg-brand-50/40 border-brand-200">
-        <h2 className="text-sm font-semibold text-ink-900 mb-2">CÃ³mo funciona</h2>
+        <h2 className="text-sm font-semibold text-ink-900 mb-2">Cómo funciona</h2>
         <ol className="text-sm text-ink-700 space-y-1.5 list-decimal list-inside leading-relaxed">
           <li>
             Sube las dos fotos reales en{' '}
             <Link href="/admin/imagenes" className="text-brand-700 underline font-medium">
-              ImÃ¡genes del sitio
+              Imágenes del sitio
             </Link>{' '}
             (slots <em>Pulsera NEGRA</em> y <em>Pulsera ROJA</em>, foto real configurador).
           </li>
           <li>
-            En esta pantalla, ajusta el rectÃ¡ngulo de impresiÃ³n arrastrando los sliders
+            En esta pantalla, ajusta el rectángulo de impresión arrastrando los sliders
             hasta que la caja punteada magenta encaje sobre la placa de aluminio de la foto.
           </li>
           <li>
             Cuando el cliente seleccione color y escriba en el configurador, el texto se
-            grabarÃ¡ automÃ¡ticamente sobre la placa de la foto correspondiente, respetando
-            ese Ã¡rea.
+            grabará automáticamente sobre la placa de la foto correspondiente, respetando
+            ese área.
           </li>
           <li>
             Al guardar, el cambio es inmediato en{' '}

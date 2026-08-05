@@ -5,7 +5,7 @@ import { formatDate, formatEuros } from '@/lib/utils';
 import { OrderStatusBadge, ORDER_STATUS_LABEL } from '@/components/shop/OrderStatusBadge';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Pedidos Â· Admin Lomhifar' };
+export const metadata = { title: 'Pedidos · Admin Lomhifar' };
 
 const PAGE_SIZE = 50;
 
@@ -85,9 +85,9 @@ export default async function OrdersPage({
             <span className="text-ink-500 font-normal text-base">({totalAll.toLocaleString('es-ES')})</span>
           </h1>
           <p className="section-subtitle">
-            HistÃ³rico completo de pedidos B2B.
+            Histórico completo de pedidos B2B.
             {totalFiltered !== totalAll && (
-              <> Â· <strong>{totalFiltered.toLocaleString('es-ES')}</strong> coinciden con los filtros.</>
+              <> · <strong>{totalFiltered.toLocaleString('es-ES')}</strong> coinciden con los filtros.</>
             )}
           </p>
         </div>
@@ -106,7 +106,7 @@ export default async function OrdersPage({
           <label className="label" htmlFor="q">Buscar</label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-400" />
-            <input id="q" name="q" defaultValue={q} placeholder="NÂº pedido, farmacia, CIFâ€¦" className="input pl-9" />
+            <input id="q" name="q" defaultValue={q} placeholder="Nº pedido, farmacia, CIF…" className="input pl-9" />
           </div>
         </div>
         <div className="w-full sm:w-auto">
@@ -181,7 +181,7 @@ export default async function OrdersPage({
                         <td>{formatDate(o.createdAt)}</td>
                         <td>{o.pharmacyName}</td>
                         <td className="font-mono">{o.cif}</td>
-                        <td>{o.items.length} lÃ­neas Â· {units} ud</td>
+                        <td>{o.items.length} líneas · {units} ud</td>
                         <td><OrderStatusBadge status={o.status} /></td>
                         <td className="text-right font-medium">{formatEuros(o.totalCents)}</td>
                       </tr>
@@ -237,7 +237,7 @@ function Pagination({
       )}
       {sorted.map((p, idx) => (
         <span key={p} className="flex items-center gap-1">
-          {idx > 0 && p - sorted[idx - 1] > 1 && <span className="text-ink-400 px-1">â€¦</span>}
+          {idx > 0 && p - sorted[idx - 1] > 1 && <span className="text-ink-400 px-1">…</span>}
           {p === currentPage ? (
             <span className="inline-flex h-7 min-w-[28px] items-center justify-center rounded bg-brand-700 text-white text-xs font-semibold px-2">
               {p}

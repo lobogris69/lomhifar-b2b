@@ -6,7 +6,7 @@ import { deletePoster } from './actions';
 import { UploadForm } from './UploadForm';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Cartel promocional Â· Admin Lomhifar' };
+export const metadata = { title: 'Cartel promocional · Admin Lomhifar' };
 
 function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
@@ -26,7 +26,7 @@ export default async function PosterPage() {
         <div>
           <h1 className="section-title">Cartel promocional para farmacias</h1>
           <p className="section-subtitle">
-            Cada farmacia descarga este cartel desde su Ã¡rea privada para imprimirlo
+            Cada farmacia descarga este cartel desde su área privada para imprimirlo
             y exponerlo en mostrador.
           </p>
         </div>
@@ -74,7 +74,7 @@ export default async function PosterPage() {
               <div className="text-sm space-y-2">
                 <Row k="Archivo" v={meta.filename} />
                 <Row k="Tipo" v={meta.mimeType} />
-                <Row k="TamaÃ±o" v={formatBytes(meta.size)} />
+                <Row k="Tamaño" v={formatBytes(meta.size)} />
                 {meta.uploadedAt && (
                   <Row k="Subido" v={formatDate(meta.uploadedAt)} />
                 )}
@@ -161,8 +161,8 @@ export default async function PosterPage() {
           <div className="card p-5">
             <h2 className="text-sm font-semibold text-ink-900 mb-1">Subir cartel personalizado</h2>
             <p className="text-xs text-ink-500 mb-4">
-              Recomendado: PDF en A4 vertical (210Ã—297 mm), peso bajo (&lt; 4 MB),
-              colores compatibles con impresiÃ³n domÃ©stica.
+              Recomendado: PDF en A4 vertical (210×297 mm), peso bajo (&lt; 4 MB),
+              colores compatibles con impresión doméstica.
             </p>
             <UploadForm />
           </div>

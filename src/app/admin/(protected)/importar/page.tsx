@@ -1,8 +1,8 @@
 ﻿import { FileSpreadsheet } from 'lucide-react';
 import { ImportForm } from './ImportForm';
 
-export const metadata = { title: 'Importar Excel Â· Admin Lomhifar' };
-// Tope superior del tiempo de ejecuciÃ³n de las server actions en esta pÃ¡gina.
+export const metadata = { title: 'Importar Excel · Admin Lomhifar' };
+// Tope superior del tiempo de ejecución de las server actions en esta página.
 // 5 min basta para importar 5000+ filas.
 export const maxDuration = 300;
 
@@ -16,8 +16,8 @@ export default function ImportPage() {
         <div>
           <h1 className="section-title">Importar clientes desde Excel</h1>
           <p className="section-subtitle">
-            Suba el archivo. El sistema previsualizarÃ¡ los datos y, tras confirmar,
-            sincronizarÃ¡ la base de clientes.
+            Suba el archivo. El sistema previsualizará los datos y, tras confirmar,
+            sincronizará la base de clientes.
           </p>
         </div>
       </div>
