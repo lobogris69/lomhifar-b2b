@@ -263,6 +263,9 @@ export async function createManualOrder(
       <tr><td style="padding:8px 0 0;font-weight:700;border-top:1px solid #ebeef0;">TOTAL</td><td style="text-align:right;padding-top:8px;font-weight:700;border-top:1px solid #ebeef0;">${formatEuros(order.totalCents)}</td></tr>
     </table>`;
 
+  // Best-effort: el pedido manual ya está creado; un fallo de email no debe
+  // tumbar la creación (se redirige igualmente a la ficha del pedido).
+  try {
   await sendEmail({
     to: recipients,
     subject: `${testTag}Pedido MANUAL #${order.number} · ${customer.pharmacyName} (${channelLabel})`,
@@ -312,6 +315,9 @@ export async function createManualOrder(
         ${totalsBlock}
       `),
     });
+  }
+  } catch (err) {
+    console.error('[pedido-manual] Fallo al enviar los emails del pedido manual (el pedido SÍ se ha creado):', err);
   }
 
   revalidatePath('/admin/pedidos');

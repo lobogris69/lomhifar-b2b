@@ -60,6 +60,7 @@ export async function approveApplication(formData: FormData) {
     data: { status: 'APPROVED', reviewedAt: new Date() },
   });
 
+  try {
   await sendEmail({
     to: app.email,
     subject: 'Su farmacia ha sido aprobada · Lomhifar',
@@ -74,6 +75,9 @@ export async function approveApplication(formData: FormData) {
       </p>
     `),
   });
+  } catch (err) {
+    console.error('[solicitudes] Fallo al enviar email de aprobación (la farmacia SÍ se ha dado de alta):', err);
+  }
 
   revalidatePath('/admin/solicitudes');
   revalidatePath('/admin/clientes');
@@ -88,6 +92,7 @@ export async function rejectApplication(formData: FormData) {
     data: { status: 'REJECTED', reviewedAt: new Date(), reviewedNotes: notes },
   });
 
+  try {
   await sendEmail({
     to: app.email,
     subject: 'Solicitud de alta · Lomhifar',
@@ -98,6 +103,9 @@ export async function rejectApplication(formData: FormData) {
       <p style="margin-top:16px;">Para cualquier consulta, puede responder a este correo.</p>
     `),
   });
+  } catch (err) {
+    console.error('[solicitudes] Fallo al enviar email de rechazo (la solicitud SÍ se ha marcado como rechazada):', err);
+  }
 
   revalidatePath('/admin/solicitudes');
 }

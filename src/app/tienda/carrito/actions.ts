@@ -171,6 +171,10 @@ export async function placeOrder(
     ? `<div style="margin-top:16px;padding:12px;background:#f6f7f8;border-left:3px solid #2a9b6e;border-radius:6px;"><strong>Comentario de la farmacia:</strong><br/>${esc(parsed.data.note)}</div>`
     : '';
 
+  // Emails del pedido. Best-effort: el pedido YA está guardado en BD, así
+  // que si el SMTP falla NO debe romperse la confirmación al cliente (si no,
+  // vería un error 500 y podría reintentar creando pedidos duplicados).
+  try {
   // Email a Lomhifar
   await sendEmail({
     to: recipients,
@@ -237,6 +241,9 @@ export async function placeOrder(
       </div>
     `, { preheader: `Pedido #${order.number} confirmado · Lomhifar` }),
   });
+  } catch (err) {
+    console.error('[carrito] Fallo al enviar los emails del pedido (el pedido SÍ se ha guardado correctamente):', err);
+  }
 
   clearCart();
   revalidatePath('/tienda/carrito');

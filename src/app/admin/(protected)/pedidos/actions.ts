@@ -32,6 +32,7 @@ export async function updateOrderStatus(formData: FormData) {
   });
 
   if (notify) {
+    try {
     await sendEmail({
       to: order.email,
       subject: `Pedido #${order.number} · ${ORDER_STATUS_LABEL[status as keyof typeof ORDER_STATUS_LABEL]} · Lomhifar`,
@@ -44,6 +45,9 @@ export async function updateOrderStatus(formData: FormData) {
         <p style="color:#637787;font-size:13px;">Puede consultar el detalle en su área privada.</p>
       `),
     });
+    } catch (err) {
+      console.error('[pedidos] Fallo al enviar email de cambio de estado (el estado SÍ se ha guardado):', err);
+    }
   }
 
   revalidatePath('/admin/pedidos');
@@ -141,6 +145,7 @@ export async function saveTracking(formData: FormData) {
   if (notify && trackingNumber) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
     const carrierLabel = getCarrierLabel(carrier);
+    try {
     await sendEmail({
       to: updated.email,
       subject: `Su pedido #${updated.number} está en camino · Lomhifar`,
@@ -166,6 +171,9 @@ export async function saveTracking(formData: FormData) {
         </p>
       `, { preheader: `Pedido #${updated.number} enviado · seguimiento ${trackingNumber}` }),
     });
+    } catch (err) {
+      console.error('[pedidos] Fallo al enviar email de seguimiento (el tracking SÍ se ha guardado):', err);
+    }
   }
 
   revalidatePath('/admin/pedidos');
