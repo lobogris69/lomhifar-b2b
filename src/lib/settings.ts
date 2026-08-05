@@ -96,11 +96,11 @@ export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
   [SETTING_KEYS.MIN_QUANTITY_PER_LINE]: '1',
   [SETTING_KEYS.DELIVERY_DAYS]: '7',
   [SETTING_KEYS.ORDERS_RECIPIENT_EMAILS]:
-    process.env.ORDERS_RECIPIENT_EMAILS ?? 'pedidos@lomhifar.com',
+    process.env.ORDERS_RECIPIENT_EMAILS ?? 'pedidos@lomhifar.es',
   [SETTING_KEYS.MAX_CHARS_PER_LINE]: '19',
   [SETTING_KEYS.COMPANY_NAME]: 'Lomhifar',
   [SETTING_KEYS.COMPANY_PHONE]: '',
-  [SETTING_KEYS.COMPANY_EMAIL]: 'pedidos@lomhifar.com',
+  [SETTING_KEYS.COMPANY_EMAIL]: 'pedidos@lomhifar.es',
   // Área de impresión en % (left, top, width, height) + rotación grados + color del láser
   // Default pensado para placa típica con SÍMBOLO médico a la izquierda y
   // hueco de grabado a la derecha (formato más común de las pulseras médicas).

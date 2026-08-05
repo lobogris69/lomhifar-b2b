@@ -3,12 +3,26 @@ import nodemailer, { type Transporter } from 'nodemailer';
 let cached: Transporter | null = null;
 
 /**
+ * Lee una variable de entorno recortando espacios/saltos de línea
+ * invisibles. En Railway es fácil que al pegar un valor quede un espacio
+ * al final, y en SMTP eso rompe la autenticación (contraseña "correcta"
+ * pero con un espacio => 535 authentication failed). Devuelve undefined
+ * si queda vacía.
+ */
+function env(key: string): string | undefined {
+  const v = process.env[key];
+  if (v == null) return undefined;
+  const t = v.trim();
+  return t === '' ? undefined : t;
+}
+
+/**
  * ¿Están configuradas las credenciales SMTP? Si devuelve false, los
  * emails NO se envían de verdad (se usa un transporte "falso" que
  * finge éxito). Útil para mostrar un aviso en el admin.
  */
 export function isEmailConfigured(): boolean {
-  return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD);
+  return Boolean(env('SMTP_HOST') && env('SMTP_USER') && env('SMTP_PASSWORD'));
 }
 
 /**
@@ -34,11 +48,11 @@ export async function sendTestEmail(to: string): Promise<{ configured: boolean }
 function getTransporter(): Transporter {
   if (cached) return cached;
 
-  const host = process.env.SMTP_HOST;
-  const port = Number(process.env.SMTP_PORT ?? 587);
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASSWORD;
-  const secure = (process.env.SMTP_SECURE ?? 'false').toLowerCase() === 'true';
+  const host = env('SMTP_HOST');
+  const port = Number(env('SMTP_PORT') ?? 587);
+  const user = env('SMTP_USER');
+  const pass = env('SMTP_PASSWORD');
+  const secure = (env('SMTP_SECURE') ?? 'false').toLowerCase() === 'true';
 
   if (!host || !user || !pass) {
     console.warn('[email] SMTP no configurado. Los emails se imprimirán por consola.');
@@ -56,9 +70,8 @@ function getTransporter(): Transporter {
 }
 
 function fromAddress() {
-  const name = process.env.SMTP_FROM_NAME ?? 'Lomhifar';
-  const email =
-    process.env.SMTP_FROM_EMAIL ?? process.env.SMTP_USER ?? 'no-reply@lomhifar.com';
+  const name = env('SMTP_FROM_NAME') ?? 'Lomhifar';
+  const email = env('SMTP_FROM_EMAIL') ?? env('SMTP_USER') ?? 'no-reply@lomhifar.com';
   return `"${name}" <${email}>`;
 }
 

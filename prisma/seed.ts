@@ -13,12 +13,12 @@ const DEFAULT_SETTINGS: { key: string; value: string }[] = [
   { key: 'order.delivery_days', value: '7' },
   {
     key: 'emails.orders_recipients',
-    value: process.env.ORDERS_RECIPIENT_EMAILS ?? 'pedidos@lomhifar.com',
+    value: process.env.ORDERS_RECIPIENT_EMAILS ?? 'pedidos@lomhifar.es',
   },
   { key: 'engraving.max_chars', value: '19' },
   { key: 'company.name', value: 'Lomhifar' },
   { key: 'company.phone', value: '' },
-  { key: 'company.email', value: 'pedidos@lomhifar.com' },
+  { key: 'company.email', value: 'pedidos@lomhifar.es' },
   // Impuestos (España B2B farmacia por defecto)
   { key: 'tax.vat_pct', value: '21' },
   { key: 'tax.equiv_surcharge_pct', value: '5.2' },

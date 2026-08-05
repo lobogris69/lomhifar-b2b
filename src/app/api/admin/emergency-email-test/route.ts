@@ -27,14 +27,25 @@ export async function GET(req: Request) {
 
   const to = url.searchParams.get('to') || process.env.SMTP_USER || '';
 
+  // Detecta espacios/saltos invisibles: compara longitud real vs recortada.
+  function ws(key: string): string {
+    const raw = process.env[key];
+    if (raw == null || raw === '') return '(vacío)';
+    const trimmed = raw.trim();
+    if (raw.length !== trimmed.length) {
+      return `⚠️ tiene ESPACIOS invisibles (${raw.length} car. reales vs ${trimmed.length} sin espacios) → los recorto al enviar`;
+    }
+    return 'ok (sin espacios sobrantes)';
+  }
+
   const lines: string[] = [];
   lines.push('=== DIAGNÓSTICO SMTP ===');
   lines.push(`SMTP_HOST      = ${process.env.SMTP_HOST ?? '(vacío)'}`);
   lines.push(`SMTP_PORT      = ${process.env.SMTP_PORT ?? '(vacío)'}`);
   lines.push(`SMTP_SECURE    = ${process.env.SMTP_SECURE ?? '(vacío)'}`);
-  lines.push(`SMTP_USER      = ${process.env.SMTP_USER ?? '(vacío)'}`);
+  lines.push(`SMTP_USER      = ${process.env.SMTP_USER ?? '(vacío)'}  [${ws('SMTP_USER')}]`);
   lines.push(`SMTP_FROM_EMAIL= ${process.env.SMTP_FROM_EMAIL ?? '(vacío)'}`);
-  lines.push(`SMTP_PASSWORD  = ${process.env.SMTP_PASSWORD ? '(presente, ' + process.env.SMTP_PASSWORD.length + ' caracteres)' : '(VACÍO ❌)'}`);
+  lines.push(`SMTP_PASSWORD  = ${process.env.SMTP_PASSWORD ? '(presente, ' + process.env.SMTP_PASSWORD.length + ' caracteres)' : '(VACÍO ❌)'}  [${ws('SMTP_PASSWORD')}]`);
   lines.push(`isEmailConfigured() = ${isEmailConfigured()}`);
   lines.push(`Destino de la prueba = ${to || '(no indicado)'}`);
   lines.push('');
