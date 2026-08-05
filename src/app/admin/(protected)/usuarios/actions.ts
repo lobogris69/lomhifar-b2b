@@ -96,17 +96,35 @@ export async function changeAdminRole(formData: FormData) {
   revalidatePath('/admin/usuarios');
 }
 
-export async function resetAdminPassword(formData: FormData) {
-  await ensureSuperAdmin();
+export interface ResetPwState {
+  ok?: boolean;
+  error?: string;
+}
+
+export async function resetAdminPassword(
+  _prev: ResetPwState,
+  formData: FormData,
+): Promise<ResetPwState> {
+  const session = await ensureSuperAdmin();
   const id = String(formData.get('id') ?? '');
   const newPassword = String(formData.get('newPassword') ?? '');
-  if (newPassword.length < 8) return;
+  if (newPassword.length < 8) {
+    return { error: 'La contraseña debe tener al menos 8 caracteres.' };
+  }
+  const target = await prisma.adminUser.findUnique({ where: { id } });
+  if (!target) {
+    return { error: 'No se ha encontrado ese usuario.' };
+  }
   await prisma.adminUser.update({
     where: { id },
     data: {
       passwordHash: await bcrypt.hash(newPassword, 12),
-      mustChangePassword: true,  // al próximo login se le obliga a cambiarla
+      // Solo se obliga a cambiarla en el próximo login si es la contraseña
+      // de OTRO usuario. Si el admin cambia la SUYA propia, NO debe forzarse
+      // (si no, entraría en un bucle: cambia -> le vuelve a pedir cambiarla).
+      mustChangePassword: id !== session.id,
     },
   });
   revalidatePath('/admin/usuarios');
+  return { ok: true };
 }

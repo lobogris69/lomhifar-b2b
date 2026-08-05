@@ -1,4 +1,4 @@
-﻿import { Users2, ShieldAlert, Power, Trash2, KeyRound } from 'lucide-react';
+﻿import { Users2, ShieldAlert, Power, Trash2 } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { getAdminSession } from '@/lib/auth';
@@ -7,9 +7,9 @@ import { formatDate } from '@/lib/utils';
 import { Alert } from '@/components/ui/Alert';
 import { CreateUserForm } from './CreateUserForm';
 import { RoleSelect } from './RoleSelect';
+import { ResetPasswordButton } from './ResetPasswordButton';
 import {
   deleteAdminUser,
-  resetAdminPassword,
   toggleAdminActive,
 } from './actions';
 
@@ -114,29 +114,7 @@ export default async function UsersPage() {
                   <td className="text-xs text-ink-500">{formatDate(u.createdAt)}</td>
                   <td>
                     <div className="flex justify-end gap-1">
-                      <details className="relative">
-                        <summary className="btn-ghost cursor-pointer list-none" title="Resetear contraseña">
-                          <KeyRound className="h-3.5 w-3.5" />
-                        </summary>
-                        <form
-                          action={resetAdminPassword}
-                          className="absolute right-0 mt-2 w-[min(18rem,calc(100vw-2rem))] card p-3 z-10 space-y-2"
-                        >
-                          <input type="hidden" name="id" value={u.id} />
-                          <label className="text-xs text-ink-700">Nueva contraseña (mín 8):</label>
-                          <input
-                            type="text"
-                            name="newPassword"
-                            minLength={8}
-                            required
-                            className="input text-sm font-mono"
-                            autoComplete="off"
-                          />
-                          <button type="submit" className="btn-primary text-xs w-full">
-                            Cambiar contraseña
-                          </button>
-                        </form>
-                      </details>
+                      <ResetPasswordButton userId={u.id} isMe={isMe} />
 
                       <form action={toggleAdminActive}>
                         <input type="hidden" name="id" value={u.id} />
