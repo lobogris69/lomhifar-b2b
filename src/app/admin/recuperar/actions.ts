@@ -44,22 +44,30 @@ export async function requestReset(
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
   const link = `${baseUrl}/admin/recuperar/${token}`;
 
-  await sendEmail({
-    to: email,
-    subject: 'Recuperar contraseña · Lomhifar',
-    html: emailLayout(`
-      <h2 style="margin:0 0 12px;color:#921a5e;">Recuperar contraseña</h2>
-      <p style="margin:0 0 12px;">Hemos recibido una solicitud para restablecer la contraseña de tu cuenta administrador.</p>
-      <p style="margin:0 0 18px;">Haz click en el botón para crear una contraseña nueva. El enlace es válido durante <strong>${RESET_TTL_MIN} minutos</strong>.</p>
-      <p style="margin:18px 0;text-align:center;">
-        <a href="${link}" style="background:linear-gradient(135deg,#921a5e 0%,#d12686 100%);color:#fff;padding:12px 26px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">
-          Restablecer contraseña
-        </a>
-      </p>
-      <p style="margin:18px 0 0;color:#54545f;font-size:12px;">Si no has solicitado este cambio, ignora este correo. Tu contraseña no será modificada.</p>
-      <p style="margin:8px 0 0;color:#a0a0a8;font-size:11px;word-break:break-all;">Enlace directo: ${link}</p>
-    `, { preheader: 'Recupera el acceso a tu cuenta admin de Lomhifar' }),
-  });
+  // El email va en try/catch: si el SMTP falla, NO reventamos la página
+  // con un 500. El token queda creado igualmente en BD (por si se arregla
+  // el email) y mantenemos el anti-enumeration devolviendo siempre ok.
+  try {
+    await sendEmail({
+      to: email,
+      subject: 'Recuperar contraseña · Lomhifar',
+      html: emailLayout(`
+        <h2 style="margin:0 0 12px;color:#921a5e;">Recuperar contraseña</h2>
+        <p style="margin:0 0 12px;">Hemos recibido una solicitud para restablecer la contraseña de tu cuenta administrador.</p>
+        <p style="margin:0 0 18px;">Haz click en el botón para crear una contraseña nueva. El enlace es válido durante <strong>${RESET_TTL_MIN} minutos</strong>.</p>
+        <p style="margin:18px 0;text-align:center;">
+          <a href="${link}" style="background:linear-gradient(135deg,#921a5e 0%,#d12686 100%);color:#fff;padding:12px 26px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">
+            Restablecer contraseña
+          </a>
+        </p>
+        <p style="margin:18px 0 0;color:#54545f;font-size:12px;">Si no has solicitado este cambio, ignora este correo. Tu contraseña no será modificada.</p>
+        <p style="margin:8px 0 0;color:#a0a0a8;font-size:11px;word-break:break-all;">Enlace directo: ${link}</p>
+      `, { preheader: 'Recupera el acceso a tu cuenta admin de Lomhifar' }),
+    });
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('[recuperar] no se pudo enviar el email de recuperación:', e);
+  }
 
   return { ok: true };
 }

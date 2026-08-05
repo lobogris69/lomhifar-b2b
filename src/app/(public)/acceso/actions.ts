@@ -89,24 +89,29 @@ export async function requestAccessCode(
     data: { customerId: customer.id, code, expiresAt, ip },
   });
 
-  await sendEmail({
-    to: customer.email,
-    subject: `Su código de acceso Lomhifar: ${code}`,
-    html: emailLayout(`
-      <h2 style="margin:0 0 16px;font-size:20px;color:#14503b;">Código de acceso</h2>
-      <p style="margin:0 0 16px;line-height:1.6;">
-        Hola, hemos recibido una solicitud de acceso a la plataforma B2B de Lomhifar
-        para la farmacia <strong>${customer.pharmacyName}</strong>.
-      </p>
-      <p style="margin:0 0 8px;">Tu código de acceso es:</p>
-      <div style="margin:16px 0;padding:18px;background:#f0faf5;border:1px solid #b7e6cf;border-radius:10px;text-align:center;">
-        <span style="font-size:32px;font-weight:700;letter-spacing:8px;color:#14503b;font-family:monospace;">${code}</span>
-      </div>
-      <p style="margin:16px 0 0;color:#637787;font-size:13px;">
-        Válido durante ${CODE_TTL_MIN} minutos. Si no has solicitado este acceso, ignora este correo.
-      </p>
-    `, { preheader: `Código ${code} para acceder a Lomhifar` }),
-  });
+  try {
+    await sendEmail({
+      to: customer.email,
+      subject: `Su código de acceso Lomhifar: ${code}`,
+      html: emailLayout(`
+        <h2 style="margin:0 0 16px;font-size:20px;color:#14503b;">Código de acceso</h2>
+        <p style="margin:0 0 16px;line-height:1.6;">
+          Hola, hemos recibido una solicitud de acceso a la plataforma B2B de Lomhifar
+          para la farmacia <strong>${customer.pharmacyName}</strong>.
+        </p>
+        <p style="margin:0 0 8px;">Tu código de acceso es:</p>
+        <div style="margin:16px 0;padding:18px;background:#f0faf5;border:1px solid #b7e6cf;border-radius:10px;text-align:center;">
+          <span style="font-size:32px;font-weight:700;letter-spacing:8px;color:#14503b;font-family:monospace;">${code}</span>
+        </div>
+        <p style="margin:16px 0 0;color:#637787;font-size:13px;">
+          Válido durante ${CODE_TTL_MIN} minutos. Si no has solicitado este acceso, ignora este correo.
+        </p>
+      `, { preheader: `Código ${code} para acceder a Lomhifar` }),
+    });
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('[acceso] no se pudo enviar el código de acceso:', e);
+  }
 
   cookies().set(PENDING_COOKIE, customer.id, {
     httpOnly: true,
@@ -193,18 +198,24 @@ export async function resendAccessCode(): Promise<{ ok: boolean; error?: string 
   const expiresAt = new Date(Date.now() + CODE_TTL_MIN * 60 * 1000);
   await prisma.accessCode.create({ data: { customerId, code, expiresAt } });
 
-  await sendEmail({
-    to: customer.email,
-    subject: `Nuevo código de acceso Lomhifar: ${code}`,
-    html: emailLayout(`
-      <h2 style="margin:0 0 16px;font-size:20px;color:#14503b;">Nuevo código de acceso</h2>
-      <p style="margin:0 0 12px;">Ha solicitado un nuevo código. Use el siguiente:</p>
-      <div style="margin:16px 0;padding:18px;background:#f0faf5;border:1px solid #b7e6cf;border-radius:10px;text-align:center;">
-        <span style="font-size:32px;font-weight:700;letter-spacing:8px;color:#14503b;font-family:monospace;">${code}</span>
-      </div>
-      <p style="margin:0;color:#637787;font-size:13px;">Válido ${CODE_TTL_MIN} minutos.</p>
-    `),
-  });
+  try {
+    await sendEmail({
+      to: customer.email,
+      subject: `Nuevo código de acceso Lomhifar: ${code}`,
+      html: emailLayout(`
+        <h2 style="margin:0 0 16px;font-size:20px;color:#14503b;">Nuevo código de acceso</h2>
+        <p style="margin:0 0 12px;">Ha solicitado un nuevo código. Use el siguiente:</p>
+        <div style="margin:16px 0;padding:18px;background:#f0faf5;border:1px solid #b7e6cf;border-radius:10px;text-align:center;">
+          <span style="font-size:32px;font-weight:700;letter-spacing:8px;color:#14503b;font-family:monospace;">${code}</span>
+        </div>
+        <p style="margin:0;color:#637787;font-size:13px;">Válido ${CODE_TTL_MIN} minutos.</p>
+      `),
+    });
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('[acceso] no se pudo reenviar el código:', e);
+    return { ok: false, error: 'No se pudo enviar el email. Inténtalo de nuevo en un momento.' };
+  }
 
   return { ok: true };
 }
