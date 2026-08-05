@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { ArrowLeft, FolderOpen, Download, FileArchive, Search } from 'lucide-react';
+import { ArrowLeft, FolderOpen, Download, Search } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { Alert } from '@/components/ui/Alert';
+import { ZipDayLink } from './ZipDayLink';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Histórico DXF · Admin Lomhifar' };
@@ -182,13 +183,7 @@ export default async function LaserArchivePage({ searchParams }: PageProps) {
                       </div>
                     </div>
                   </div>
-                  <a
-                    href={`/api/admin/laser/zip/${date}`}
-                    className="btn-secondary text-xs"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <FileArchive className="h-3.5 w-3.5" /> ZIP del día
-                  </a>
+                  <ZipDayLink date={date} />
                 </summary>
                 <div className="overflow-x-auto">
                   <table className="table-pro min-w-[720px]">

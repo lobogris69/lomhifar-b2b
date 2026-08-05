@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
  * con certeza qué build está vivo en producción (útil al depurar deploys).
  * Cambiar MARKER en cada cambio que se quiera verificar.
  */
-const MARKER = 'hist-fix-v2';
+const MARKER = 'hist-fix-v3';
 
 export function GET() {
   return NextResponse.json(
