@@ -74,6 +74,7 @@ export async function GET(
       pharmacyName: order.pharmacyName,
       lineIndex: lineIdx + 1,
       lineText: eng.lines[0],
+      color: eng.color,
     });
 
     const dxfBuffer = Buffer.from(dxf, 'utf-8');

@@ -427,17 +427,29 @@ export function todayMadridYmd(now: Date = new Date()): string {
   return fmt.format(now); // "2026-08-03"
 }
 
+/** Etiqueta de color apta para nombre de archivo: BLACK→Negra, RED→Roja. */
+export function laserColorLabel(color?: string | null): string {
+  const c = (color ?? '').toUpperCase();
+  if (c === 'BLACK') return 'Negra';
+  if (c === 'RED') return 'Roja';
+  return slugForFilename(color ?? '', 12) || 'Color';
+}
+
 export function buildDxfFilename(opts: {
   orderNumber: number | string;
   pharmacyName: string;
   lineIndex: number;
   lineText: string;
+  color?: string | null;
   date?: Date;
 }): string {
   const ymd = todayMadridYmd(opts.date ?? new Date());
   const pharma = slugForFilename(opts.pharmacyName, 24);
   const preview = slugForFilename(opts.lineText, 20);
-  return `${ymd}_Pedido-${opts.orderNumber}_${pharma}_L${opts.lineIndex}_${preview}.dxf`;
+  // El color va justo tras la farmacia para identificar de un vistazo si el
+  // grabado es para pulsera Negra o Roja (p. ej. ..._FarmaciaLopez_Roja_L1_...).
+  const colorPart = opts.color ? `_${laserColorLabel(opts.color)}` : '';
+  return `${ymd}_Pedido-${opts.orderNumber}_${pharma}${colorPart}_L${opts.lineIndex}_${preview}.dxf`;
 }
 
 /**
