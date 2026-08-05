@@ -58,8 +58,8 @@ export default async function SentPage() {
 
       <div className="mt-8 rounded-xl border border-ink-100 bg-ink-50/40 p-4 text-center text-sm text-ink-600">
         ¿No te ha llegado nada y han pasado varias horas? Escríbenos a{' '}
-        <a href="mailto:pedidos@lomhifar.com" className="text-brand-700 font-medium hover:underline">
-          pedidos@lomhifar.com
+        <a href="mailto:pedidos@lomhifar.es" className="text-brand-700 font-medium hover:underline">
+          pedidos@lomhifar.es
         </a>{' '}
         y lo revisamos.
       </div>
