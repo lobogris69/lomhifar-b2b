@@ -2,6 +2,35 @@ import nodemailer, { type Transporter } from 'nodemailer';
 
 let cached: Transporter | null = null;
 
+/**
+ * ¿Están configuradas las credenciales SMTP? Si devuelve false, los
+ * emails NO se envían de verdad (se usa un transporte "falso" que
+ * finge éxito). Útil para mostrar un aviso en el admin.
+ */
+export function isEmailConfigured(): boolean {
+  return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD);
+}
+
+/**
+ * Envía un email de prueba y devuelve si realmente salió. Lanza el
+ * error real si el SMTP está configurado pero falla (credenciales,
+ * host, etc.) para poder mostrarlo en el diagnóstico.
+ */
+export async function sendTestEmail(to: string): Promise<{ configured: boolean }> {
+  const configured = isEmailConfigured();
+  await sendEmail({
+    to,
+    subject: 'Prueba de email · Lomhifar',
+    html: emailLayout(`
+      <h2 style="margin:0 0 12px;color:#921a5e;">✅ El email funciona</h2>
+      <p>Si estás leyendo esto, la configuración SMTP de tu plataforma Lomhifar
+      es correcta y los avisos a clientes se están enviando bien.</p>
+      <p style="color:#54545f;font-size:13px;margin-top:16px;">Este es un mensaje de prueba enviado desde el panel de administración.</p>
+    `),
+  });
+  return { configured };
+}
+
 function getTransporter(): Transporter {
   if (cached) return cached;
 

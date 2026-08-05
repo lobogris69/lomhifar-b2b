@@ -4,11 +4,52 @@ import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/auth';
 import { SETTING_KEYS, setSetting, type VolumeDiscountTier } from '@/lib/settings';
 import { settingsSchema } from '@/lib/validations';
+import { isEmailConfigured, sendTestEmail } from '@/lib/email';
 
 export interface SaveSettingsState {
   error?: string;
   ok?: boolean;
   fieldErrors?: Record<string, string>;
+}
+
+export interface EmailTestState {
+  ok?: boolean;
+  error?: string;
+  sentTo?: string;
+  notConfigured?: boolean;
+}
+
+/**
+ * Envía un email de prueba a la dirección del admin logueado y devuelve
+ * el resultado real. Sirve para diagnosticar si el SMTP funciona en
+ * producción sin tener que hacer una solicitud de alta de verdad.
+ */
+export async function sendTestEmailAction(
+  _prev: EmailTestState,
+  _formData: FormData,
+): Promise<EmailTestState> {
+  const session = await requireAdmin({ write: true });
+
+  if (!isEmailConfigured()) {
+    return {
+      notConfigured: true,
+      error:
+        'El SMTP no está configurado en el servidor. Los emails NO se están enviando. ' +
+        'Configura las variables SMTP_HOST, SMTP_PORT, SMTP_USER y SMTP_PASSWORD en Railway.',
+    };
+  }
+
+  try {
+    await sendTestEmail(session.email);
+    return { ok: true, sentTo: session.email };
+  } catch (e) {
+    return {
+      error:
+        'El SMTP está configurado pero falló al enviar: ' +
+        (e instanceof Error ? e.message : 'error desconocido') +
+        '. Revisa host, puerto, usuario y contraseña en Railway.',
+    };
+  }
 }
 
 export async function saveSettings(

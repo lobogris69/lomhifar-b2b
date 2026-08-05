@@ -423,11 +423,17 @@ export default function HelpPage() {
             por transferencia/albarán. Así que al probar no hay ningún cobro que se dispare.
           </Tip>
         </SubDetail>
-        <SubDetail title="Un cliente dice que no ha recibido el email de confirmación">
-          <ul className="list-disc list-inside text-sm space-y-1">
-            <li>Pídele que revise SPAM.</li>
+        <SubDetail title="Un cliente dice que no ha recibido el email (o no llegan los emails)">
+          <p>Lo primero: comprueba que el email del servidor funciona:</p>
+          <ol className="list-decimal list-inside text-sm space-y-1 mt-1">
+            <li>Ve a <A href="/admin/configuracion">/admin/configuracion</A> → bloque «Estado del email (SMTP)».</li>
+            <li>Si aparece en rojo «El email NO está configurado» → ningún correo se envía. Hay que configurar el SMTP en Railway (las instrucciones están en ese mismo bloque).</li>
+            <li>Si está en verde, pulsa «Enviar email de prueba» → si te llega, el sistema funciona.</li>
+          </ol>
+          <p className="mt-2">Si el email del servidor funciona pero un cliente concreto no recibe:</p>
+          <ul className="list-disc list-inside text-sm space-y-1 mt-1">
+            <li>Pídele que revise SPAM / correo no deseado.</li>
             <li>Verifica que su email en <A href="/admin/clientes">/admin/clientes</A> es correcto.</li>
-            <li>Reenvía desde el propio pedido (botón «Notificar al cliente» al cambiar el estado a RECIBIDO).</li>
           </ul>
         </SubDetail>
         <SubDetail title="La farmacia se equivocó al escribir el texto — ¿puedo cambiarlo antes de grabar?">

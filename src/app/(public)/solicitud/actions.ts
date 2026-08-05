@@ -90,45 +90,53 @@ export async function submitApplication(
 
   const recipients = parseRecipients(await getSetting(SETTING_KEYS.ORDERS_RECIPIENT_EMAILS));
 
-  // Notificar a Lomhifar
-  await sendEmail({
-    to: recipients,
-    subject: `Nueva solicitud de alta · ${data.pharmacyName}`,
-    replyTo: data.email,
-    html: emailLayout(`
-      <h2 style="margin:0 0 16px;font-size:20px;color:#921a5e;">Solicitud de alta de farmacia</h2>
-      <table style="width:100%;border-collapse:collapse;font-size:14px;">
-        <tr><td style="padding:6px 0;color:#54545f;width:160px;">Farmacia</td><td style="font-weight:600;">${data.pharmacyName}</td></tr>
-        <tr><td style="padding:6px 0;color:#54545f;">CIF/NIF</td><td>${cif}</td></tr>
-        <tr><td style="padding:6px 0;color:#54545f;">Contacto</td><td>${data.contactName}</td></tr>
-        <tr><td style="padding:6px 0;color:#54545f;">Email</td><td>${email}</td></tr>
-        <tr><td style="padding:6px 0;color:#54545f;">Teléfono</td><td>${data.phone}</td></tr>
-        ${whatsapp ? `<tr><td style="padding:6px 0;color:#54545f;">WhatsApp</td><td>${whatsapp}</td></tr>` : ''}
-        <tr><td style="padding:6px 0;color:#54545f;">Dirección</td><td>${data.address}</td></tr>
-        <tr><td style="padding:6px 0;color:#54545f;">Localidad</td><td>${data.city} (${data.postalCode}) · ${data.province}</td></tr>
-        <tr><td style="padding:6px 0;color:#54545f;">IBAN</td><td style="font-family:monospace;">${bankAccount}</td></tr>
-      </table>
-      ${data.message ? `<div style="margin-top:16px;padding:12px;background:#f7f7f8;border-left:3px solid #d12686;border-radius:6px;"><strong>Mensaje:</strong><br/>${escapeHtml(data.message)}</div>` : ''}
-      <p style="margin-top:24px;color:#54545f;font-size:13px;">
-        Revise y apruebe en el panel de administración.
-      </p>
-    `),
-  });
+  // Los emails van dentro de try/catch: si el SMTP falla, la solicitud
+  // YA está guardada en BD y el admin la verá igualmente en el panel.
+  // Un problema de correo no debe hacer perder la solicitud al usuario.
+  try {
+    // Notificar a Lomhifar
+    await sendEmail({
+      to: recipients,
+      subject: `Nueva solicitud de alta · ${data.pharmacyName}`,
+      replyTo: data.email,
+      html: emailLayout(`
+        <h2 style="margin:0 0 16px;font-size:20px;color:#921a5e;">Solicitud de alta de farmacia</h2>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;">
+          <tr><td style="padding:6px 0;color:#54545f;width:160px;">Farmacia</td><td style="font-weight:600;">${data.pharmacyName}</td></tr>
+          <tr><td style="padding:6px 0;color:#54545f;">CIF/NIF</td><td>${cif}</td></tr>
+          <tr><td style="padding:6px 0;color:#54545f;">Contacto</td><td>${data.contactName}</td></tr>
+          <tr><td style="padding:6px 0;color:#54545f;">Email</td><td>${email}</td></tr>
+          <tr><td style="padding:6px 0;color:#54545f;">Teléfono</td><td>${data.phone}</td></tr>
+          ${whatsapp ? `<tr><td style="padding:6px 0;color:#54545f;">WhatsApp</td><td>${whatsapp}</td></tr>` : ''}
+          <tr><td style="padding:6px 0;color:#54545f;">Dirección</td><td>${data.address}</td></tr>
+          <tr><td style="padding:6px 0;color:#54545f;">Localidad</td><td>${data.city} (${data.postalCode}) · ${data.province}</td></tr>
+          <tr><td style="padding:6px 0;color:#54545f;">IBAN</td><td style="font-family:monospace;">${bankAccount}</td></tr>
+        </table>
+        ${data.message ? `<div style="margin-top:16px;padding:12px;background:#f7f7f8;border-left:3px solid #d12686;border-radius:6px;"><strong>Mensaje:</strong><br/>${escapeHtml(data.message)}</div>` : ''}
+        <p style="margin-top:24px;color:#54545f;font-size:13px;">
+          Revise y apruebe en el panel de administración.
+        </p>
+      `),
+    });
 
-  // Acuse de recibo al solicitante
-  await sendEmail({
-    to: email,
-    subject: 'Hemos recibido su solicitud · Lomhifar',
-    html: emailLayout(`
-      <h2 style="margin:0 0 16px;font-size:20px;color:#921a5e;">Solicitud recibida</h2>
-      <p style="margin:0 0 12px;line-height:1.6;">
-        Gracias por su interés en trabajar con Lomhifar.
-        Hemos recibido la solicitud de alta de <strong>${data.pharmacyName}</strong>.
-      </p>
-      <p style="margin:0 0 12px;">Nuestro equipo la revisará y le contactará en horas hábiles.</p>
-      <p style="margin:0;color:#54545f;font-size:13px;">Referencia: ${app.id.slice(-8).toUpperCase()}</p>
-    `),
-  });
+    // Acuse de recibo al solicitante
+    await sendEmail({
+      to: email,
+      subject: 'Hemos recibido su solicitud · Lomhifar',
+      html: emailLayout(`
+        <h2 style="margin:0 0 16px;font-size:20px;color:#921a5e;">Solicitud recibida</h2>
+        <p style="margin:0 0 12px;line-height:1.6;">
+          Gracias por su interés en trabajar con Lomhifar.
+          Hemos recibido la solicitud de alta de <strong>${data.pharmacyName}</strong>.
+        </p>
+        <p style="margin:0 0 12px;">Nuestro equipo la revisará y le contactará en horas hábiles.</p>
+        <p style="margin:0;color:#54545f;font-size:13px;">Referencia: ${app.id.slice(-8).toUpperCase()}</p>
+      `),
+    });
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('[solicitud] no se pudieron enviar los emails (la solicitud SÍ se guardó):', e);
+  }
 
   redirect('/solicitud/enviada');
 }

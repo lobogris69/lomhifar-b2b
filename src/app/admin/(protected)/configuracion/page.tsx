@@ -5,12 +5,16 @@ import {
   parseShippingMode,
   parseVolumeDiscountTiers,
 } from '@/lib/settings';
+import { isEmailConfigured } from '@/lib/email';
+import { getAdminSession } from '@/lib/auth';
 import { SettingsForm } from './SettingsForm';
+import { EmailDiagnostic } from './EmailDiagnostic';
 
-export const metadata = { title: 'ConfiguraciÃ³n Â· Admin Lomhifar' };
+export const metadata = { title: 'Configuración · Admin Lomhifar' };
 
 export default async function SettingsPage() {
-  const s = await getSettings();
+  const [s, session] = await Promise.all([getSettings(), getAdminSession()]);
+  const emailOk = isEmailConfigured();
   const centsToEuro = (c: string) => (Number(c) / 100).toFixed(2).replace('.', ',');
   return (
     <div className="p-4 sm:p-6 lg:p-10 max-w-4xl">
@@ -19,9 +23,15 @@ export default async function SettingsPage() {
           <Settings className="h-5 w-5" />
         </span>
         <div>
-          <h1 className="section-title">ConfiguraciÃ³n</h1>
+          <h1 className="section-title">Configuración</h1>
           <p className="section-subtitle">Precios, portes, plazos y datos de empresa.</p>
         </div>
+      </div>
+
+      {/* Diagnóstico de email — arriba porque es crítico para que todo
+          el flujo (altas, códigos de acceso, avisos de pedido) funcione. */}
+      <div className="mb-6">
+        <EmailDiagnostic configured={emailOk} adminEmail={session?.email ?? ''} />
       </div>
 
       <SettingsForm
