@@ -1,13 +1,16 @@
 import Link from 'next/link';
 import { Zap, FolderClock, ExternalLink } from 'lucide-react';
 import { getLaserSettings } from '@/lib/laser';
+import { getLaserProfiles } from '@/lib/laser-profiles';
 import { LaserSettingsForm } from './LaserSettingsForm';
+import { LaserProfilesForm } from './LaserProfilesForm';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Configuración Láser · Admin Lomhifar' };
 
 export default async function LaserSettingsPage() {
   const s = await getLaserSettings();
+  const perfiles = await getLaserProfiles();
 
   return (
     <div className="p-4 sm:p-6 lg:p-10 max-w-6xl space-y-6">
@@ -55,6 +58,16 @@ export default async function LaserSettingsPage() {
           curveSteps: s.curveSteps,
         }}
       />
+
+      <div className="pt-2">
+        <h2 className="section-title text-lg">Perfiles de grabado por material</h2>
+        <p className="section-subtitle mb-4">
+          Potencia, velocidad, pasadas y frecuencia de la máquina. Cada material se
+          comporta distinto, así que van por perfil: al probar uno nuevo se crea su
+          perfil sin tocar los que ya están afinados.
+        </p>
+        <LaserProfilesForm config={perfiles} />
+      </div>
     </div>
   );
 }

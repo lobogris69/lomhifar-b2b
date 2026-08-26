@@ -3,6 +3,12 @@
 import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/auth';
 import { SETTING_KEYS, setSetting, type SettingKey } from '@/lib/settings';
+import {
+  saveLaserProfiles,
+  normalizar,
+  LIMITES,
+  type LaserProfile,
+} from '@/lib/laser-profiles';
 
 export interface SaveLaserState {
   ok?: boolean;
@@ -70,3 +76,88 @@ export async function saveLaserSettings(
   revalidatePath('/admin/pedidos', 'layout');
   return { ok: true };
 }
+
+// ============================================================
+// Perfiles de grabado por material
+// ============================================================
+
+
+export interface SaveProfilesState {
+  ok?: boolean;
+  error?: string;
+}
+
+/**
+ * Guarda la lista completa de perfiles y el mapeo color → perfil.
+ *
+ * El formulario manda los campos indexados (p0_nombre, p0_potencia, …) más
+ * `count` con cuántos perfiles hay, y color_BLACK / color_RED con el perfil
+ * asignado a cada color de pulsera.
+ */
+export async function saveLaserProfilesAction(
+  _prev: SaveProfilesState,
+  formData: FormData,
+): Promise<SaveProfilesState> {
+  await requireAdmin({ write: true });
+
+  const count = Number(formData.get('count') ?? 0);
+  if (!Number.isFinite(count) || count < 1) {
+    return { error: 'Tiene que haber al menos un perfil.' };
+  }
+
+  const n = (name: string, def: number, lim: { min: number; max: number }) => {
+    const v = Number(String(formData.get(name) ?? '').replace(',', '.'));
+    if (!Number.isFinite(v)) return def;
+    return Math.min(lim.max, Math.max(lim.min, v));
+  };
+
+  const perfiles: LaserProfile[] = [];
+  const vistos = new Set<string>();
+
+  for (let i = 0; i < count; i++) {
+    const nombre = String(formData.get(`p${i}_nombre`) ?? '').trim();
+    if (!nombre) return { error: `El perfil ${i + 1} no tiene nombre.` };
+
+    // El id se deriva del nombre para que sea legible en la BD, pero se
+    // conserva el original si ya existía: así el mapeo por color no se
+    // rompe al renombrar un perfil.
+    const idPrevio = String(formData.get(`p${i}_id`) ?? '').trim();
+    let id =
+      idPrevio ||
+      nombre
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 40) ||
+      `perfil-${i + 1}`;
+    while (vistos.has(id)) id = `${id}-2`;
+    vistos.add(id);
+
+    perfiles.push({
+      id,
+      nombre: nombre.slice(0, 60),
+      potenciaPct: n(`p${i}_potencia`, 70, LIMITES.potenciaPct),
+      velocidadMmS: n(`p${i}_velocidad`, 250, LIMITES.velocidadMmS),
+      pasadas: Math.round(n(`p${i}_pasadas`, 1, LIMITES.pasadas)),
+      frecuenciaKHz: n(`p${i}_frecuencia`, 30, LIMITES.frecuenciaKHz),
+      relleno: formData.get(`p${i}_relleno`) === 'on',
+      pasoRellenoMm: n(`p${i}_paso`, 0.05, LIMITES.pasoRellenoMm),
+      notas: String(formData.get(`p${i}_notas`) ?? '').slice(0, 500),
+    });
+  }
+
+  const porColor: Record<string, string> = {};
+  for (const color of ['BLACK', 'RED']) {
+    const id = String(formData.get(`color_${color}`) ?? '');
+    if (id) porColor[color] = id;
+  }
+
+  await saveLaserProfiles(normalizar({ perfiles, porColor }));
+
+  revalidatePath('/admin/laser');
+  revalidatePath('/admin/pedidos', 'layout');
+  return { ok: true };
+}
+

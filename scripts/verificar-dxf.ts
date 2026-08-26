@@ -17,7 +17,8 @@ const settings: LaserSettings = {
   marginRightMm: 0.5,
   marginTopMm: 0.5,
   marginBottomMm: 0.5,
-  lineHeightFactor: 1.25,
+  // Se puede pasar por argumento: npx tsx scripts/verificar-dxf.ts 2.0
+  lineHeightFactor: Number(process.argv[2] ?? 1.25),
   curveSteps: 24,
 };
 

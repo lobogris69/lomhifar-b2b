@@ -73,6 +73,7 @@ export const SETTING_KEYS = {
   LASER_MARGIN_BOTTOM_MM: 'laser.margin_bottom_mm',
   LASER_LINE_HEIGHT_FACTOR: 'laser.line_height_factor', // 1.0 = pegadas, 1.2 = holgadas
   LASER_CURVE_STEPS: 'laser.curve_steps',               // resolución de curvas Bézier (10-60)
+  LASER_PROFILES: 'laser.profiles',                     // perfiles de material (JSON) — ver lib/laser-profiles.ts
   // === NEGOCIO (costes parametrizables para el panel de rentabilidad) ===
   // Todos en CÉNTIMOS de € salvo BIZ_MACHINE_LIFE_UNITS (nº de pulseras).
   BIZ_COST_BRACELET_BLACK_CENTS: 'biz.cost_bracelet_black_cents', // coste pulsera negra en blanco
@@ -170,8 +171,16 @@ export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
   [SETTING_KEYS.LASER_MARGIN_BOTTOM_MM]: '0.5',
   // 1.25 = 25% de separación entre líneas (para 2 filas legibles);
   // en 1 sola línea este factor no afecta (se usa toda la altura).
-  [SETTING_KEYS.LASER_LINE_HEIGHT_FACTOR]: '1.25',
+  [SETTING_KEYS.LASER_LINE_HEIGHT_FACTOR]: '1.9',
   [SETTING_KEYS.LASER_CURVE_STEPS]: '24',
+  // Perfiles de grabado. Valores verificados en la máquina el 26-ago-2026.
+  [SETTING_KEYS.LASER_PROFILES]: JSON.stringify({
+    perfiles: [
+      { id: 'negra', nombre: 'Pulsera negra', potenciaPct: 70, velocidadMmS: 250, pasadas: 1, frecuenciaKHz: 30, relleno: false, pasoRellenoMm: 0.05, notas: '' },
+      { id: 'roja', nombre: 'Pulsera roja', potenciaPct: 70, velocidadMmS: 250, pasadas: 1, frecuenciaKHz: 30, relleno: false, pasoRellenoMm: 0.05, notas: '' },
+    ],
+    porColor: { BLACK: 'negra', RED: 'roja' },
+  }),
   // === Negocio (defaults a 0 → el admin los rellena en /admin/negocio.
   // Vida de máquina 20.000 pulseras para evitar división por cero cuando
   // el precio de máquina aún no está puesto).
