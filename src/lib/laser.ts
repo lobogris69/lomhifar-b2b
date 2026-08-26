@@ -334,12 +334,20 @@ function pathToPolylines(
   return polylines;
 }
 
-function polylineToDxf(pts: Point[]): string {
+function polylineToDxf(pts: Point[], handle: number): string {
   // LWPOLYLINE = polilínea 2D ligera. Cerrada (flag 70=1).
-  // Formato: cabecera + N pares (10=X, 20=Y).
+  //
+  // Los marcadores de subclase (100/AcDbEntity, 100/AcDbPolyline) y el handle
+  // (grupo 5) NO son opcionales: sin ellos EZCAD lo acepta igual porque es muy
+  // permisivo, pero cualquier lector estándar rechaza el fichero con
+  // "missing 'AcDbPolyline' subclass in LWPOLYLINE". Eso dejaba fuera a ezdxf
+  // y por tanto a MeerK40t, que es quien manda el trabajo a la máquina.
   const header = [
     '0', 'LWPOLYLINE',
+    '5', handle.toString(16).toUpperCase(),  // handle único
+    '100', 'AcDbEntity',
     '8', '0',              // layer 0
+    '100', 'AcDbPolyline',
     '90', String(pts.length),
     '70', '1',             // 1 = closed
   ];
@@ -352,12 +360,13 @@ function polylineToDxf(pts: Point[]): string {
 }
 
 function wrapDxf(entitiesContent: string, s: LaserSettings): string {
-  // Cabecera DXF R2000-compatible mínima que EZCAD acepta sin problemas.
-  // Incluye HEADER con $INSUNITS=4 (milímetros) y $EXTMIN/$EXTMAX para
-  // que EZCAD detecte el tamaño real del dibujo al importar.
+  // Cabecera DXF R2000. Incluye $ACADVER (obligatorio para que un lector
+  // estándar sepa qué versión está leyendo), $INSUNITS=4 (milímetros) y
+  // $EXTMIN/$EXTMAX para que EZCAD detecte el tamaño real al importar.
   return [
     '0', 'SECTION',
     '2', 'HEADER',
+    '9', '$ACADVER', '1', 'AC1015',        // AC1015 = R2000
     '9', '$INSUNITS', '70', '4',           // 4 = mm
     '9', '$EXTMIN', '10', '0.0', '20', '0.0', '30', '0.0',
     '9', '$EXTMAX', '10', String(s.plateWidthMm), '20', String(s.plateHeightMm), '30', '0.0',
@@ -382,6 +391,10 @@ export async function generateDxfForLines(
   const layout = await layoutLines(lines, s);
 
   const entities: string[] = [];
+  // Handles DXF: cada entidad necesita el suyo, único dentro del fichero.
+  // Se empieza en 0x100 para no chocar con los handles bajos que suelen
+  // reservarse a las tablas.
+  let nextHandle = 0x100;
   for (const line of layout.lines) {
     const polylines = pathToPolylines(
       line.path.commands as opentype.PathCommand[],
@@ -389,7 +402,7 @@ export async function generateDxfForLines(
       s.curveSteps,
     );
     for (const pl of polylines) {
-      entities.push(polylineToDxf(pl));
+      entities.push(polylineToDxf(pl, nextHandle++));
     }
   }
   return wrapDxf(entities.join('\n'), s);
