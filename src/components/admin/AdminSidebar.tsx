@@ -2,49 +2,18 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ReactNode, useState } from 'react';
-import {
-  LayoutDashboard,
-  Users,
-  FileSpreadsheet,
-  ClipboardList,
-  Settings,
-  Building2,
-  LogOut,
-  Megaphone,
-  Images,
-  UserCog,
-  Users2,
-  Menu,
-  X,
-  Package,
-  Type,
-  Wrench,
-  Zap,
-  HelpCircle,
-  BarChart3,
-} from 'lucide-react';
+import { ReactNode, useEffect, useState } from 'react';
+import { ChevronDown, LogOut, Menu, UserCog, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ADMIN_ROLE_LABEL, type AdminRole, canAccessPath } from '@/lib/admin-roles';
-
-const NAV = [
-  { href: '/admin', label: 'Resumen', icon: LayoutDashboard, exact: true },
-  { href: '/admin/clientes', label: 'Clientes', icon: Users },
-  { href: '/admin/solicitudes', label: 'Solicitudes', icon: Building2, badgeKey: 'pendingApplications' as const },
-  { href: '/admin/pedidos', label: 'Pedidos', icon: ClipboardList },
-  { href: '/admin/stock', label: 'Stock', icon: Package, badgeKey: 'lowStock' as const },
-  { href: '/admin/importar', label: 'Importar Excel', icon: FileSpreadsheet },
-  { href: '/admin/cartel', label: 'Cartel promocional', icon: Megaphone },
-  { href: '/admin/imagenes', label: 'Imágenes del sitio', icon: Images },
-  { href: '/admin/textos', label: 'Textos del sitio', icon: Type },
-  { href: '/admin/personas', label: 'Personas / casos uso', icon: Users },
-  { href: '/admin/negocio', label: 'Control de negocio', icon: BarChart3 },
-  { href: '/admin/configuracion', label: 'Configuración', icon: Settings },
-  { href: '/admin/laser', label: 'Grabado láser', icon: Zap },
-  { href: '/admin/usuarios', label: 'Usuarios admin', icon: Users2 },
-  { href: '/admin/sistema', label: 'Sistema / Reset', icon: Wrench },
-  { href: '/admin/ayuda', label: 'Ayuda', icon: HelpCircle },
-];
+import {
+  NAV_ARRIBA,
+  NAV_GRUPOS,
+  enlaceActivo,
+  type BadgeKey,
+  type NavGroup,
+  type NavItem,
+} from './nav';
 
 export interface SidebarBadges {
   pendingApplications?: number;
@@ -59,45 +28,205 @@ interface SidebarProps {
   badges?: SidebarBadges;
 }
 
-function NavLinks({
-  pathname,
-  visibleNav,
+const RECORDATORIO = 'lomhifar.admin.menu';
+
+function cuenta(badges: SidebarBadges | undefined, clave?: BadgeKey): number {
+  if (!clave || !badges) return 0;
+  return badges[clave] ?? 0;
+}
+
+function Chapa({ n }: { n: number }) {
+  return (
+    <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-400 text-amber-950 text-[10px] font-bold px-1.5">
+      {n}
+    </span>
+  );
+}
+
+function Enlace({
+  item,
+  activo,
   badges,
   onClick,
 }: {
-  pathname: string;
-  visibleNav: typeof NAV;
+  item: NavItem;
+  activo: boolean;
   badges?: SidebarBadges;
   onClick?: () => void;
 }) {
+  const n = cuenta(badges, item.badgeKey);
   return (
-    <>
-      {visibleNav.map((n) => {
-        const active = n.exact ? pathname === n.href : pathname.startsWith(n.href);
-        const badgeCount = n.badgeKey && badges ? badges[n.badgeKey] : 0;
-        return (
-          <Link
-            key={n.href}
-            href={n.href}
-            onClick={onClick}
+    <Link
+      href={item.href}
+      onClick={onClick}
+      aria-current={activo ? 'page' : undefined}
+      className={cn(
+        'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+        activo
+          ? 'bg-brand-700 text-white font-semibold shadow-sm'
+          : 'text-ink-200 font-medium hover:bg-white/5 hover:text-white',
+      )}
+    >
+      <item.icon
+        className={cn('h-4 w-4 shrink-0', activo ? 'text-white' : 'text-ink-400 group-hover:text-white')}
+      />
+      <span className="min-w-0 flex-1">
+        <span className="block truncate">{item.label}</span>
+        {item.pista && (
+          <span
             className={cn(
-              'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-              active
-                ? 'bg-brand-700 text-white'
-                : 'text-ink-200 hover:bg-white/5 hover:text-white',
+              'block truncate text-[10px] font-normal leading-tight',
+              activo ? 'text-brand-100' : 'text-ink-500',
             )}
           >
-            <n.icon className="h-4 w-4" />
-            <span className="flex-1">{n.label}</span>
-            {badgeCount && badgeCount > 0 ? (
-              <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-400 text-amber-950 text-[10px] font-bold px-1.5">
-                {badgeCount}
-              </span>
-            ) : null}
-          </Link>
-        );
-      })}
-    </>
+            {item.pista}
+          </span>
+        )}
+      </span>
+      {n > 0 && <Chapa n={n} />}
+    </Link>
+  );
+}
+
+/**
+ * Un bloque del menú, que se abre y se cierra.
+ *
+ * Cerrado deja ver de un vistazo los cuatro sitios a los que se puede ir;
+ * abierto, el detalle. Se recuerda cómo lo dejaste, y el bloque de la página
+ * en la que estás se abre solo.
+ */
+function Bloque({
+  grupo,
+  activo,
+  abierto,
+  alternar,
+  badges,
+  onLinkClick,
+}: {
+  grupo: NavGroup;
+  activo: string | null;
+  abierto: boolean;
+  alternar: () => void;
+  badges?: SidebarBadges;
+  onLinkClick?: () => void;
+}) {
+  const dentro = grupo.items.some((i) => i.href === activo);
+  const pendientes = grupo.items.reduce((a, i) => a + cuenta(badges, i.badgeKey), 0);
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={alternar}
+        aria-expanded={abierto}
+        className={cn(
+          'flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-white/5',
+          dentro ? 'text-white' : 'text-ink-300 hover:text-white',
+        )}
+      >
+        <grupo.icon className={cn('h-4 w-4 shrink-0', dentro ? 'text-brand-300' : 'text-ink-500')} />
+        <span className="flex-1 text-[11px] font-semibold uppercase tracking-wider">
+          {grupo.label}
+        </span>
+        {!abierto && pendientes > 0 && <Chapa n={pendientes} />}
+        <ChevronDown
+          className={cn(
+            'h-3.5 w-3.5 shrink-0 text-ink-500 transition-transform',
+            abierto && 'rotate-180',
+          )}
+        />
+      </button>
+
+      {abierto && (
+        <div className="mt-0.5 ml-4 space-y-0.5 border-l border-white/10 pb-1 pl-2">
+          {grupo.items.map((i) => (
+            <Enlace
+              key={i.href}
+              item={i}
+              activo={i.href === activo}
+              badges={badges}
+              onClick={onLinkClick}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** El menú entero. Lo comparten la barra de escritorio y el cajón del móvil. */
+function Navegacion({
+  adminRole,
+  badges,
+  onLinkClick,
+}: {
+  adminRole: string;
+  badges?: SidebarBadges;
+  onLinkClick?: () => void;
+}) {
+  const pathname = usePathname();
+  const activo = enlaceActivo(pathname);
+
+  const arriba = NAV_ARRIBA.filter((n) => canAccessPath(adminRole, n.href));
+  const grupos = NAV_GRUPOS
+    .map((g) => ({ ...g, items: g.items.filter((i) => canAccessPath(adminRole, i.href)) }))
+    .filter((g) => g.items.length > 0);
+
+  // Lo que el usuario haya abierto o cerrado a mano. Se lee después del primer
+  // pintado: en el servidor no hay localStorage, y mirarlo antes dejaría el
+  // menú distinto en cliente y servidor.
+  const [aMano, setAMano] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    try {
+      const guardado = window.localStorage.getItem(RECORDATORIO);
+      if (guardado) setAMano(JSON.parse(guardado));
+    } catch {
+      // Sin recuerdo se abre el bloque de la página actual, que ya sirve.
+    }
+  }, []);
+
+  function alternar(id: string, abiertoAhora: boolean) {
+    setAMano((prev) => {
+      const siguiente = { ...prev, [id]: !abiertoAhora };
+      try {
+        window.localStorage.setItem(RECORDATORIO, JSON.stringify(siguiente));
+      } catch {
+        // Si el navegador no deja guardar, al menos funciona esta sesión.
+      }
+      return siguiente;
+    });
+  }
+
+  return (
+    <div className="space-y-0.5">
+      {arriba.map((n) => (
+        <Enlace
+          key={n.href}
+          item={n}
+          activo={n.href === activo}
+          badges={badges}
+          onClick={onLinkClick}
+        />
+      ))}
+
+      <div className="space-y-1 border-t border-white/10 pt-3 mt-3">
+        {grupos.map((g) => {
+          const dentro = g.items.some((i) => i.href === activo);
+          const abierto = aMano[g.id] ?? dentro;
+          return (
+            <Bloque
+              key={g.id}
+              grupo={g}
+              activo={activo}
+              abierto={abierto}
+              alternar={() => alternar(g.id, abierto)}
+              badges={badges}
+              onLinkClick={onLinkClick}
+            />
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -146,13 +275,12 @@ function ProfileBlock({
 
 export function AdminSidebar({ adminEmail, adminRole, logo, badges }: SidebarProps) {
   const pathname = usePathname();
-  const visibleNav = NAV.filter((n) => canAccessPath(adminRole, n.href));
 
   return (
     <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-ink-950 text-white">
       <div className="px-5 py-6 border-b border-white/10">{logo}</div>
-      <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-        <NavLinks pathname={pathname} visibleNav={visibleNav} badges={badges} />
+      <nav className="flex-1 overflow-y-auto p-3">
+        <Navegacion adminRole={adminRole} badges={badges} />
       </nav>
       <ProfileBlock adminEmail={adminEmail} adminRole={adminRole} pathname={pathname} />
     </aside>
@@ -172,14 +300,12 @@ export function AdminMobileTopbar({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const visibleNav = NAV.filter((n) => canAccessPath(adminRole, n.href));
   const close = () => setOpen(false);
 
   // Badge total para el icono hamburguesa
-  const totalBadges = visibleNav.reduce(
-    (a, n) => a + (n.badgeKey && badges?.[n.badgeKey] ? badges[n.badgeKey]! : 0),
-    0,
-  );
+  const totalBadges = [...NAV_ARRIBA, ...NAV_GRUPOS.flatMap((g) => g.items)]
+    .filter((n) => canAccessPath(adminRole, n.href))
+    .reduce((a, n) => a + cuenta(badges, n.badgeKey), 0);
 
   return (
     <>
@@ -224,13 +350,8 @@ export function AdminMobileTopbar({
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-              <NavLinks
-                pathname={pathname}
-                visibleNav={visibleNav}
-                badges={badges}
-                onClick={close}
-              />
+            <nav className="flex-1 overflow-y-auto p-3">
+              <Navegacion adminRole={adminRole} badges={badges} onLinkClick={close} />
             </nav>
             <ProfileBlock
               adminEmail={adminEmail}

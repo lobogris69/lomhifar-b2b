@@ -59,7 +59,9 @@ export async function GET(
 
   try {
     if (format === 'svg') {
-      const svg = await generateSvgPreview(eng.lines);
+      // Con el color de la pulsera: la vista previa sale sobre la correa
+      // negra o roja que toca, para no grabar sobre la equivocada.
+      const svg = await generateSvgPreview(eng.lines, undefined, eng.color);
       return new NextResponse(svg, {
         headers: {
           'Content-Type': 'image/svg+xml; charset=utf-8',

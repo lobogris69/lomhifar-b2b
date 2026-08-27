@@ -198,8 +198,16 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
                               DXF» le quedaban 60px y desaparecía justo en pantalla
                               completa, que es cuando más se usa. */}
                           <div className="p-3 flex flex-col gap-3">
-                            <div className="w-full rounded border border-ink-100 bg-ink-50/40 flex items-center justify-center p-1 min-h-[70px]">
-                              {/* Preview SVG del texto sobre la placa */}
+                            <div
+                              className={`w-full rounded border flex items-center justify-center p-1 min-h-[70px] ${
+                                e.color === 'RED'
+                                  ? 'border-[#3a0509] bg-[#8e1520]'
+                                  : 'border-black bg-[#17171a]'
+                              }`}
+                            >
+                              {/* Preview SVG del texto sobre la placa, ya con
+                                  la correa de su color. El marco acompaña al
+                                  mismo color: de un vistazo se ve cuál coger. */}
                               <object
                                 type="image/svg+xml"
                                 data={previewUrl}
@@ -210,8 +218,22 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
                               </object>
                             </div>
                             <div className="min-w-0">
-                              <div className="text-[10px] uppercase tracking-wider text-ink-500">
-                                Grabado {idx + 1} · {e.color === 'RED' ? 'Roja' : 'Negra'} · {e.totalUnits} ud{e.totalUnits === 1 ? '' : 's'}
+                              <div className="flex flex-wrap items-center gap-1.5 text-[10px] uppercase tracking-wider text-ink-500">
+                                <span>Grabado {idx + 1}</span>
+                                <span>·</span>
+                                {/* El color, con su color: leerlo en gris entre
+                                    el resto del texto es justo lo que lleva a
+                                    coger la pulsera equivocada. */}
+                                <span
+                                  className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 font-bold text-white ${
+                                    e.color === 'RED' ? 'bg-[#8e1520]' : 'bg-[#17171a]'
+                                  }`}
+                                >
+                                  <span className="h-1.5 w-1.5 rounded-full bg-white/80" />
+                                  {e.color === 'RED' ? 'Pulsera roja' : 'Pulsera negra'}
+                                </span>
+                                <span>·</span>
+                                <span>{e.totalUnits} ud{e.totalUnits === 1 ? '' : 's'}</span>
                               </div>
                               <div className="mt-0.5 text-sm font-semibold text-ink-900 break-words">
                                 {e.lines.map((l, i) => (

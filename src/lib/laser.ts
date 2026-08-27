@@ -277,12 +277,25 @@ function alturaDeLaTinta(
 // SVG (para preview visual del texto sobre la placa)
 // ============================================================
 
+/** Color de la correa tal como se ve, no como sale en el catálogo. */
+const CORREA = {
+  BLACK: { fondo: '#17171a', borde: '#000000', cota: '#9a9aa4', nombre: 'NEGRA' },
+  RED:   { fondo: '#8e1520', borde: '#3a0509', cota: '#f0c9cd', nombre: 'ROJA' },
+} as const;
+
 export async function generateSvgPreview(
   lines: string[],
   override?: LaserSettings,
+  colorPulsera?: string,
 ): Promise<string> {
   const s = override ?? (await getLaserSettings());
   const layout = await layoutLines(lines, s);
+
+  // La placa es de aluminio siempre; lo que cambia de color es la correa. Al
+  // pintarla de su color, la vista del pedido ya dice sola si la pulsera que
+  // hay que coger es la negra o la roja, sin tener que leer la ficha. Un
+  // grabado con la pulsera equivocada se tira: no se puede desgrabar.
+  const correa = CORREA[colorPulsera as keyof typeof CORREA];
 
   // viewBox en mm reales. Padding visual de 2mm alrededor para ver
   // el contorno de la placa cómodamente en el navegador.
@@ -295,7 +308,14 @@ export async function generateSvgPreview(
   // Path SVG combinado de todos los caracteres
   const paths = layout.lines.map((l) => l.path.toSVG(3)).join('\n  ');
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vbX} ${vbY} ${vbW} ${vbH}" width="100%" style="max-width:100%;height:auto;background:#f8f8fa;font-family:system-ui,sans-serif;">
+  const fondo = correa ? correa.fondo : '#f8f8fa';
+  const cota = correa ? correa.cota : '#54545f';
+  const tira = correa
+    ? `\n  <!-- Correa: sale por los dos lados de la placa, como en la pulsera -->
+  <rect x="${vbX}" y="${-0.4}" width="${vbW}" height="${s.plateHeightMm + 0.8}" rx="0.4" fill="${correa.fondo}" stroke="${correa.borde}" stroke-width="0.12"/>`
+    : '';
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vbX} ${vbY} ${vbW} ${vbH}" width="100%" style="max-width:100%;height:auto;background:${fondo};font-family:system-ui,sans-serif;">${tira}
   <!-- Contorno de la placa -->
   <rect x="0" y="0" width="${s.plateWidthMm}" height="${s.plateHeightMm}" fill="#eaeaef" stroke="#c4c4cc" stroke-width="0.1"/>
   <!-- Área útil (imprimible) -->
@@ -305,8 +325,8 @@ export async function generateSvgPreview(
   ${paths}
   </g>
   <!-- Cotas informativas -->
-  <text x="${s.plateWidthMm / 2}" y="${-0.6}" text-anchor="middle" font-size="0.9" fill="#54545f">${s.plateWidthMm}mm</text>
-  <text x="${-0.6}" y="${s.plateHeightMm / 2}" text-anchor="middle" font-size="0.9" fill="#54545f" transform="rotate(-90 ${-0.6} ${s.plateHeightMm / 2})">${s.plateHeightMm}mm</text>
+  <text x="${s.plateWidthMm / 2}" y="${-0.6}" text-anchor="middle" font-size="0.9" fill="${cota}">${s.plateWidthMm}mm</text>
+  <text x="${-0.6}" y="${s.plateHeightMm / 2}" text-anchor="middle" font-size="0.9" fill="${cota}" transform="rotate(-90 ${-0.6} ${s.plateHeightMm / 2})">${s.plateHeightMm}mm</text>
 </svg>`;
 }
 
