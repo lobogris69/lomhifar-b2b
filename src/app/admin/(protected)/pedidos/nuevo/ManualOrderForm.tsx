@@ -6,9 +6,9 @@ import { Loader2, NotebookPen, Plus, Trash2, Save, UserPlus, Info } from 'lucide
 import { Alert } from '@/components/ui/Alert';
 import {
   createManualOrder, quickCreateCustomer,
-  CHANNEL_LABEL,
   type CreateManualOrderState, type QuickCustomerState,
 } from './actions';
+import { CHANNEL_LABEL } from './channels';
 
 interface CustomerLite {
   id: string;

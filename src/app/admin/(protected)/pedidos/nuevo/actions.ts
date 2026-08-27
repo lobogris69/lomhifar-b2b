@@ -5,6 +5,9 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { asegurarClienteMostrador, notaDeTalonario } from '@/lib/mostrador';
+// Los canales viven fuera: un fichero 'use server' sólo puede exportar
+// funciones asíncronas, y exportar de aquí una constante tumba la página.
+import { CHANNEL_VALUES, CHANNEL_LABEL } from './channels';
 import { requireAdmin } from '@/lib/auth';
 import { priceCart } from '@/lib/pricing';
 import { getSetting, getSettings, parseRecipients, SETTING_KEYS } from '@/lib/settings';
@@ -68,17 +71,6 @@ export async function quickCreateCustomer(
 // Crear pedido manual
 // ============================================================
 
-const CHANNEL_VALUES = ['PHONE', 'EMAIL', 'WHATSAPP', 'VISIT', 'NOTE', 'OTHER'] as const;
-type Channel = (typeof CHANNEL_VALUES)[number];
-
-export const CHANNEL_LABEL: Record<Channel, string> = {
-  PHONE: 'Teléfono',
-  EMAIL: 'Email',
-  WHATSAPP: 'WhatsApp',
-  VISIT: 'Visita comercial',
-  NOTE: 'Nota escrita',
-  OTHER: 'Otro',
-};
 
 const itemSchema = z.object({
   color: z.enum(['BLACK', 'RED']),
