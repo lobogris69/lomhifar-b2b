@@ -6,6 +6,7 @@ import { formatDate, formatEuros } from '@/lib/utils';
 import { colorLabel } from '@/lib/cart';
 import { OrderStatusBadge, ORDER_STATUS_LABEL } from '@/components/shop/OrderStatusBadge';
 import { BraceletPreview } from '@/components/shop/BraceletPreview';
+import { IndicadorGrabadora } from '@/components/laser/IndicadorGrabadora';
 import { EnviarAGrabadora } from './EnviarAGrabadora';
 import { PrintButton } from '@/components/admin/PrintButton';
 import { OrderProgress } from '@/components/admin/OrderProgress';
@@ -60,7 +61,11 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <div className="card p-6">
-            <h2 className="text-sm font-semibold text-ink-900 mb-4">Pulseras a fabricar</h2>
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <h2 className="text-sm font-semibold text-ink-900">Pulseras a fabricar</h2>
+              {/* Cómo está la máquina del taller, sin tener que ir a mirarla. */}
+              <IndicadorGrabadora />
+            </div>
 
             {/* Vista previa visual — crítica para producción */}
             <div className="space-y-5 mb-6">

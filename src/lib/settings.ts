@@ -75,6 +75,7 @@ export const SETTING_KEYS = {
   LASER_CURVE_STEPS: 'laser.curve_steps',               // resolución de curvas Bézier (10-60)
   LASER_PROFILES: 'laser.profiles',                     // perfiles de material (JSON) — ver lib/laser-profiles.ts
   LASER_BRIDGE_TOKEN: 'laser.bridge_token',             // clave del puente de la grabadora
+  LASER_BRIDGE_ESTADO: 'laser.bridge_estado',           // último latido del puente (JSON)
   // === NEGOCIO (costes parametrizables para el panel de rentabilidad) ===
   // Todos en CÉNTIMOS de € salvo BIZ_MACHINE_LIFE_UNITS (nº de pulseras).
   BIZ_COST_BRACELET_BLACK_CENTS: 'biz.cost_bracelet_black_cents', // coste pulsera negra en blanco
@@ -178,6 +179,7 @@ export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
   // Vacía hasta que se genere desde /admin/laser. Sin clave, la cola no
   // atiende a nadie.
   [SETTING_KEYS.LASER_BRIDGE_TOKEN]: '',
+  [SETTING_KEYS.LASER_BRIDGE_ESTADO]: '',
   [SETTING_KEYS.LASER_PROFILES]: JSON.stringify({
     perfiles: [
       { id: 'negra', nombre: 'Pulsera negra', potenciaPct: 70, velocidadMmS: 250, pasadas: 1, frecuenciaKHz: 30, relleno: false, pasoRellenoMm: 0.05, notas: '' },
