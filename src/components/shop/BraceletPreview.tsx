@@ -16,6 +16,15 @@ interface Props {
   showRuler?: boolean;
   /** Oculta los badges inferiores ("Pulsera negra · silicona médica" / "Placa…") */
   hideMeta?: boolean;
+  /**
+   * Pinta el texto fantasma «LÍNEA 2 (OPCIONAL)» cuando no hay segunda línea.
+   *
+   * Sólo tiene sentido en el configurador de la tienda, mientras el cliente
+   * teclea, para que vea que puede poner otra línea. En cualquier otro sitio
+   * la vista debe ser FIEL a lo que se va a grabar: ese hueco reservado
+   * empujaba la línea 1 hacia arriba y la pulsera se veía descentrada.
+   */
+  placeholderLinea2?: boolean;
 }
 
 const SIZE_CLASS = {
@@ -44,6 +53,7 @@ export function BraceletPreview({
   size = 'md',
   showRuler = false,
   hideMeta = false,
+  placeholderLinea2 = false,
 }: Props) {
   const isBlack = color === 'BLACK';
   const strapBorder = isBlack ? '#000' : '#3a0509';
@@ -203,23 +213,28 @@ export function BraceletPreview({
               >
                 {line1 || <span style={{ opacity: 0.3 }}>LÍNEA 1</span>}
               </div>
-              <div
-                className="engrave-text"
-                style={{
-                  fontSize: line2.length > 10 ? 8 : 9.5,
-                  letterSpacing: '0.06em',
-                  marginTop: 1,
-                  textShadow: '0 0.4px 0 rgba(255,255,255,0.45)',
-                  width: '100%',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  opacity: line2 ? 1 : 0.3,
-                  fontWeight: 600,
-                }}
-              >
-                {line2 || 'LÍNEA 2 (OPCIONAL)'}
-              </div>
+              {/* Sin segunda línea NO se pinta nada: si se reserva el hueco,
+                  la línea 1 queda empujada hacia arriba y la pulsera se ve
+                  descentrada. El texto fantasma sólo en el configurador. */}
+              {(line2 || placeholderLinea2) && (
+                <div
+                  className="engrave-text"
+                  style={{
+                    fontSize: line2.length > 10 ? 8 : 9.5,
+                    letterSpacing: '0.06em',
+                    marginTop: 1,
+                    textShadow: '0 0.4px 0 rgba(255,255,255,0.45)',
+                    width: '100%',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    opacity: line2 ? 1 : 0.3,
+                    fontWeight: 600,
+                  }}
+                >
+                  {line2 || 'LÍNEA 2 (OPCIONAL)'}
+                </div>
+              )}
             </div>
           </foreignObject>
 

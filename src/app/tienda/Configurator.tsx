@@ -189,7 +189,7 @@ export function Configurator({
               />
             </div>
           ) : (
-            <BraceletPreview color={color} line1={line1} line2={previewLine2} size="sm" />
+            <BraceletPreview color={color} line1={line1} line2={previewLine2} size="sm" placeholderLinea2 />
           )}
           <div className="mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs">
             <span className="text-ink-500 whitespace-nowrap">
@@ -240,7 +240,7 @@ export function Configurator({
               alt={`Pulsera ${color === 'BLACK' ? 'negra' : 'roja'} Lomhifar`}
             />
           ) : (
-            <BraceletPreview color={color} line1={line1} line2={previewLine2} />
+            <BraceletPreview color={color} line1={line1} line2={previewLine2} placeholderLinea2 />
           )}
           <div className="card p-4">
             {/* P.V.F. — lo que paga la farmacia */}
