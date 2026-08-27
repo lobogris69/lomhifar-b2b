@@ -185,8 +185,14 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
                           key={e.key}
                           className="rounded-lg border border-ink-200 bg-white overflow-hidden"
                         >
-                          <div className="p-3 flex items-start gap-3 flex-wrap sm:flex-nowrap">
-                            <div className="w-full sm:w-[220px] shrink-0 rounded border border-ink-100 bg-ink-50/40 flex items-center justify-center p-1 min-h-[70px]">
+                          {/* Se apila SIEMPRE. No usar cortes tipo sm:/lg: aquí: se
+                              miden contra el ancho de la VENTANA, no contra el de
+                              esta columna, que en pantalla ancha se queda en ~300px.
+                              Con la miniatura fijada a 220px, al botón «Descargar
+                              DXF» le quedaban 60px y desaparecía justo en pantalla
+                              completa, que es cuando más se usa. */}
+                          <div className="p-3 flex flex-col gap-3">
+                            <div className="w-full rounded border border-ink-100 bg-ink-50/40 flex items-center justify-center p-1 min-h-[70px]">
                               {/* Preview SVG del texto sobre la placa */}
                               <object
                                 type="image/svg+xml"
@@ -197,7 +203,7 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
                                 <span className="text-[10px] text-ink-400">Preview</span>
                               </object>
                             </div>
-                            <div className="flex-1 min-w-0">
+                            <div className="min-w-0">
                               <div className="text-[10px] uppercase tracking-wider text-ink-500">
                                 Grabado {idx + 1} · {e.color === 'RED' ? 'Roja' : 'Negra'} · {e.totalUnits} ud{e.totalUnits === 1 ? '' : 's'}
                               </div>

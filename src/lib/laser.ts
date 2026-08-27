@@ -203,7 +203,74 @@ async function layoutLines(
     rendered.push({ text, path, x, y: baselineY });
   }
 
+  // ── PASO 3b: que la TINTA quepa de alto ──
+  //
+  // Los pasos anteriores dimensionan por la altura de las MAYÚSCULAS, pero lo
+  // que se graba incluye los rabos de las minúsculas (p, y, g, j) y las tildes.
+  // Sin esta comprobación, un texto como «pygj» salía de 11,5 mm de alto en una
+  // placa de 10 y se grababa FUERA de la pulsera.
+  const tinta = alturaDeLaTinta(rendered);
+  if (tinta) {
+    const altoTinta = tinta.max - tinta.min;
+    if (altoTinta > usableHeight && altoTinta > 0) {
+      const factor = usableHeight / altoTinta;
+      fontSizeMm *= factor;
+      const capAjustado = fontSizeMm * capRatio;
+      const gapAjustado = capAjustado * gapFactor;
+      const bloque = N * capAjustado + (N - 1) * gapAjustado;
+      const topAjustado = centerYArea - bloque / 2;
+      for (let i = 0; i < N; i++) {
+        const l = rendered[i];
+        l.y = topAjustado + i * (capAjustado + gapAjustado) + capAjustado;
+        l.x = s.marginLeftMm
+          + (usableWidth - font.getAdvanceWidth(l.text, fontSizeMm)) / 2;
+        l.path = font.getPath(l.text, l.x, l.y, fontSizeMm);
+      }
+    }
+  }
+
+  // ── PASO 4: centrar ÓPTICAMENTE, por la tinta real ──
+  //
+  // Los pasos anteriores centran la banda de MAYÚSCULAS, que es lo correcto
+  // para un texto todo en caja alta. Pero en cuanto aparecen minúsculas con
+  // rabo (la «y» de «Ayllon»), esa cola cae por debajo de la línea base y el
+  // ojo ve el texto descolocado hacia arriba, con más hueco abajo que arriba.
+  //
+  // Aquí se mide lo que de verdad se va a grabar y se desplaza el bloque
+  // entero para que su mancha quede centrada en la placa. Con texto en
+  // mayúsculas el ajuste es cero, así que no cambia nada de lo ya verificado.
+  const caja = alturaDeLaTinta(rendered);
+  if (caja) {
+    const centroTinta = (caja.min + caja.max) / 2;
+    const desplazamiento = centerYArea - centroTinta;
+    if (Math.abs(desplazamiento) > 0.001) {
+      for (const l of rendered) {
+        l.y += desplazamiento;
+        l.path = font.getPath(l.text, l.x, l.y, fontSizeMm);
+      }
+    }
+  }
+
   return { fontSizeMm, capHeightMm, lines: rendered, usableWidth, usableHeight };
+}
+
+/**
+ * Extremos verticales de la tinta de todas las líneas, en coordenadas
+ * opentype (Y crece hacia abajo). Devuelve null si no hay trazado, en cuyo
+ * caso se deja el centrado por mayúsculas tal cual.
+ */
+function alturaDeLaTinta(
+  lines: RenderedLine[],
+): { min: number; max: number } | null {
+  let min = Infinity;
+  let max = -Infinity;
+  for (const l of lines) {
+    const bb = l.path.getBoundingBox();
+    if (!bb || !Number.isFinite(bb.y1) || !Number.isFinite(bb.y2)) continue;
+    if (bb.y1 < min) min = bb.y1;
+    if (bb.y2 > max) max = bb.y2;
+  }
+  return Number.isFinite(min) && Number.isFinite(max) ? { min, max } : null;
 }
 
 // ============================================================
