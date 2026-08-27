@@ -8,6 +8,7 @@ import { OrderStatusBadge, ORDER_STATUS_LABEL } from '@/components/shop/OrderSta
 import { BraceletPreview } from '@/components/shop/BraceletPreview';
 import { IndicadorGrabadora } from '@/components/laser/IndicadorGrabadora';
 import { AvisoDePedal } from '@/components/laser/AvisoDePedal';
+import { BotonReferencia } from '@/components/laser/BotonReferencia';
 import { EnviarAGrabadora } from './EnviarAGrabadora';
 import { PrintButton } from '@/components/admin/PrintButton';
 import { OrderProgress } from '@/components/admin/OrderProgress';
@@ -71,6 +72,10 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
               <h2 className="text-sm font-semibold text-ink-900">Pulseras a fabricar</h2>
               {/* Cómo está la máquina del taller, sin tener que ir a mirarla. */}
               <IndicadorGrabadora />
+            </div>
+
+            <div className="mb-4">
+              <BotonReferencia referencia="pulsera" etiqueta="Recuadro de la placa" />
             </div>
 
             {/* Vista previa visual — crítica para producción */}

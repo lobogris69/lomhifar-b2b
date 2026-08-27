@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { apagarPuntero } from '@/lib/laser-puntero';
 import {
   dxfDeLlavero,
   encajarEnVentana,
@@ -210,6 +211,10 @@ export async function enviarLlaveroAGrabadora(
     where: { id },
     data: { queuedAt: new Date(), queuedBy: session.email, takenAt: null, engravedAt: null },
   });
+
+  // El puntero se apaga al mandar el trabajo: el puente no puede pasear la
+  // referencia y preparar un grabado a la vez, y ya has colocado la pieza.
+  await apagarPuntero();
 
   revalidatePath('/admin/llaveros');
   const uds = t.unidades === 1 ? '1 llavero' : `${t.unidades} llaveros`;

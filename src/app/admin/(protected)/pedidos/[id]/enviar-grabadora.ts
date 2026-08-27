@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { apagarPuntero } from '@/lib/laser-puntero';
 import {
   buildDxfFilename,
   extractUniqueEngravings,
@@ -131,6 +132,9 @@ export async function enviarAGrabadora(
       queuedBy: session.email,
     },
   });
+
+  // Igual que en llaveros: el puntero se apaga al mandar el trabajo.
+  await apagarPuntero();
 
   revalidatePath(`/admin/pedidos/${order.id}`);
   revalidatePath('/admin/laser/archivo');

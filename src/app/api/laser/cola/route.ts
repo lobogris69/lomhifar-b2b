@@ -3,6 +3,7 @@ import { rechazoDeAutenticacion, trabajosPendientes } from '@/lib/laser-cola';
 import { getLaserProfiles } from '@/lib/laser-profiles';
 import { getPerfilesLlavero } from '@/lib/llaveros';
 import { llaverosPendientes } from '@/lib/llaveros-cola';
+import { getPuntero, REFERENCIAS } from '@/lib/laser-puntero';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,11 +29,12 @@ export async function GET(req: Request) {
   // refresca sola en cada consulta.
   // Las pulseras primero: son pedidos de clientes que esperan. Los llaveros
   // son una prueba de taller y pueden aguardar su turno.
-  const [trabajos, llaveros, perfiles, perfilesLlavero] = await Promise.all([
+  const [trabajos, llaveros, perfiles, perfilesLlavero, puntero] = await Promise.all([
     trabajosPendientes(),
     llaverosPendientes(),
     getLaserProfiles(),
     getPerfilesLlavero(),
+    getPuntero(),
   ]);
 
   // Los perfiles van todos en la misma lista, que es lo que el puente sabe
@@ -42,8 +44,14 @@ export async function GET(req: Request) {
     porColor: { ...perfiles.porColor, ...perfilesLlavero.porMaterial },
   };
 
+  // El puntero viaja con la cola: el puente pregunta cada pocos segundos y
+  // aquí se le dice qué referencia tiene que estar enseñando.
   return NextResponse.json(
-    { trabajos: [...trabajos, ...llaveros], perfiles: perfilesTodos },
+    {
+      trabajos: [...trabajos, ...llaveros],
+      perfiles: perfilesTodos,
+      puntero: { modo: puntero, fichero: REFERENCIAS[puntero].fichero },
+    },
     { headers: { 'Cache-Control': 'no-store' } },
   );
 }

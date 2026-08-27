@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { formatDate } from '@/lib/utils';
 import { IndicadorGrabadora } from '@/components/laser/IndicadorGrabadora';
 import { AvisoDePedal } from '@/components/laser/AvisoDePedal';
+import { BotonReferencia } from '@/components/laser/BotonReferencia';
 import { getPerfilesLlavero, getVentanaLlavero } from '@/lib/llaveros';
 import { SubirDiseno } from './SubirDiseno';
 import { FichaDiseno, type DisenoLite } from './FichaDiseno';
@@ -78,6 +79,11 @@ export default async function LlaverosPage() {
           </div>
         </div>
         <IndicadorGrabadora />
+      </div>
+
+      {/* Colocar el llavero en el util sin bajar a teclear a la maquina. */}
+      <div className="card p-3">
+        <BotonReferencia referencia="llavero" etiqueta="Recuadro del llavero" />
       </div>
 
       {/* Cuando la máquina está esperando el pedal, que se vea desde aquí. */}
