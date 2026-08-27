@@ -3,6 +3,7 @@ import { ArrowLeft, FolderOpen, Download, Search } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { Alert } from '@/components/ui/Alert';
 import { ZipDayLink } from './ZipDayLink';
+import { RepetirGrabado } from './RepetirGrabado';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Histórico DXF · Admin Lomhifar' };
@@ -224,10 +225,14 @@ export default async function LaserArchivePage({ searchParams }: PageProps) {
                               </span>
                             </td>
                             <td className="text-right font-semibold text-sm">{f.totalUnits}</td>
-                            <td className="text-right">
+                            <td className="text-right whitespace-nowrap">
+                              <RepetirGrabado
+                                fileId={f.id}
+                                unidadesOriginales={f.totalUnits}
+                              />
                               <a
                                 href={`/api/admin/laser/file/${f.id}`}
-                                className="btn-ghost text-xs"
+                                className="btn-ghost text-xs ml-1"
                                 title={`Descargar ${f.filename}`}
                               >
                                 <Download className="h-3.5 w-3.5" />

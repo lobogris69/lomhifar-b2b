@@ -517,3 +517,30 @@ export function extractUniqueEngravings(
   }
   return Array.from(map.values());
 }
+
+/**
+ * Reescribe la cantidad en un nombre de DXF ya generado.
+ *
+ * Sirve para repetir un grabado del histórico con un número de unidades
+ * distinto al original: se conserva el nombre (fecha, pedido, farmacia,
+ * color, línea y texto) y sólo se cambia el `_xN_`, que es lo que lee el
+ * puente de la grabadora.
+ *
+ *   ..._Roja_L1_ASMA.dxf      + 3  ->  ..._Roja_x3_L1_ASMA.dxf
+ *   ..._Roja_x5_L1_ASMA.dxf   + 1  ->  ..._Roja_L1_ASMA.dxf
+ */
+export function conCantidadEnNombre(filename: string, units: number): string {
+  const n = Math.max(1, Math.min(999, Math.round(units)));
+  // Quitar la cantidad que hubiera
+  let base = filename.replace(/_x\d{1,3}(?=_L\d)/i, '');
+  if (n > 1) {
+    // Insertar antes del marcador de línea (_L1, _L2…), que siempre está
+    if (/_L\d/.test(base)) {
+      base = base.replace(/(_L\d)/, `_x${n}$1`);
+    } else {
+      // Nombre inesperado: se añade antes de la extensión para no perder el dato
+      base = base.replace(/\.dxf$/i, `_x${n}.dxf`);
+    }
+  }
+  return base;
+}
