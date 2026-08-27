@@ -97,9 +97,15 @@ export interface PerfilesLlavero {
  * que afinarlos en máquina; para eso están.
  */
 export const PERFILES_LLAVERO_POR_DEFECTO: PerfilesLlavero = {
+  // SIN relleno. Lo puse relleno al principio y fue un error: al vectorizar
+  // un dibujo salen los contornos de fuera Y los de los huecos de dentro, y
+  // la máquina rellena cada contorno cerrado por su cuenta, sin saber cuál es
+  // un hueco. Un dibujo con detalle se convierte en una mancha negra.
+  // Comprobado en metal el 27/08/2026 con un grabado de una plaza: perfecto
+  // en pantalla, mancha en el llavero.
   perfiles: [
-    { id: 'llavero-dorado', nombre: 'Llavero dorado', ...PERFIL_BASE, relleno: true },
-    { id: 'llavero-plateado', nombre: 'Llavero plateado', ...PERFIL_BASE, relleno: true },
+    { id: 'llavero-dorado', nombre: 'Llavero dorado', ...PERFIL_BASE, relleno: false },
+    { id: 'llavero-plateado', nombre: 'Llavero plateado', ...PERFIL_BASE, relleno: false },
   ],
   porMaterial: { GOLD: 'llavero-dorado', SILVER: 'llavero-plateado' },
 };
@@ -439,23 +445,27 @@ export function svgDeLlavero(
   const PAD = 3;
   const fondo = MATERIALES[material].css;
 
-  const caminos = encaje.contornos
-    .map((c) => {
-      const d = c
-        .map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(3)} ${(v.altoMm - p.y).toFixed(3)}`)
-        .join(' ');
-      return `${d} Z`;
-    })
-    .join(' ');
+  const trazos = encaje.contornos.map((c) => {
+    const d = c
+      .map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(3)} ${(v.altoMm - p.y).toFixed(3)}`)
+      .join(' ');
+    return `${d} Z`;
+  });
 
-  // `evenodd` para que los agujeros de las letras salgan huecos y no macizos.
-  const pintado = relleno
-    ? `fill="#1a1a20" fill-rule="evenodd" stroke="none"`
-    : `fill="none" stroke="#1a1a20" stroke-width="0.15"`;
+  // Cómo se pinta esto TIENE que ser cómo lo hace la máquina, aunque quede
+  // feo. Antes se dibujaba con `evenodd`, que deja huecos los contornos de
+  // dentro, y quedaba precioso en pantalla. Pero la máquina rellena cada
+  // contorno cerrado por separado, sin saber cuál es un hueco, así que salía
+  // una mancha. Se enseñaba una cosa y se grababa otra.
+  const caminos = relleno
+    ? trazos
+      .map((d) => `<path d="${d}" fill="#1a1a20" stroke="none"/>`)
+      .join(' ')
+    : `<path d="${trazos.join(' ')}" fill="none" stroke="#1a1a20" stroke-width="0.15"/>`;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-PAD} ${-PAD} ${v.anchoMm + PAD * 2} ${v.altoMm + PAD * 2}" width="100%" style="max-width:100%;height:auto;background:#f4f4f6;font-family:system-ui,sans-serif;">
   <rect x="0" y="0" width="${v.anchoMm}" height="${v.altoMm}" rx="1.2" fill="${fondo}" stroke="#00000033" stroke-width="0.2"/>
-  <path d="${caminos}" ${pintado}/>
+  ${caminos}
   <text x="${v.anchoMm / 2}" y="${-0.9}" text-anchor="middle" font-size="1.4" fill="#54545f">${v.anchoMm} mm</text>
   <text x="${-1}" y="${v.altoMm / 2}" text-anchor="middle" font-size="1.4" fill="#54545f" transform="rotate(-90 ${-1} ${v.altoMm / 2})">${v.altoMm} mm</text>
 </svg>`;

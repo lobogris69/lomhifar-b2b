@@ -158,30 +158,50 @@ export function FichaDiseno({ d }: { d: DisenoLite }) {
             </div>
 
             <div className="grid sm:grid-cols-2 gap-3">
-              <label className="block">
+              <div>
                 <span className="text-[11px] text-ink-600">
-                  Umbral: <strong>{umbral}</strong>
+                  Umbral
                   {umbral !== d.umbral && <em className="text-amber-700"> · sin aplicar</em>}
                 </span>
-                <input
-                  name="umbral"
-                  type="range"
-                  min={20}
-                  max={230}
-                  step={5}
-                  value={umbral}
-                  onChange={(e) => setUmbral(Number(e.target.value))}
-                  onPointerUp={aplicarAlSoltar}
-                  onKeyUp={aplicarAlSoltar}
-                  className="w-full mt-1 accent-brand-700"
-                />
+                <div className="flex items-center gap-2 mt-1">
+                  <input
+                    name="umbral"
+                    type="range"
+                    min={20}
+                    max={230}
+                    step={1}
+                    value={umbral}
+                    onChange={(e) => setUmbral(Number(e.target.value))}
+                    onPointerUp={aplicarAlSoltar}
+                    onKeyUp={aplicarAlSoltar}
+                    className="flex-1 accent-brand-700"
+                  />
+                  {/* Escribiéndolo se afina de uno en uno; con la barra es a
+                      ojo. Se aplica al salir del campo o al pulsar Intro. */}
+                  <input
+                    type="number"
+                    min={20}
+                    max={230}
+                    value={umbral}
+                    onChange={(e) => setUmbral(Number(e.target.value))}
+                    onBlur={aplicarAlSoltar}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        aplicarAlSoltar();
+                      }
+                    }}
+                    className="input w-16 text-xs text-center py-1"
+                    aria-label="Umbral exacto"
+                  />
+                </div>
                 {/* Lo importante que hay que entender de este control. */}
-                <span className="block text-[11px] text-ink-500 leading-tight">
+                <span className="block text-[11px] text-ink-500 leading-tight mt-0.5">
                   Hacia la izquierda se graba <strong>solo lo más oscuro</strong>: los trazos
                   limpios, sin sombras ni grises. Hacia la derecha entran también los grises
                   y las sombras.
                 </span>
-              </label>
+              </div>
 
               <div className="space-y-2">
                 <label className="block">

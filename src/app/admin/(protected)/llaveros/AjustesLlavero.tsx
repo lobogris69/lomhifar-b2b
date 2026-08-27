@@ -119,9 +119,22 @@ export function AjustesLlavero({
                     <Campo etiqueta="Pasadas" nombre={`p${i}_pasadas`} valor={p.pasadas} />
                     <Campo etiqueta="Frecuencia (kHz)" nombre={`p${i}_frecuencia`} valor={p.frecuenciaKHz} />
                   </div>
-                  <label className="flex items-center gap-2 text-xs text-ink-700">
-                    <input type="checkbox" name={`p${i}_relleno`} defaultChecked={p.relleno} />
-                    Rellenar el dibujo (no solo el contorno)
+                  <label className="flex items-start gap-2 text-xs text-ink-700">
+                    <input
+                      type="checkbox"
+                      name={`p${i}_relleno`}
+                      defaultChecked={p.relleno}
+                      className="mt-0.5"
+                    />
+                    <span>
+                      Rellenar el dibujo (no solo el contorno)
+                      {/* Aprendido en metal: con un dibujo con detalle, el
+                          relleno lo convierte en una mancha. */}
+                      <span className="block text-[10px] text-amber-700 leading-tight mt-0.5">
+                        Solo para siluetas macizas. En un dibujo con detalle rellena también
+                        los huecos de dentro y sale una mancha negra.
+                      </span>
+                    </span>
                   </label>
                   <Campo
                     etiqueta="Separación del relleno (mm)"
