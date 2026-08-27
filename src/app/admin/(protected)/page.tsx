@@ -4,7 +4,7 @@ import {
 } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { Alert } from '@/components/ui/Alert';
-import { formatDate, formatEuros } from '@/lib/utils';
+import { formatDate, formatEuros, inicioDelMesEspanol } from '@/lib/utils';
 import { OrderStatusBadge } from '@/components/shop/OrderStatusBadge';
 import { MonthlyChart } from '@/components/admin/MonthlyChart';
 import { ColorBreakdownCard } from '@/components/admin/ColorBreakdownCard';
@@ -33,17 +33,21 @@ export default async function AdminDashboardPage({
     prisma.order.findMany({
       take: 5, orderBy: { createdAt: 'desc' }, include: { items: true },
     }),
-    prisma.order.count(),
+    // Los pedidos marcados como PRUEBA no son facturación: se quedan fuera
+    // de todos los números del resumen, igual que ya hacía el informe de
+    // negocio. Antes inflaban el total y los ingresos del panel.
+    prisma.order.count({ where: { isTest: false } }),
     prisma.order.aggregate({
       _sum: { totalCents: true },
-      where: { status: { not: 'CANCELLED' } },
+      where: { status: { not: 'CANCELLED' }, isTest: false },
     }),
     getMonthlyOrderStats(6),
     getTopCustomers(5),
     prisma.order.count({
       where: {
-        createdAt: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) },
+        createdAt: { gte: inicioDelMesEspanol() },
         status: { not: 'CANCELLED' },
+        isTest: false,
       },
     }),
     getUnitsByColor(),

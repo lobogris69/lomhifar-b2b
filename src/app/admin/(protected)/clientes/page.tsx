@@ -1,6 +1,7 @@
 ﻿import Link from 'next/link';
 import { Plus, Search, Users, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
+import { Alert } from '@/components/ui/Alert';
 import { BulkSelectTable } from './BulkSelectTable';
 
 export const dynamic = 'force-dynamic';
@@ -11,7 +12,10 @@ const PAGE_SIZE = 50;
 export default async function CustomersPage({
   searchParams,
 }: {
-  searchParams: { q?: string; status?: string; page?: string };
+  searchParams: {
+    q?: string; status?: string; page?: string;
+    borrado?: string; desactivado?: string; nosepudo?: string;
+  };
 }) {
   const q = (searchParams.q ?? '').trim();
   const status = searchParams.status ?? '';
@@ -20,10 +24,10 @@ export default async function CustomersPage({
   const where: Record<string, unknown> = {};
   if (q) {
     where.OR = [
-      { cif: { contains: q } },
-      { email: { contains: q } },
-      { pharmacyName: { contains: q } },
-      { city: { contains: q } },
+      { cif: { contains: q, mode: 'insensitive' } },
+      { email: { contains: q, mode: 'insensitive' } },
+      { pharmacyName: { contains: q, mode: 'insensitive' } },
+      { city: { contains: q, mode: 'insensitive' } },
     ];
   }
   if (status === 'active') where.active = true;
@@ -62,6 +66,23 @@ export default async function CustomersPage({
 
   return (
     <div className="p-4 sm:p-6 lg:p-10">
+      {/* Qué ha pasado al pulsar la papelera. Antes no se decía nada. */}
+      {searchParams.borrado && (
+        <Alert variant="success" className="mb-4">Farmacia eliminada.</Alert>
+      )}
+      {searchParams.desactivado && (
+        <Alert variant="warning" className="mb-4">
+          Esa farmacia tiene {searchParams.desactivado} pedido
+          {searchParams.desactivado === '1' ? '' : 's'} y no se puede eliminar sin borrar su
+          historial. La hemos <strong>desactivado</strong>: ya no puede entrar en la tienda,
+          pero sus pedidos siguen ahí.
+        </Alert>
+      )}
+      {searchParams.nosepudo && (
+        <Alert variant="danger" className="mb-4">
+          No se ha podido eliminar esa farmacia. Tiene datos vinculados.
+        </Alert>
+      )}
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
         <div>
           <h1 className="section-title flex items-center gap-2">

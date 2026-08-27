@@ -16,6 +16,8 @@ interface Props {
   /** PVPR conservado por compatibilidad; ya no se renderiza el bloque de margen */
   pvprCents: number;
   maxCharsPerLine: number;
+  /** Unidades mínimas por línea, del panel de admin. */
+  minQuantityPerLine?: number;
   deliveryDays: number;
   /** URLs (o null) de las fotos reales y sus áreas de impresión */
   photoBlackUrl: string | null;
@@ -60,6 +62,7 @@ export function Configurator({
   priceRedCents,
   pvprCents,
   maxCharsPerLine,
+  minQuantityPerLine = 1,
   deliveryDays,
   photoBlackUrl,
   photoRedUrl,
@@ -70,7 +73,8 @@ export function Configurator({
   texts,
 }: Props) {
   const [color, setColor] = useState<'BLACK' | 'RED'>('BLACK');
-  const [quantity, setQuantity] = useState<number>(1);
+  const minUds = Math.max(1, Math.round(minQuantityPerLine));
+  const [quantity, setQuantity] = useState<number>(minUds);
   const [line1, setLine1] = useState('');
   const [line2, setLine2] = useState('');
   const [line3, setLine3] = useState('');
@@ -366,7 +370,7 @@ export function Configurator({
             <button
               type="button"
               onClick={() => {
-                setQuantity((q) => Math.max(1, q - 1));
+                setQuantity((q) => Math.max(minUds, q - 1));
                 setConfirmed(false);
               }}
               className="btn-secondary px-3 py-2 text-lg"
@@ -382,7 +386,7 @@ export function Configurator({
               value={quantity}
               onChange={(e) => {
                 const v = Math.max(1, Math.min(9999, Number(e.target.value) || 1));
-                setQuantity(v);
+                setQuantity(Math.max(minUds, v));
                 setConfirmed(false);
               }}
               className="input text-center w-20 sm:w-28 text-lg font-semibold"
@@ -560,7 +564,10 @@ export function Configurator({
             <div className="grid grid-cols-3 gap-3 text-sm">
               <Summary label="Color" value={color === 'BLACK' ? 'Negra' : 'Roja'} />
               <Summary label="Unidades" value={String(quantity)} />
-              <Summary label="Total línea" value={formatEuros(lineTotal)} />
+              {/* Con el descuento aplicado, como el panel de al lado. Los dos
+                  ponían «Total línea» y daban importes distintos en la misma
+                  pantalla, que es de lo que se desconfía en una tienda. */}
+              <Summary label="Total línea" value={formatEuros(lineTotalAfterDiscount)} />
               <Summary label="Línea 1" value={line1 || '—'} className="col-span-3" />
               {line2Visible && (
                 <Summary label="Línea 2" value={line2 || '—'} className="col-span-3" />

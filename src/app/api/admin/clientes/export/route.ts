@@ -28,10 +28,10 @@ export async function GET(req: Request) {
   const where: Record<string, unknown> = {};
   if (q) {
     where.OR = [
-      { cif: { contains: q } },
-      { email: { contains: q } },
-      { pharmacyName: { contains: q } },
-      { city: { contains: q } },
+      { cif: { contains: q, mode: 'insensitive' } },
+      { email: { contains: q, mode: 'insensitive' } },
+      { pharmacyName: { contains: q, mode: 'insensitive' } },
+      { city: { contains: q, mode: 'insensitive' } },
     ];
   }
   if (status === 'active') where.active = true;

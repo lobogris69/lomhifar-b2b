@@ -87,6 +87,7 @@ export default async function ShopPage() {
         priceRedCents={Number(settings[SETTING_KEYS.PRICE_RED_CENTS])}
         pvprCents={Number(settings[SETTING_KEYS.PVPR_CENTS])}
         maxCharsPerLine={Number(settings[SETTING_KEYS.MAX_CHARS_PER_LINE])}
+        minQuantityPerLine={Number(settings[SETTING_KEYS.MIN_QUANTITY_PER_LINE]) || 1}
         deliveryDays={Number(settings[SETTING_KEYS.DELIVERY_DAYS])}
         photoBlackUrl={photoBlackUrl}
         photoRedUrl={photoRedUrl}

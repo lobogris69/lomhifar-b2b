@@ -175,11 +175,15 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
               }
               return (
                 <>
+                  {/* Explicaba el método viejo de EZCAD, y encima daba a
+                      entender que el láser dispara al pulsar una tecla. */}
                   <p className="text-xs text-ink-500 mb-4">
                     Este pedido tiene <strong>{engravings.length}</strong>{' '}
                     {engravings.length === 1 ? 'texto único' : 'textos únicos'} para grabar.
-                    Descarga el DXF de cada uno → doble-click abre EZCAD → pulsa F2 y graba
-                    tantas veces como unidades pedidas.
+                    Pulsa <strong>«Enviar a la grabadora»</strong> en cada uno: el trabajo viaja
+                    solo al PC del taller y la máquina lo deja preparado.{' '}
+                    <strong>No graba hasta que pisas el pedal</strong>, y graba tantas pulseras
+                    como unidades pedidas.
                   </p>
                   <div className="space-y-3">
                     {engravings.map((e, idx) => {

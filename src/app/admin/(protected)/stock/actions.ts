@@ -31,22 +31,29 @@ export async function adjustStock(
   const session = await ensureAdmin();
   await ensureStockBase();
 
+  // El formulario de cada color escucha solo los errores que traen SU color
+  // (StockForms.tsx compara state.color). Las salidas de error no lo mandaban,
+  // así que el aviso no se pintaba nunca y el botón parecía muerto.
+  const color = String(formData.get('color') ?? '');
+
   const parsed = adjustSchema.safeParse({
-    color: String(formData.get('color') ?? ''),
+    color,
     delta: String(formData.get('delta') ?? '0'),
     reason: String(formData.get('reason') ?? ''),
     note: String(formData.get('note') ?? ''),
   });
-  if (!parsed.success) return { error: 'Datos no válidos' };
-  if (parsed.data.delta === 0) return { error: 'La cantidad no puede ser 0' };
+  if (!parsed.success) return { error: 'Datos no válidos', color };
+  if (parsed.data.delta === 0) return { error: 'La cantidad no puede ser 0', color };
 
   const stock = await prisma.stock.findUnique({ where: { color: parsed.data.color } });
-  if (!stock) return { error: 'Color no encontrado' };
+  if (!stock) return { error: 'Color no encontrado', color };
 
   await prisma.$transaction([
     prisma.stock.update({
       where: { id: stock.id },
-      data: { quantity: stock.quantity + parsed.data.delta },
+      // Que sume la base de datos, no nosotros: si dos ajustes coinciden,
+      // leyendo y reescribiendo uno pisaría al otro.
+      data: { quantity: { increment: parsed.data.delta } },
     }),
     prisma.stockMovement.create({
       data: {

@@ -1,7 +1,7 @@
 ﻿import Link from 'next/link';
 import { ClipboardList, Search, Download, ChevronLeft, ChevronRight, ClipboardPlus, Phone } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
-import { formatDate, formatEuros } from '@/lib/utils';
+import { formatDate, formatEuros, inicioDelDiaEspanol, finDelDiaEspanol } from '@/lib/utils';
 import { OrderStatusBadge, ORDER_STATUS_LABEL } from '@/components/shop/OrderStatusBadge';
 
 export const dynamic = 'force-dynamic';
@@ -24,21 +24,21 @@ export default async function OrdersPage({
   if (q) {
     const num = Number(q);
     where.OR = [
-      { pharmacyName: { contains: q } },
-      { cif: { contains: q } },
-      { email: { contains: q } },
+      { pharmacyName: { contains: q, mode: 'insensitive' } },
+      { cif: { contains: q, mode: 'insensitive' } },
+      { email: { contains: q, mode: 'insensitive' } },
       ...(Number.isFinite(num) ? [{ number: num }] : []),
     ];
   }
   if (status) where.status = status;
 
+  // Del día español al día español: la columna Fecha se pinta en hora de
+  // Madrid, así que el filtro tiene que cortar por ahí. Con new Date() se
+  // cortaba por la hora del servidor (UTC) y los pedidos de madrugada se
+  // quedaban fuera del día que la propia tabla les enseñaba.
   const dateFilter: Record<string, Date> = {};
-  if (from) dateFilter.gte = new Date(from);
-  if (to) {
-    const d = new Date(to);
-    d.setHours(23, 59, 59, 999);
-    dateFilter.lte = d;
-  }
+  if (from) dateFilter.gte = inicioDelDiaEspanol(from);
+  if (to) dateFilter.lte = finDelDiaEspanol(to);
   if (Object.keys(dateFilter).length) where.createdAt = dateFilter;
 
   const [totalFiltered, totalAll, orders] = await Promise.all([

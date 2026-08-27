@@ -255,7 +255,12 @@ export async function createManualOrder(
   const settings = await getSettings();
   const deliveryDays = settings[SETTING_KEYS.DELIVERY_DAYS];
 
-  const channelLabel = CHANNEL_LABEL[parsed.data.channel];
+  // Del pedido, no del formulario. En un talonario el canal guardado se
+  // fuerza a NOTE y el nombre real de la farmacia va en order.pharmacyName;
+  // usando customer.* el aviso llegaba como «VARIOS · Mostrador» y con el
+  // canal del desplegable, así que quien lo prepara no sabía de quién era.
+  const channelLabel =
+    CHANNEL_LABEL[order.channel as keyof typeof CHANNEL_LABEL] ?? CHANNEL_LABEL[parsed.data.channel];
   const testTag = isTest ? '[PRUEBA] ' : '';
 
   const itemsTable = order.items.map((it) => {
@@ -284,7 +289,7 @@ export async function createManualOrder(
   try {
   await sendEmail({
     to: recipients,
-    subject: `${testTag}Pedido MANUAL #${order.number} · ${customer.pharmacyName} (${channelLabel})`,
+    subject: `${testTag}Pedido MANUAL #${order.number} · ${order.pharmacyName} (${channelLabel})`,
     html: emailLayout(`
       ${isTest ? '<div style="margin:0 0 12px;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;color:#92400e;font-size:13px;font-weight:600;">⚠️ PEDIDO DE PRUEBA — no descuenta stock, no notifica al cliente</div>' : ''}
       <h2 style="margin:0 0 4px;font-size:22px;color:#14503b;">Pedido manual #${order.number}</h2>

@@ -32,9 +32,13 @@ export const cartItemSchema = z.object({
   id: z.string(),
   color: z.string(),  // BLACK | RED — laxo para acomodar datos de Prisma
   quantity: z.number().int().min(1).max(9999),
-  line1: z.string().max(40),
-  line2: z.string().max(40),
-  line3: z.string().max(40).default(''),
+  // 60 es el máximo que el panel deja configurar (validations.ts). Aquí se
+  // acepta hasta ahí; el límite de verdad lo pone el server action con el
+  // valor guardado. Si aquí se quedara en 40, subir el ajuste haría que el
+  // carrito dejara de leerse y se vaciara solo.
+  line1: z.string().max(60),
+  line2: z.string().max(60),
+  line3: z.string().max(60).default(''),
 });
 
 export type CartItem = z.infer<typeof cartItemSchema>;

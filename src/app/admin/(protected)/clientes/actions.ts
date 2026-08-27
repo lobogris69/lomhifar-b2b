@@ -21,11 +21,35 @@ export async function toggleCustomerActive(formData: FormData) {
   revalidatePath('/admin/clientes');
 }
 
+/**
+ * Elimina una farmacia. Si tiene pedidos NO se puede borrar —la base de datos
+ * no lo permite, y con razón: se llevaría por delante su historial— así que
+ * se desactiva, que es lo que hace también el borrado en bloque.
+ *
+ * Antes el error se lo tragaba un `.catch(() => null)`: la página se recargaba
+ * con la farmacia todavía ahí y sin una palabra. El admin lo intentaba tres
+ * veces pensando que el botón no iba.
+ */
 export async function deleteCustomer(formData: FormData) {
   await ensureAdmin();
   const id = String(formData.get('id') ?? '');
-  await prisma.customer.delete({ where: { id } }).catch(() => null);
+  if (!id) redirect('/admin/clientes');
+
+  const pedidos = await prisma.order.count({ where: { customerId: id } });
+  if (pedidos > 0) {
+    await prisma.customer.update({ where: { id }, data: { active: false } });
+    revalidatePath('/admin/clientes');
+    redirect(`/admin/clientes?desactivado=${pedidos}`);
+  }
+
+  try {
+    await prisma.customer.delete({ where: { id } });
+  } catch {
+    revalidatePath('/admin/clientes');
+    redirect('/admin/clientes?nosepudo=1');
+  }
   revalidatePath('/admin/clientes');
+  redirect('/admin/clientes?borrado=1');
 }
 
 /**

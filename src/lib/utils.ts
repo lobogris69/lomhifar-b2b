@@ -17,6 +17,49 @@ export function formatEuros(cents: number): string {
  * Importante: el servidor de Railway corre en UTC, así que sin esta
  * opción las fechas aparecen 1h o 2h por detrás (DST en verano).
  */
+// ============================================================
+// Fechas en hora española
+// ============================================================
+//
+// El servidor de Railway va en UTC y España va una o dos horas por delante.
+// Como las fechas se ENSEÑAN en hora española (formatDate fuerza
+// Europe/Madrid), filtrar por la del servidor descuadra: un pedido que la
+// tabla muestra del día 27 a la 01:00 queda fuera de un filtro «del 27 al
+// 27», y los pedidos de madrugada del día 1 se contaban en el mes anterior.
+
+/** Minutos que Madrid va por delante de UTC en ese instante. */
+function desfaseMadrid(momento: Date): number {
+  const enMadrid = new Date(momento.toLocaleString('en-US', { timeZone: 'Europe/Madrid' }));
+  const enUtc = new Date(momento.toLocaleString('en-US', { timeZone: 'UTC' }));
+  return Math.round((enMadrid.getTime() - enUtc.getTime()) / 60000);
+}
+
+/** Las 00:00 españolas de un 'YYYY-MM-DD', como instante real. */
+export function inicioDelDiaEspanol(ymd: string): Date {
+  const base = new Date(`${ymd}T00:00:00.000Z`);
+  return new Date(base.getTime() - desfaseMadrid(base) * 60000);
+}
+
+/** Las 23:59:59.999 españolas de un 'YYYY-MM-DD'. */
+export function finDelDiaEspanol(ymd: string): Date {
+  const base = new Date(`${ymd}T23:59:59.999Z`);
+  return new Date(base.getTime() - desfaseMadrid(base) * 60000);
+}
+
+/** Las 00:00 españolas del día 1 del mes en curso. */
+export function inicioDelMesEspanol(): Date {
+  return inicioDelDiaEspanol(mesEspanol(new Date()) + '-01');
+}
+
+/** Clave 'YYYY-MM' del mes al que pertenece esa fecha en España. */
+export function mesEspanol(fecha: Date): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Madrid',
+    year: 'numeric',
+    month: '2-digit',
+  }).format(fecha).slice(0, 7);
+}
+
 export function formatDate(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
   return new Intl.DateTimeFormat('es-ES', {

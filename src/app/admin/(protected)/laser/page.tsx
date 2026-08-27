@@ -6,6 +6,8 @@ import { LaserSettingsForm } from './LaserSettingsForm';
 import { LaserProfilesForm } from './LaserProfilesForm';
 import { ClaveDelPuente } from './ClaveDelPuente';
 import { claveDelPuente } from '@/lib/laser-cola';
+import { getAdminSession } from '@/lib/auth';
+import { hasPermission } from '@/lib/admin-roles';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Configuración Láser · Admin Lomhifar' };
@@ -13,7 +15,15 @@ export const metadata = { title: 'Configuración Láser · Admin Lomhifar' };
 export default async function LaserSettingsPage() {
   const s = await getLaserSettings();
   const perfiles = await getLaserProfiles();
-  const clave = await claveDelPuente();
+
+  // La clave del puente no es informativa: con ella se escribe en
+  // /api/laser/** sin sesión —marcar trabajos como grabados, devolverlos a la
+  // cola— y aquí salía entera en pantalla. Un Supervisor, que es de solo
+  // lectura, la veía y con ella podía escribir. Solo la ven los roles que de
+  // verdad pueden tocar la configuración.
+  const sesion = await getAdminSession();
+  const puedeVerla = sesion ? hasPermission(sesion.role, 'CONFIG_WRITE') : false;
+  const clave = puedeVerla ? await claveDelPuente() : '';
 
   return (
     <div className="p-4 sm:p-6 lg:p-10 max-w-6xl space-y-6">
@@ -73,7 +83,7 @@ export default async function LaserSettingsPage() {
       </div>
 
       <div className="pt-2">
-        <ClaveDelPuente claveActual={clave} />
+        {puedeVerla && <ClaveDelPuente claveActual={clave} />}
       </div>
     </div>
   );

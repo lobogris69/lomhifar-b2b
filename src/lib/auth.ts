@@ -86,14 +86,39 @@ export async function createAdminSession(admin: {
 export async function getAdminSession(): Promise<AdminSessionData | null> {
   const cookie = cookies().get(ADMIN_COOKIE);
   if (!cookie?.value) return null;
+
+  let data: AdminSessionData;
   try {
-    const data = await unsealData<AdminSessionData>(cookie.value, {
+    data = await unsealData<AdminSessionData>(cookie.value, {
       password: SESSION_SECRET,
       ttl: ADMIN_TTL,
     });
-    return data;
   } catch {
     return null;
+  }
+  if (!data?.id) return null;
+
+  // El rol y el «está de alta» venían solo de la cookie, que dura 8 horas.
+  // O sea que dar de baja a alguien, borrarlo o bajarle el rol no tenía
+  // efecto hasta esas 8 horas: seguía entrando y escribiendo con lo que
+  // tenía al hacer login. Se vuelve a mirar en la base de datos, que es una
+  // consulta por clave primaria.
+  try {
+    const usuario = await prisma.adminUser.findUnique({
+      where: { id: data.id },
+      select: { active: true, role: true, email: true, mustChangePassword: true },
+    });
+    if (!usuario || !usuario.active) return null;
+    return {
+      ...data,
+      email: usuario.email,
+      role: usuario.role,
+      mustChangePassword: usuario.mustChangePassword,
+    };
+  } catch {
+    // Si la base de datos no contesta no se echa a nadie: se sigue con lo
+    // que dice la cookie, que es lo que había hasta ahora.
+    return data;
   }
 }
 

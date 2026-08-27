@@ -99,18 +99,21 @@ export async function submitApplication(
       to: recipients,
       subject: `Nueva solicitud de alta · ${data.pharmacyName}`,
       replyTo: data.email,
+      // Todo lo que escribe el solicitante va escapado: un nombre con
+      // «<» o «&» rompía la tabla del correo, y el campo libre daba para
+      // colar etiquetas. Sólo el mensaje estaba protegido.
       html: emailLayout(`
         <h2 style="margin:0 0 16px;font-size:20px;color:#921a5e;">Solicitud de alta de farmacia</h2>
         <table style="width:100%;border-collapse:collapse;font-size:14px;">
-          <tr><td style="padding:6px 0;color:#54545f;width:160px;">Farmacia</td><td style="font-weight:600;">${data.pharmacyName}</td></tr>
-          <tr><td style="padding:6px 0;color:#54545f;">CIF/NIF</td><td>${cif}</td></tr>
-          <tr><td style="padding:6px 0;color:#54545f;">Contacto</td><td>${data.contactName}</td></tr>
-          <tr><td style="padding:6px 0;color:#54545f;">Email</td><td>${email}</td></tr>
-          <tr><td style="padding:6px 0;color:#54545f;">Teléfono</td><td>${data.phone}</td></tr>
-          ${whatsapp ? `<tr><td style="padding:6px 0;color:#54545f;">WhatsApp</td><td>${whatsapp}</td></tr>` : ''}
-          <tr><td style="padding:6px 0;color:#54545f;">Dirección</td><td>${data.address}</td></tr>
-          <tr><td style="padding:6px 0;color:#54545f;">Localidad</td><td>${data.city} (${data.postalCode}) · ${data.province}</td></tr>
-          <tr><td style="padding:6px 0;color:#54545f;">IBAN</td><td style="font-family:monospace;">${bankAccount}</td></tr>
+          <tr><td style="padding:6px 0;color:#54545f;width:160px;">Farmacia</td><td style="font-weight:600;">${escapeHtml(data.pharmacyName)}</td></tr>
+          <tr><td style="padding:6px 0;color:#54545f;">CIF/NIF</td><td>${escapeHtml(cif)}</td></tr>
+          <tr><td style="padding:6px 0;color:#54545f;">Contacto</td><td>${escapeHtml(data.contactName)}</td></tr>
+          <tr><td style="padding:6px 0;color:#54545f;">Email</td><td>${escapeHtml(email)}</td></tr>
+          <tr><td style="padding:6px 0;color:#54545f;">Teléfono</td><td>${escapeHtml(data.phone)}</td></tr>
+          ${whatsapp ? `<tr><td style="padding:6px 0;color:#54545f;">WhatsApp</td><td>${escapeHtml(whatsapp)}</td></tr>` : ''}
+          <tr><td style="padding:6px 0;color:#54545f;">Dirección</td><td>${escapeHtml(data.address)}</td></tr>
+          <tr><td style="padding:6px 0;color:#54545f;">Localidad</td><td>${escapeHtml(data.city)} (${escapeHtml(data.postalCode)}) · ${escapeHtml(data.province)}</td></tr>
+          <tr><td style="padding:6px 0;color:#54545f;">IBAN</td><td style="font-family:monospace;">${escapeHtml(bankAccount)}</td></tr>
         </table>
         ${data.message ? `<div style="margin-top:16px;padding:12px;background:#f7f7f8;border-left:3px solid #d12686;border-radius:6px;"><strong>Mensaje:</strong><br/>${escapeHtml(data.message)}</div>` : ''}
         <p style="margin-top:24px;color:#54545f;font-size:13px;">

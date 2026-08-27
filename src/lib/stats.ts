@@ -1,4 +1,5 @@
 import { prisma } from './prisma';
+import { mesEspanol } from './utils';
 
 export interface MonthBucket {
   month: string;      // ISO YYYY-MM
@@ -26,13 +27,16 @@ export async function getMonthlyOrderStats(months = 6): Promise<MonthBucket[]> {
   const orders = await prisma.order.findMany({
     where: {
       createdAt: { gte: from },
-      status: { not: 'CANCELLED' },
+      status: { not: 'CANCELLED' }, isTest: false,
     },
     select: { createdAt: true, totalCents: true },
   });
 
   for (const o of orders) {
-    const m = `${o.createdAt.getFullYear()}-${String(o.createdAt.getMonth() + 1).padStart(2, '0')}`;
+    // El mes, en hora española. Con getMonth() manda la zona del servidor
+    // (UTC en Railway) y un pedido del día 1 a las 00:30 caía en el mes
+    // anterior.
+    const m = mesEspanol(o.createdAt);
     const b = buckets.find((x) => x.month === m);
     if (b) {
       b.count += 1;
@@ -53,7 +57,7 @@ export interface TopCustomerRow {
 export async function getTopCustomers(limit = 5): Promise<TopCustomerRow[]> {
   const grouped = await prisma.order.groupBy({
     by: ['customerId'],
-    where: { status: { not: 'CANCELLED' } },
+    where: { status: { not: 'CANCELLED' }, isTest: false },
     _count: { _all: true },
     _sum: { totalCents: true },
     orderBy: { _count: { id: 'desc' } },
@@ -87,6 +91,7 @@ export interface StatusBreakdown {
 export async function getOrdersByStatus(): Promise<StatusBreakdown[]> {
   const grouped = await prisma.order.groupBy({
     by: ['status'],
+    where: { isTest: false },
     _count: { _all: true },
   });
   return grouped.map((g) => ({ status: g.status, count: g._count._all }));
@@ -104,7 +109,7 @@ export interface ColorBreakdown {
  */
 export async function getUnitsByColor(): Promise<ColorBreakdown[]> {
   const items = await prisma.orderItem.findMany({
-    where: { order: { status: { not: 'CANCELLED' } } },
+    where: { order: { status: { not: 'CANCELLED' }, isTest: false } },
     select: { color: true, quantity: true },
   });
   const map = new Map<string, { units: number; lines: number }>();

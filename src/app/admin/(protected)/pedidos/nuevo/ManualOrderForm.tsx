@@ -37,6 +37,20 @@ const initialQC: QuickCustomerState = {};
 const CHANNELS: Array<keyof typeof CHANNEL_LABEL> =
   ['PHONE', 'EMAIL', 'WHATSAPP', 'VISIT', 'NOTE', 'OTHER'];
 
+function GuardarPedido({ puedeGuardar }: { puedeGuardar: boolean }) {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={!puedeGuardar || pending}
+      className="btn-primary disabled:opacity-40"
+    >
+      {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+      {pending ? 'Guardando…' : 'Guardar pedido'}
+    </button>
+  );
+}
+
 function SubmitBtn({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
@@ -68,8 +82,14 @@ export function ManualOrderForm({ customers, maxCharsPerLine }: Props) {
   const [isTest, setIsTest] = useState(false);
   const [adminNote, setAdminNote] = useState('');
 
-  // Cuando el quick create tiene éxito, seleccionar automáticamente ese cliente
-  if (qcState.ok && qcState.customerId && qcState.customerId !== selectedCustomerId) {
+  // Al dar de alta una farmacia desde aquí, se selecciona sola. Pero UNA vez:
+  // `qcState` no se reinicia nunca, así que comparando contra la selección
+  // actual el bloque saltaba en cada pintado y devolvía la selección a la
+  // recién creada en cuanto se elegía otra farmacia. No había forma de
+  // cambiarla sin recargar la página.
+  const [altaYaAplicada, setAltaYaAplicada] = useState<string | null>(null);
+  if (qcState.ok && qcState.customerId && qcState.customerId !== altaYaAplicada) {
+    setAltaYaAplicada(qcState.customerId);
     setSelectedCustomerId(qcState.customerId);
     setShowQuickCreate(false);
   }
@@ -452,9 +472,10 @@ export function ManualOrderForm({ customers, maxCharsPerLine }: Props) {
             {items.length} línea{items.length === 1 ? '' : 's'} de pulseras ·{' '}
             {items.reduce((a, b) => a + b.quantity, 0)} uds totales
           </div>
-          <button type="submit" disabled={!canSubmit} className="btn-primary disabled:opacity-40">
-            <Save className="h-4 w-4" /> Guardar pedido
-          </button>
+          {/* Con `disabled={!canSubmit}` a secas el botón seguía vivo mientras
+              se guardaba, y la acción tarda (precios, alta y dos correos): daba
+              tiempo de sobra a pulsar dos veces y crear el pedido dos veces. */}
+          <GuardarPedido puedeGuardar={canSubmit} />
         </div>
       </form>
     </div>

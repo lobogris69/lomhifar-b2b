@@ -509,10 +509,17 @@ export function slugForFilename(s: string, maxLen = 40): string {
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '') // quitar acentos
     .replace(/[^a-zA-Z0-9]+/g, '_')
+    // Una «x» pegada a un número se separa. En el nombre del fichero va la
+    // cantidad a grabar como `_x5_`, y el puente la lee de ahí: una farmacia
+    // llamada «Farmacia x50 Centro» habría hecho grabar cincuenta pulseras.
+    .replace(/x(?=[0-9])/g, 'x_')
     .replace(/^_+|_+$/g, '')
+    .replace(/_{2,}/g, '_')
     .slice(0, maxLen)
+    .replace(/_+$/, '')
     || 'sin-nombre';
 }
+
 
 /**
  * Fecha en formato YYYY-MM-DD en zona Europe/Madrid.

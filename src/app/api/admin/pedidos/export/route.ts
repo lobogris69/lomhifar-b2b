@@ -4,6 +4,7 @@ import { getAdminSession } from '@/lib/auth';
 import { canAccessPath } from '@/lib/admin-roles';
 import { ORDER_STATUS_LABEL } from '@/components/shop/OrderStatusBadge';
 import { colorLabel } from '@/lib/cart';
+import { inicioDelDiaEspanol, finDelDiaEspanol } from '@/lib/utils';
 import { OrderStatus } from '@/lib/enums';
 
 export const dynamic = 'force-dynamic';
@@ -36,19 +37,17 @@ export async function GET(req: Request) {
   if (q) {
     const num = Number(q);
     where.OR = [
-      { pharmacyName: { contains: q } },
-      { cif: { contains: q } },
-      { email: { contains: q } },
+      { pharmacyName: { contains: q, mode: 'insensitive' } },
+      { cif: { contains: q, mode: 'insensitive' } },
+      { email: { contains: q, mode: 'insensitive' } },
       ...(Number.isFinite(num) ? [{ number: num }] : []),
     ];
   }
+  // El mismo corte que en la pantalla de pedidos: día español, no del
+  // servidor. Si no, lo exportado no coincide con lo que se ve.
   const createdAt: Record<string, Date> = {};
-  if (from) createdAt.gte = new Date(from);
-  if (to) {
-    const d = new Date(to);
-    d.setHours(23, 59, 59, 999);
-    createdAt.lte = d;
-  }
+  if (from) createdAt.gte = inicioDelDiaEspanol(from);
+  if (to) createdAt.lte = finDelDiaEspanol(to);
   if (Object.keys(createdAt).length) where.createdAt = createdAt;
 
   const orders = await prisma.order.findMany({
