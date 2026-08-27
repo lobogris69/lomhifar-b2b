@@ -23,7 +23,7 @@ export default async function LlaverosPage() {
       take: ULTIMOS,
       select: {
         id: true, nombre: true, material: true, unidades: true,
-        anchoMm: true, altoMm: true, umbral: true, invertido: true,
+        anchoMm: true, altoMm: true, umbral: true, invertido: true, detalle: true,
         // OJO: `vistaSvg` NO se pide aquí. Son megas por diseño y la lista
         // enseña veinte; metido en el HTML tumbaba el navegador. Se pide
         // aparte, como imagen, desde /api/admin/llaveros/[id]/vista
@@ -50,6 +50,7 @@ export default async function LlaverosPage() {
     altoMm: d.altoMm,
     umbral: d.umbral,
     invertido: d.invertido,
+    detalle: d.detalle,
     contornos: d.contornos,
     size: d.size,
     tieneVista: d.size > 0,

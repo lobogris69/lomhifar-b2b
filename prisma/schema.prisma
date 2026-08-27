@@ -436,6 +436,7 @@ model KeyringJob {
   altoMm    Float
   umbral    Int     @default(128)
   invertido Boolean @default(false)
+  detalle   String  @default("medio") // grueso | medio | fino
 
   imagen       Bytes // el PNG/JPG original tal cual se subió
   imagenTipo   String // image/png, image/jpeg

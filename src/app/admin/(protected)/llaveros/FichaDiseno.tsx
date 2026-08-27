@@ -23,6 +23,7 @@ export interface DisenoLite {
   altoMm: number;
   umbral: number;
   invertido: boolean;
+  detalle: string;
   contornos: number;
   size: number;
   tieneVista: boolean;
@@ -230,6 +231,23 @@ export function FichaDiseno({ d }: { d: DisenoLite }) {
                 </label>
               </div>
             </div>
+
+            <label className="block">
+              <span className="text-[11px] text-ink-600">Detalle</span>
+              {/* Esto es lo que de verdad decide si el grabado sale limpio.
+                  El vectorizado dibuja el CONTORNO de cada trazo, o sea dos
+                  lineas por linea; con demasiado detalle se juntan y sale una
+                  mancha, y ademas tarda muchisimo. */}
+              <select name="detalle" className="input mt-0.5 text-xs" defaultValue={d.detalle}>
+                <option value="grueso">Grueso — pocas líneas, limpio y rápido</option>
+                <option value="medio">Medio</option>
+                <option value="fino">Fino — mucho detalle, lento y puede emborronarse</option>
+              </select>
+              <span className="block text-[11px] text-ink-500 leading-tight mt-0.5">
+                Si el grabado sale emborronado, baja el detalle. El umbral no
+                arregla eso.
+              </span>
+            </label>
 
             <label className="flex items-center gap-2 text-[11px] text-ink-600">
               <input type="checkbox" name="invertido" defaultChecked={d.invertido} />

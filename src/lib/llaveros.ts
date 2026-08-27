@@ -1,4 +1,5 @@
 import potrace from 'potrace';
+import Jimp from 'jimp';
 import { getSetting, setSetting, SETTING_KEYS } from './settings';
 import { LIMITES, PERFIL_BASE, type LaserProfile } from './laser-profiles';
 
@@ -191,6 +192,36 @@ export interface Trazado {
   alto: number;
 }
 
+/**
+ * Cuánto detalle se conserva del dibujo.
+ *
+ * El vectorizado dibuja el CONTORNO de cada trazo, no el trazo: una línea
+ * negra sale como dos líneas paralelas, una a cada lado. En una pieza de
+ * 30 mm, con demasiado detalle esas parejas se juntan y el grabado sale
+ * emborronado — y encima tarda muchísimo, porque el láser tiene que recorrer
+ * cada contorno.
+ *
+ * Se arregla ANTES de vectorizar, reduciendo la imagen y tirando las manchas
+ * pequeñas. Bajar el umbral no sirve para esto: el umbral decide qué es negro,
+ * no cuánto detalle hay.
+ *
+ * Medido con un grabado real: a «fino» salían 1.728 contornos y 209.564
+ * puntos en 30 × 20 mm, que en metal es una mancha.
+ */
+export const DETALLES = {
+  grueso: { etiqueta: 'Grueso — pocas líneas, limpio y rápido', lado: 500, ruido: 20 },
+  medio: { etiqueta: 'Medio', lado: 900, ruido: 8 },
+  fino: { etiqueta: 'Fino — mucho detalle, lento y puede emborronarse', lado: 1500, ruido: 3 },
+} as const;
+
+export type Detalle = keyof typeof DETALLES;
+
+export function esDetalle(v: unknown): v is Detalle {
+  return v === 'grueso' || v === 'medio' || v === 'fino';
+}
+
+export const DETALLE_POR_DEFECTO: Detalle = 'medio';
+
 export const UMBRAL_POR_DEFECTO = 128;
 
 /** Cuántos tramos rectos por curva. Igual criterio que en las pulseras. */
@@ -205,18 +236,33 @@ const PASOS_CURVA = 16;
  */
 export async function vectorizar(
   imagen: Buffer,
-  opciones: { umbral?: number; invertir?: boolean; ruidoMin?: number } = {},
+  opciones: { umbral?: number; invertir?: boolean; detalle?: Detalle } = {},
 ): Promise<Trazado> {
   const umbral = Math.min(254, Math.max(1, Math.round(opciones.umbral ?? UMBRAL_POR_DEFECTO)));
+  const nivel = DETALLES[opciones.detalle ?? DETALLE_POR_DEFECTO];
+
+  // Se reduce ANTES de trazar. Trazar una imagen de 3.000 píxeles para grabar
+  // en 30 mm no da más calidad: da más contornos, más tiempo de láser y un
+  // grabado más sucio.
+  //
+  // Y se aplasta sobre blanco: lo transparente tiene que contar como «no
+  // grabar», no como negro.
+  const foto = await Jimp.read(imagen);
+  const fondo = new Jimp(foto.bitmap.width, foto.bitmap.height, 0xffffffff);
+  fondo.composite(foto, 0, 0);
+  if (Math.max(fondo.bitmap.width, fondo.bitmap.height) > nivel.lado) {
+    fondo.scaleToFit(nivel.lado, nivel.lado);
+  }
+  const preparada = await fondo.getBufferAsync(Jimp.MIME_PNG);
 
   const svg = await new Promise<string>((resolver, rechazar) => {
     potrace.trace(
-      imagen,
+      preparada,
       {
         threshold: umbral,
-        // Manchas más pequeñas que esto se tiran: en un dibujo generado
-        // suelen ser basura de compresión, y cada una es un viaje del láser.
-        turdSize: Math.max(0, Math.round(opciones.ruidoMin ?? 4)),
+        // Manchas más pequeñas que esto se tiran. Cada una es un viaje del
+        // láser y en metal no se distingue.
+        turdSize: nivel.ruido,
         optCurve: true,
         blackOnWhite: !opciones.invertir,
       },

@@ -16,6 +16,8 @@ import {
   savePerfilesLlavero,
   saveVentanaLlavero,
   svgDeLlavero,
+  DETALLE_POR_DEFECTO,
+  esDetalle,
   UMBRAL_POR_DEFECTO,
   vectorizar,
   type Material,
@@ -52,6 +54,7 @@ async function prepararTrabajo(id: string): Promise<{ contornos: number; puntos:
   const trazado = await vectorizar(Buffer.from(t.imagen), {
     umbral: t.umbral,
     invertir: t.invertido,
+    detalle: esDetalle(t.detalle) ? t.detalle : DETALLE_POR_DEFECTO,
   });
 
   const ventana: VentanaLlavero = { anchoMm: t.anchoMm, altoMm: t.altoMm };
@@ -120,6 +123,7 @@ export async function subirDiseno(
       altoMm: ventana.altoMm,
       umbral: UMBRAL_POR_DEFECTO,
       invertido: false,
+      detalle: DETALLE_POR_DEFECTO,
       imagen: bytes,
       imagenTipo: archivo.type,
       imagenNombre: archivo.name.slice(0, 120),
@@ -160,6 +164,9 @@ export async function ajustarDiseno(
     unidades: Math.max(1, Math.min(999, Number(formData.get('unidades')) || 1)),
   };
   if (esMaterial(material)) datos.material = material;
+
+  const detalle = String(formData.get('detalle') ?? '');
+  if (esDetalle(detalle)) datos.detalle = detalle;
 
   // Si la zona de grabado ha cambiado desde que se subió, se reencaja a la de
   // ahora: al final es la medida del llavero que hay en la mesa.
