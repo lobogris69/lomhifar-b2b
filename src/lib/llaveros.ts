@@ -436,6 +436,34 @@ export function dxfDeLlavero(encaje: Encaje, v: VentanaLlavero): string {
  * los contornos ya encajados. No es la imagen original: es el trazado, que es
  * lo que va a salir en el metal.
  */
+/**
+ * Cuántos puntos como mucho lleva la VISTA PREVIA.
+ *
+ * El grabado de una plaza salió con 209.564 puntos. Eso, escrito como SVG,
+ * son 3,2 MB de texto por diseño, y la lista enseña veinte: el navegador se
+ * caía con un error genérico al abrir la página.
+ *
+ * Se dibuja igual pero con menos puntos. A 400 píxeles de ancho no se nota
+ * ninguna diferencia, y el DXF que va a la máquina NO se toca: ese conserva
+ * todos los puntos.
+ */
+const PUNTOS_VISTA = 12000;
+
+/** Quita puntos intermedios para dibujar, sin cambiar la forma. */
+function aligerar(contornos: Punto[][]): Punto[][] {
+  const total = contornos.reduce((a, c) => a + c.length, 0);
+  if (total <= PUNTOS_VISTA) return contornos;
+
+  const salto = Math.ceil(total / PUNTOS_VISTA);
+  return contornos.map((c) => {
+    if (c.length <= 4) return c;
+    const menos = c.filter((_, i) => i % salto === 0);
+    // Se cierra siempre por donde cerraba, o aparecen cortes.
+    if (menos[menos.length - 1] !== c[c.length - 1]) menos.push(c[c.length - 1]);
+    return menos.length >= 3 ? menos : c;
+  });
+}
+
 export function svgDeLlavero(
   encaje: Encaje,
   v: VentanaLlavero,
@@ -445,7 +473,7 @@ export function svgDeLlavero(
   const PAD = 3;
   const fondo = MATERIALES[material].css;
 
-  const trazos = encaje.contornos.map((c) => {
+  const trazos = aligerar(encaje.contornos).map((c) => {
     const d = c
       .map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(3)} ${(v.altoMm - p.y).toFixed(3)}`)
       .join(' ');

@@ -25,7 +25,7 @@ export interface DisenoLite {
   invertido: boolean;
   contornos: number;
   size: number;
-  vistaSvg: string | null;
+  tieneVista: boolean;
   creado: string;
   enCola: boolean;
   grabado: string | null;
@@ -90,13 +90,19 @@ export function FichaDiseno({ d }: { d: DisenoLite }) {
       <div className="p-4 grid lg:grid-cols-[minmax(0,320px)_1fr] gap-4">
         {/* Lo que va a salir en el metal */}
         <div className="w-full max-w-[420px]">
-          {d.vistaSvg ? (
-            <div
-              className="rounded-lg border border-ink-200 overflow-hidden"
-              // El SVG lo genera el propio servidor a partir del trazado, no
-              // viene de fuera.
-              dangerouslySetInnerHTML={{ __html: d.vistaSvg }}
-            />
+          {d.tieneVista ? (
+            // Se pide como imagen aparte en vez de venir dentro del HTML: con
+            // un dibujo detallado son megas de texto por diseño y el navegador
+            // se caía al abrir la lista. El `umbral` va en la dirección para
+            // que al reajustar se vuelva a pedir y no salga la de antes.
+            <object
+              type="image/svg+xml"
+              data={`/api/admin/llaveros/${d.id}/vista?u=${d.umbral}&i=${d.invertido ? 1 : 0}&m=${d.material}`}
+              className="w-full rounded-lg border border-ink-200 overflow-hidden pointer-events-none"
+              aria-label={`Trazado de ${d.nombre}`}
+            >
+              <span className="text-[10px] text-ink-400">Vista previa</span>
+            </object>
           ) : (
             <div className="rounded-lg border border-dashed border-ink-300 p-6 text-center text-xs text-ink-500">
               Sin trazado todavía. Ajusta el umbral aquí abajo.
