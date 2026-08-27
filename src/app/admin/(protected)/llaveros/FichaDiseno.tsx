@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import { Download, Loader2, Send, Sliders, Trash2, X } from 'lucide-react';
 import { useEstadoGrabadora } from '@/components/laser/estado-grabadora';
@@ -71,6 +72,19 @@ export function FichaDiseno({ d }: { d: DisenoLite }) {
   const dorado = d.material === 'GOLD';
   const reintentar = Boolean(envio.error && d.grabado);
 
+  // El umbral tiene que verse mientras se arrastra la barra. Antes el número
+  // enseñaba el valor GUARDADO y la barra iba por libre: parecía que moverla
+  // no hacía nada.
+  const [umbral, setUmbral] = useState(d.umbral);
+  const formulario = useRef<HTMLFormElement>(null);
+  useEffect(() => { setUmbral(d.umbral); }, [d.umbral]);
+
+  // Al soltar la barra se aplica solo. Tener que acordarse de pulsar otro
+  // botón después de mover el control es justo lo que despista.
+  const aplicarAlSoltar = () => {
+    if (umbral !== d.umbral) formulario.current?.requestSubmit();
+  };
+
   return (
     <div className="rounded-xl border border-ink-200 bg-white overflow-hidden">
       <div className="p-4 grid lg:grid-cols-[minmax(0,320px)_1fr] gap-4">
@@ -97,7 +111,8 @@ export function FichaDiseno({ d }: { d: DisenoLite }) {
           </div>
           {d.contornos > 60 && (
             <div className="mt-1 text-[11px] text-amber-700">
-              Muchos contornos: el grabado va a tardar. Sube el umbral para simplificar el dibujo.
+              Muchos contornos: el grabado va a tardar. Mueve el umbral hacia la izquierda
+              para quedarte solo con los trazos, o usa un dibujo más limpio.
             </div>
           )}
         </div>
@@ -132,7 +147,11 @@ export function FichaDiseno({ d }: { d: DisenoLite }) {
           </div>
 
           {/* Preparación del dibujo */}
-          <form action={accionAjustar} className="rounded-lg bg-ink-50/60 border border-ink-100 p-3 space-y-2">
+          <form
+            ref={formulario}
+            action={accionAjustar}
+            className="rounded-lg bg-ink-50/60 border border-ink-100 p-3 space-y-2"
+          >
             <input type="hidden" name="id" value={d.id} />
             <div className="flex items-center gap-1.5 text-[11px] font-semibold text-ink-700 uppercase tracking-wider">
               <Sliders className="h-3.5 w-3.5" /> Preparación del dibujo
@@ -141,7 +160,8 @@ export function FichaDiseno({ d }: { d: DisenoLite }) {
             <div className="grid sm:grid-cols-2 gap-3">
               <label className="block">
                 <span className="text-[11px] text-ink-600">
-                  Umbral: dónde se corta entre grabar y no grabar
+                  Umbral: <strong>{umbral}</strong>
+                  {umbral !== d.umbral && <em className="text-amber-700"> · sin aplicar</em>}
                 </span>
                 <input
                   name="umbral"
@@ -149,10 +169,18 @@ export function FichaDiseno({ d }: { d: DisenoLite }) {
                   min={20}
                   max={230}
                   step={5}
-                  defaultValue={d.umbral}
+                  value={umbral}
+                  onChange={(e) => setUmbral(Number(e.target.value))}
+                  onPointerUp={aplicarAlSoltar}
+                  onKeyUp={aplicarAlSoltar}
                   className="w-full mt-1 accent-brand-700"
                 />
-                <span className="text-[11px] text-ink-500">Ahora en {d.umbral}</span>
+                {/* Lo importante que hay que entender de este control. */}
+                <span className="block text-[11px] text-ink-500 leading-tight">
+                  Hacia la izquierda se graba <strong>solo lo más oscuro</strong>: los trazos
+                  limpios, sin sombras ni grises. Hacia la derecha entran también los grises
+                  y las sombras.
+                </span>
               </label>
 
               <div className="space-y-2">
