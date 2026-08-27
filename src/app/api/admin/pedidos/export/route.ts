@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAdminSession } from '@/lib/auth';
+import { canAccessPath } from '@/lib/admin-roles';
 import { ORDER_STATUS_LABEL } from '@/components/shop/OrderStatusBadge';
 import { colorLabel } from '@/lib/cart';
 import { OrderStatus } from '@/lib/enums';
@@ -16,6 +17,13 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: Request) {
   const session = await getAdminSession();
   if (!session) return new NextResponse('Unauthorized', { status: 401 });
+
+  // Las rutas /api no pasan por el middleware del panel, así que aquí se
+  // repite la comprobación: quien no puede abrir /admin/pedidos tampoco
+  // puede descargárselo por la puerta de atrás.
+  if (!canAccessPath(session.role, '/admin/pedidos')) {
+    return new NextResponse('Sin permiso', { status: 403 });
+  }
 
   const url = new URL(req.url);
   const status = url.searchParams.get('status') ?? '';

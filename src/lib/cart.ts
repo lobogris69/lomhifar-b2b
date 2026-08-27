@@ -5,18 +5,24 @@ const CART_COOKIE = 'lomhifar_cart';
 const MAX_ITEMS = 50;
 
 /**
- * Tope real del carrito, en bytes de la cookie.
+ * Tope real del carrito, medido como lo mide el navegador.
  *
  * El carrito entero viaja dentro de una cookie, y los navegadores tiran las
- * que pasan de 4 KB sin decir nada: ni error, ni aviso. Con tres líneas de
- * texto por pulsera eso llegaba alrededor de la línea 19, y a partir de ahí
- * la farmacia añadía pulseras y el carrito se quedaba como estaba. Perder un
- * pedido en silencio es lo peor que puede pasar aquí, así que ahora se mide
- * antes de escribir y, si no cabe, se dice.
+ * que pasan de 4.096 bytes sin decir nada: ni error, ni aviso. La farmacia
+ * seguía añadiendo pulseras, la web decía «añadida», y el carrito se quedaba
+ * como estaba. Perder un pedido en silencio es lo peor que puede pasar aquí.
  *
- * 3.800 deja margen para el nombre de la cookie y sus atributos.
+ * OJO con cómo se mide: lo que va en la cabecera `Set-Cookie` no es el JSON,
+ * es el JSON pasado por encodeURIComponent. Las llaves, comillas, dos puntos
+ * y comas pasan de un byte a tres, así que el tamaño real es casi el doble.
+ * Midiendo el JSON en crudo el límite se quedaba muy corto y seguía habiendo
+ * una franja —de la pulsera 23 a la 35 con una sola línea— en la que la
+ * comprobación decía que cabía y el navegador la tiraba igual.
+ *
+ * 4.000 sobre el valor ya codificado deja sitio al nombre de la cookie y a
+ * sus atributos.
  */
-const MAX_BYTES = 3800;
+const MAX_BYTES = 4000;
 
 export const CARRITO_LLENO =
   'El carrito no admite más líneas distintas. Finaliza este pedido y haz otro a continuación: ' +
@@ -47,10 +53,11 @@ export function readCart(): CartItem[] {
   }
 }
 
-/** ¿Cabe este carrito en la cookie del navegador? */
+/** ¿Cabe este carrito en la cookie del navegador, ya codificada? */
 export function cabeElCarrito(items: CartItem[]): boolean {
   if (items.length > MAX_ITEMS) return false;
-  return Buffer.byteLength(JSON.stringify(items), 'utf8') <= MAX_BYTES;
+  const enLaCabecera = encodeURIComponent(JSON.stringify(items));
+  return CART_COOKIE.length + 1 + enLaCabecera.length <= MAX_BYTES;
 }
 
 export function writeCart(items: CartItem[]): void {
