@@ -34,6 +34,11 @@ interface ItemDraft {
 
 const initialOrder: CreateManualOrderState = {};
 const initialQC: QuickCustomerState = {};
+
+// Cuántas farmacias se pintan a la vez. Con casi dos mil, pintarlas todas
+// hace la página lentísima; pero recortar sin decirlo lleva a pensar que una
+// farmacia no está dada de alta cuando lo que pasa es que no cabe en la lista.
+const TOPE_VISIBLE = 100;
 const CHANNELS: Array<keyof typeof CHANNEL_LABEL> =
   ['PHONE', 'EMAIL', 'WHATSAPP', 'VISIT', 'NOTE', 'OTHER'];
 
@@ -107,14 +112,25 @@ export function ManualOrderForm({ customers, maxCharsPerLine }: Props) {
       }];
     }
     const q = search.trim().toLowerCase();
-    if (!q) return list.slice(0, 100);
+    if (!q) return list.slice(0, TOPE_VISIBLE);
     return list.filter((c) =>
       c.cif.toLowerCase().includes(q)
       || c.pharmacyName.toLowerCase().includes(q)
       || (c.city ?? '').toLowerCase().includes(q)
       || c.email.toLowerCase().includes(q),
-    ).slice(0, 100);
+    ).slice(0, TOPE_VISIBLE);
   }, [customers, search, qcState]);
+
+  const totalQueCoinciden = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return customers.length;
+    return customers.filter((c) =>
+      c.pharmacyName.toLowerCase().includes(q)
+      || c.cif.toLowerCase().includes(q)
+      || (c.city ?? '').toLowerCase().includes(q)
+      || c.email.toLowerCase().includes(q),
+    ).length;
+  }, [customers, search]);
 
   const selectedCustomer = currentList.find((c) => c.id === selectedCustomerId)
     ?? customers.find((c) => c.id === selectedCustomerId);
@@ -253,6 +269,13 @@ export function ManualOrderForm({ customers, maxCharsPerLine }: Props) {
             No hay clientes que coincidan. Prueba con menos texto o crea uno nuevo.
           </div>
         ) : (
+          <>
+          {totalQueCoinciden > currentList.length && (
+            <div className="text-[11px] text-amber-700 mb-1">
+              Mostrando {currentList.length} de {totalQueCoinciden.toLocaleString('es-ES')} farmacias.
+              Escribe arriba para encontrar la que buscas.
+            </div>
+          )}
           <div className="max-h-[220px] overflow-y-auto border border-ink-200 rounded-lg divide-y divide-ink-100">
             {currentList.map((c) => (
               <label
@@ -280,6 +303,7 @@ export function ManualOrderForm({ customers, maxCharsPerLine }: Props) {
               </label>
             ))}
           </div>
+          </>
         )}
 
         {selectedCustomer && (
