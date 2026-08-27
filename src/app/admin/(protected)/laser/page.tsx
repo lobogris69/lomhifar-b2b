@@ -4,6 +4,8 @@ import { getLaserSettings } from '@/lib/laser';
 import { getLaserProfiles } from '@/lib/laser-profiles';
 import { LaserSettingsForm } from './LaserSettingsForm';
 import { LaserProfilesForm } from './LaserProfilesForm';
+import { ClaveDelPuente } from './ClaveDelPuente';
+import { claveDelPuente } from '@/lib/laser-cola';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Configuración Láser · Admin Lomhifar' };
@@ -11,6 +13,7 @@ export const metadata = { title: 'Configuración Láser · Admin Lomhifar' };
 export default async function LaserSettingsPage() {
   const s = await getLaserSettings();
   const perfiles = await getLaserProfiles();
+  const clave = await claveDelPuente();
 
   return (
     <div className="p-4 sm:p-6 lg:p-10 max-w-6xl space-y-6">
@@ -67,6 +70,10 @@ export default async function LaserSettingsPage() {
           perfil sin tocar los que ya están afinados.
         </p>
         <LaserProfilesForm config={perfiles} />
+      </div>
+
+      <div className="pt-2">
+        <ClaveDelPuente claveActual={clave} />
       </div>
     </div>
   );

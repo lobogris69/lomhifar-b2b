@@ -6,6 +6,7 @@ import { formatDate, formatEuros } from '@/lib/utils';
 import { colorLabel } from '@/lib/cart';
 import { OrderStatusBadge, ORDER_STATUS_LABEL } from '@/components/shop/OrderStatusBadge';
 import { BraceletPreview } from '@/components/shop/BraceletPreview';
+import { EnviarAGrabadora } from './EnviarAGrabadora';
 import { PrintButton } from '@/components/admin/PrintButton';
 import { OrderProgress } from '@/components/admin/OrderProgress';
 import { CARRIERS, DEFAULT_CARRIER } from '@/lib/shipping';
@@ -212,10 +213,14 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
                                   <div key={i} className="font-mono text-[13px]">{l}</div>
                                 ))}
                               </div>
-                              <div className="mt-2 flex flex-wrap gap-2">
+                              <div className="mt-2 flex flex-wrap items-start gap-2">
+                                {/* Lo habitual: va solo a la máquina y allí
+                                    espera al pedal. La descarga manual se
+                                    queda como alternativa. */}
+                                <EnviarAGrabadora orderId={order.id} lineIndex={idx} />
                                 <a
                                   href={dxfUrl}
-                                  className="btn-primary text-xs"
+                                  className="btn-secondary text-xs"
                                   download
                                 >
                                   <Download className="h-3.5 w-3.5" /> Descargar DXF

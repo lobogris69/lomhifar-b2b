@@ -400,9 +400,19 @@ model LaserFile {
   createdBy    String?  // email del admin que descargó
   createdAt    DateTime @default(now())
 
+  // ── Cola de la grabadora ──
+  // El puente que controla el láser pregunta por los que estén encolados y
+  // sin grabar. Las tres fechas son nulables a propósito: un DXF descargado
+  // a mano nunca pasa por aquí, y así el histórico de siempre no cambia.
+  queuedAt     DateTime?  // se pulsó «Enviar a la grabadora»
+  queuedBy     String?    // email del admin que lo mandó
+  takenAt      DateTime?  // el puente se lo ha llevado (evita duplicados)
+  engravedAt   DateTime?  // el puente confirma que está grabado
+
   @@index([dateFolder])
   @@index([orderId])
   @@index([pharmacyName])
+  @@index([queuedAt])
 }
 
 // ============================================================

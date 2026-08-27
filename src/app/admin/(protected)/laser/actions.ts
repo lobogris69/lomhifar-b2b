@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/auth';
 import { SETTING_KEYS, setSetting, type SettingKey } from '@/lib/settings';
+import { generarClaveDelPuente } from '@/lib/laser-cola';
 import {
   saveLaserProfiles,
   normalizar,
@@ -161,3 +162,31 @@ export async function saveLaserProfilesAction(
   return { ok: true };
 }
 
+
+// ============================================================
+// Clave del puente de la grabadora
+// ============================================================
+
+
+export interface ClaveState {
+  ok?: boolean;
+  clave?: string;
+  error?: string;
+}
+
+/**
+ * Genera una clave nueva para el puente del taller.
+ *
+ * Al regenerarla, el puente que estuviera usando la anterior deja de tener
+ * acceso hasta que se le copie la nueva. Se avisa de eso en la pantalla.
+ */
+export async function regenerarClaveDelPuente(): Promise<ClaveState> {
+  await requireAdmin({ write: true });
+  try {
+    const clave = await generarClaveDelPuente();
+    revalidatePath('/admin/laser');
+    return { ok: true, clave };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : 'No se pudo generar la clave.' };
+  }
+}
