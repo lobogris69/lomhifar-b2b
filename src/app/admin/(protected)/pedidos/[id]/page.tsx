@@ -7,6 +7,7 @@ import { colorLabel } from '@/lib/cart';
 import { OrderStatusBadge, ORDER_STATUS_LABEL } from '@/components/shop/OrderStatusBadge';
 import { BraceletPreview } from '@/components/shop/BraceletPreview';
 import { IndicadorGrabadora } from '@/components/laser/IndicadorGrabadora';
+import { AvisoDePedal } from '@/components/laser/AvisoDePedal';
 import { EnviarAGrabadora } from './EnviarAGrabadora';
 import { PrintButton } from '@/components/admin/PrintButton';
 import { OrderProgress } from '@/components/admin/OrderProgress';
@@ -56,6 +57,11 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
           engravedAt={order.engravedAt}
           trackingNumber={order.trackingNumber}
         />
+      </div>
+
+      {/* Lo mismo que en llaveros: si la máquina espera, que se vea. */}
+      <div className="mb-6">
+        <AvisoDePedal />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">

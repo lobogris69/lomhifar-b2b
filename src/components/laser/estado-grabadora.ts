@@ -24,11 +24,20 @@ export interface EstadoGrabadora {
 /** Mientras no sepamos nada, no bloqueamos: `null` significa «aún preguntando». */
 type Conocido = EstadoGrabadora | null;
 
-const CADA = 8000;
+/**
+ * Cada cuánto se pregunta por la grabadora.
+ *
+ * En reposo no hace falta ir deprisa. Pero cuando la máquina está esperando
+ * el pedal, el aviso tiene que salir enseguida: si tarda diez segundos, el
+ * operario ya está mirando la máquina y la pantalla no le sirve de nada.
+ */
+const CADA_REPOSO = 8000;
+const CADA_TRABAJANDO = 2500;
 
 let actual: Conocido = null;
 let oyentes: Array<(e: Conocido) => void> = [];
 let temporizador: ReturnType<typeof setInterval> | null = null;
+let ritmo = CADA_REPOSO;
 
 async function consultar() {
   try {
@@ -41,13 +50,24 @@ async function consultar() {
     return;
   }
   oyentes.forEach((f) => f(actual));
+  ajustarRitmo();
+}
+
+/** Acelera o frena el sondeo según lo que esté haciendo la máquina. */
+function ajustarRitmo() {
+  const quiere = actual?.haciendo ? CADA_TRABAJANDO : CADA_REPOSO;
+  if (quiere === ritmo || temporizador === null) return;
+  ritmo = quiere;
+  clearInterval(temporizador);
+  temporizador = setInterval(consultar, ritmo);
 }
 
 function suscribir(f: (e: Conocido) => void) {
   oyentes.push(f);
   if (temporizador === null) {
     void consultar();
-    temporizador = setInterval(consultar, CADA);
+    ritmo = CADA_REPOSO;
+    temporizador = setInterval(consultar, ritmo);
   } else if (actual !== null) {
     f(actual);
   }

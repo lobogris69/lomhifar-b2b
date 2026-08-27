@@ -2,6 +2,7 @@ import { KeyRound } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { formatDate } from '@/lib/utils';
 import { IndicadorGrabadora } from '@/components/laser/IndicadorGrabadora';
+import { AvisoDePedal } from '@/components/laser/AvisoDePedal';
 import { getPerfilesLlavero, getVentanaLlavero } from '@/lib/llaveros';
 import { SubirDiseno } from './SubirDiseno';
 import { FichaDiseno, type DisenoLite } from './FichaDiseno';
@@ -75,6 +76,9 @@ export default async function LlaverosPage() {
         </div>
         <IndicadorGrabadora />
       </div>
+
+      {/* Cuando la máquina está esperando el pedal, que se vea desde aquí. */}
+      <AvisoDePedal />
 
       {/* Cuántos llevamos hechos */}
       <div className="card p-4 flex flex-wrap gap-6 text-sm">
