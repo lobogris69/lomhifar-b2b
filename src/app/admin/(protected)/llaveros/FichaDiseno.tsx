@@ -75,7 +75,7 @@ export function FichaDiseno({ d }: { d: DisenoLite }) {
     <div className="rounded-xl border border-ink-200 bg-white overflow-hidden">
       <div className="p-4 grid lg:grid-cols-[minmax(0,320px)_1fr] gap-4">
         {/* Lo que va a salir en el metal */}
-        <div>
+        <div className="w-full max-w-[420px]">
           {d.vistaSvg ? (
             <div
               className="rounded-lg border border-ink-200 overflow-hidden"
