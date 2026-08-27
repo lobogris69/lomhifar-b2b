@@ -53,7 +53,11 @@ export async function llaverosPendientes(limite = 10): Promise<LlaveroEnCola[]> 
     where: {
       queuedAt: { not: null },
       engravedAt: null,
-      dxf: { not: null },
+      // Por el tamaño y no por `dxf: { not: null }`: filtrar un campo binario
+      // por «no nulo» dejaba la lista vacía aunque el trabajo estuviera
+      // encolado y el DXF guardado. `size` es un número corriente y hace lo
+      // mismo, porque se escriben a la vez.
+      size: { gt: 0 },
       OR: [{ takenAt: null }, { takenAt: { lt: limiteReintento } }],
     },
     orderBy: { queuedAt: 'asc' },
