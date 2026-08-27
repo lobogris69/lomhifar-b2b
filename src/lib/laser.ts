@@ -454,6 +454,8 @@ export function buildDxfFilename(opts: {
   lineIndex: number;
   lineText: string;
   color?: string | null;
+  /** Unidades a grabar con este mismo texto. Se omite si es 1. */
+  units?: number;
   date?: Date;
 }): string {
   const ymd = todayMadridYmd(opts.date ?? new Date());
@@ -462,7 +464,13 @@ export function buildDxfFilename(opts: {
   // El color va justo tras la farmacia para identificar de un vistazo si el
   // grabado es para pulsera Negra o Roja (p. ej. ..._FarmaciaLopez_Roja_L1_...).
   const colorPart = opts.color ? `_${laserColorLabel(opts.color)}` : '';
-  return `${ymd}_Pedido-${opts.orderNumber}_${pharma}${colorPart}_L${opts.lineIndex}_${preview}.dxf`;
+  // La cantidad viaja en el nombre porque es lo que lee el puente de la
+  // grabadora para saber cuántas pulseras hacer con el mismo fichero: graba
+  // una, espera al pedal, y repite. Formato `_xN_`, que es el que espera.
+  // Se omite cuando es una sola, para no ensuciar el nombre.
+  const units = Math.max(1, Math.min(999, Math.round(opts.units ?? 1)));
+  const unitsPart = units > 1 ? `_x${units}` : '';
+  return `${ymd}_Pedido-${opts.orderNumber}_${pharma}${colorPart}${unitsPart}_L${opts.lineIndex}_${preview}.dxf`;
 }
 
 /**

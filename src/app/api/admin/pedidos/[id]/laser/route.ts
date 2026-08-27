@@ -75,6 +75,7 @@ export async function GET(
       lineIndex: lineIdx + 1,
       lineText: eng.lines[0],
       color: eng.color,
+      units: eng.totalUnits,
     });
 
     const dxfBuffer = Buffer.from(dxf, 'utf-8');
