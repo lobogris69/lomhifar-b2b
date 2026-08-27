@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { asegurarClienteMostrador, notaDeTalonario } from '@/lib/mostrador';
 import { requireAdmin } from '@/lib/auth';
 import { priceCart } from '@/lib/pricing';
 import { getSetting, getSettings, parseRecipients, SETTING_KEYS } from '@/lib/settings';
@@ -88,7 +89,12 @@ const itemSchema = z.object({
 });
 
 const createOrderSchema = z.object({
-  customerId: z.string().min(1, 'Selecciona un cliente'),
+  // Opcional a propósito: en modo talonario no se elige cliente, se usa el
+  // genérico de mostrador. La comprobación va más abajo, según el modo.
+  customerId: z.string().optional().default(''),
+  talonario: z.string().optional(),          // 'on' | undefined
+  talonarioFarmacia: z.string().max(120).optional().default(''),
+  talonarioRef: z.string().max(40).optional().default(''),
   channel: z.enum(CHANNEL_VALUES),
   notify: z.string().optional(), // 'on' | undefined
   isTest: z.string().optional(), // 'on' | undefined
@@ -121,6 +127,9 @@ export async function createManualOrder(
 
   const parsed = createOrderSchema.safeParse({
     customerId: String(formData.get('customerId') ?? ''),
+    talonario: formData.get('talonario') ? 'on' : undefined,
+    talonarioFarmacia: String(formData.get('talonarioFarmacia') ?? ''),
+    talonarioRef: String(formData.get('talonarioRef') ?? ''),
     channel: String(formData.get('channel') ?? ''),
     notify: formData.get('notify') ? 'on' : undefined,
     isTest: formData.get('isTest') ? 'on' : undefined,
@@ -135,12 +144,28 @@ export async function createManualOrder(
 
   const isTest = parsed.data.isTest === 'on';
 
-  const customer = await prisma.customer.findUnique({ where: { id: parsed.data.customerId } });
-  if (!customer) return { error: 'Cliente no encontrado' };
-  // Los pedidos de prueba pueden usar clientes desactivados (p.ej. un
-  // cliente demo que no quieres que aparezca en descubrir/tienda real).
-  if (!customer.active && !isTest) {
-    return { error: 'Este cliente está desactivado. Actívalo antes de crear un pedido.' };
+  const esTalonario = parsed.data.talonario === 'on';
+  const nombreFarmacia = parsed.data.talonarioFarmacia.trim();
+
+  let customer;
+  if (esTalonario) {
+    // Pedido en papel de una farmacia que no es clienta: cuelga del cliente
+    // genérico, pero el pedido guarda el nombre real que venga escrito.
+    if (!nombreFarmacia) {
+      return { fieldErrors: { talonarioFarmacia: 'Pon el nombre de la farmacia del talonario' } };
+    }
+    customer = await asegurarClienteMostrador();
+  } else {
+    if (!parsed.data.customerId) {
+      return { fieldErrors: { customerId: 'Selecciona un cliente' } };
+    }
+    customer = await prisma.customer.findUnique({ where: { id: parsed.data.customerId } });
+    if (!customer) return { error: 'Cliente no encontrado' };
+    // Los pedidos de prueba pueden usar clientes desactivados (p.ej. un
+    // cliente demo que no quieres que aparezca en descubrir/tienda real).
+    if (!customer.active && !isTest) {
+      return { error: 'Este cliente está desactivado. Actívalo antes de crear un pedido.' };
+    }
   }
 
   let rawItems: unknown[];
@@ -184,7 +209,7 @@ export async function createManualOrder(
     data: {
       number: nextNumber,
       customerId: customer.id,
-      pharmacyName: customer.pharmacyName,
+      pharmacyName: esTalonario ? nombreFarmacia : customer.pharmacyName,
       cif: customer.cif,
       email: customer.email,
       contactName: customer.contactName,
@@ -203,9 +228,13 @@ export async function createManualOrder(
       equivSurchargePct: totals.equivSurchargeEnabled ? totals.equivSurchargePct : 0,
       equivSurchargeCents: totals.equivSurchargeCents,
       totalCents: totals.totalCents,
-      adminNotes: parsed.data.adminNote || null,
+      adminNotes: esTalonario
+        ? notaDeTalonario(parsed.data.talonarioRef, parsed.data.adminNote)
+        : parsed.data.adminNote || null,
       source: 'ADMIN',
-      channel: parsed.data.channel,
+      // Un pedido de talonario llega en papel: el canal es NOTE, se ponga lo
+      // que se ponga en el desplegable.
+      channel: esTalonario ? 'NOTE' : parsed.data.channel,
       createdByAdmin: session.email,
       isTest,
       items: {
