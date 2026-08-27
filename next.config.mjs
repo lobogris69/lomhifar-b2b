@@ -1,6 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // El id de compilación se expone al navegador para poder avisar de que hay
+  // una versión nueva publicada. Ver /api/version.
+  env: {
+    NEXT_PUBLIC_BUILD_ID: process.env.RAILWAY_GIT_COMMIT_SHA
+      || String(Date.now()),
+  },
   poweredByHeader: false,
   output: 'standalone',
   experimental: {

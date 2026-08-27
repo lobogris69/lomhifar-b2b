@@ -3,6 +3,7 @@ import { getAdminSession } from '@/lib/auth';
 import { AdminSidebar, AdminMobileTopbar } from '@/components/admin/AdminSidebar';
 import { MustChangePasswordBanner } from '@/components/admin/MustChangePasswordBanner';
 import { ReadOnlyBanner } from '@/components/admin/ReadOnlyBanner';
+import { AvisoDeVersion } from '@/components/admin/AvisoDeVersion';
 import { Logo } from '@/components/brand/Logo';
 import { prisma } from '@/lib/prisma';
 
@@ -59,6 +60,9 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
           mobileLogo={mobileLogo}
           badges={badges}
         />
+        {/* Si se publica una version nueva, avisa en vez de dejar la pestana
+            con el codigo viejo dando errores raros. */}
+        <AvisoDeVersion />
         {session.mustChangePassword && <MustChangePasswordBanner />}
         {adminRole === 'VIEWER' && <ReadOnlyBanner />}
         <main className="flex-1 min-w-0">{children}</main>
