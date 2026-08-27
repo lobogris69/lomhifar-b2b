@@ -4,6 +4,11 @@ import {
   marcarComoGrabado,
   rechazoDeAutenticacion,
 } from '@/lib/laser-cola';
+import {
+  esLlavero,
+  llaveroDevueltoALaCola,
+  llaveroGrabado,
+} from '@/lib/llaveros-cola';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,7 +41,10 @@ export async function POST(
   }
 
   try {
-    if (ok) {
+    if (esLlavero(params.id)) {
+      if (ok) await llaveroGrabado(params.id);
+      else await llaveroDevueltoALaCola(params.id);
+    } else if (ok) {
       await marcarComoGrabado(params.id);
     } else {
       await devolverALaCola(params.id);

@@ -23,34 +23,34 @@ datasource db {
 // Administrador del panel privado
 // ------------------------------------------------------------
 model AdminUser {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  passwordHash  String
-  name          String?
+  id                 String   @id @default(cuid())
+  email              String   @unique
+  passwordHash       String
+  name               String?
   // Valores: SUPER_ADMIN | ADMIN | ORDER_MANAGER
   //   SUPER_ADMIN:   acceso total + gestionar usuarios
   //   ADMIN:         acceso total excepto gestionar usuarios
   //   ORDER_MANAGER: solo ver/cambiar estado de pedidos
-  role          String   @default("ADMIN")
-  active        Boolean  @default(true)
+  role               String   @default("ADMIN")
+  active             Boolean  @default(true)
   // Si true, la primera vez que entra se le obliga a cambiar la password
-  mustChangePassword Boolean @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  mustChangePassword Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   passwordResets AdminPasswordReset[]
 }
 
 // Tokens de recuperación de contraseña admin (TTL 1h)
 model AdminPasswordReset {
-  id          String   @id @default(cuid())
-  adminId     String
-  admin       AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
-  token       String   @unique
-  expiresAt   DateTime
-  usedAt      DateTime?
-  ip          String?
-  createdAt   DateTime @default(now())
+  id        String    @id @default(cuid())
+  adminId   String
+  admin     AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  ip        String?
+  createdAt DateTime  @default(now())
 
   @@index([token])
   @@index([adminId])
@@ -60,28 +60,28 @@ model AdminPasswordReset {
 // Cliente farmacia importado desde Excel
 // ------------------------------------------------------------
 model Customer {
-  id              String   @id @default(cuid())
-  cif             String   @unique
-  email           String
-  pharmacyName    String
-  contactName     String?
-  phone           String?
-  address         String?
-  city            String?
-  postalCode      String?
-  province        String?
-  bankAccount     String?  // IBAN
-  whatsapp        String?
-  notes           String?
-  active          Boolean  @default(true)
+  id           String   @id @default(cuid())
+  cif          String   @unique
+  email        String
+  pharmacyName String
+  contactName  String?
+  phone        String?
+  address      String?
+  city         String?
+  postalCode   String?
+  province     String?
+  bankAccount  String? // IBAN
+  whatsapp     String?
+  notes        String?
+  active       Boolean  @default(true)
   // Valores: EXCEL | APPLICATION | MANUAL
-  source          String   @default("EXCEL")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  source       String   @default("EXCEL")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  accessCodes     AccessCode[]
-  sessions        CustomerSession[]
-  orders          Order[]
+  accessCodes AccessCode[]
+  sessions    CustomerSession[]
+  orders      Order[]
 
   @@index([email])
   @@index([active])
@@ -91,25 +91,25 @@ model Customer {
 // Solicitud de alta de farmacia (cuando la búsqueda no encuentra cliente)
 // ------------------------------------------------------------
 model PharmacyApplication {
-  id              String   @id @default(cuid())
-  cif             String
-  email           String
-  pharmacyName    String
-  contactName     String
-  phone           String
-  address         String
-  city            String
-  postalCode      String
-  province        String
-  bankAccount     String   // IBAN obligatorio
-  whatsapp        String?
-  message         String?
+  id            String    @id @default(cuid())
+  cif           String
+  email         String
+  pharmacyName  String
+  contactName   String
+  phone         String
+  address       String
+  city          String
+  postalCode    String
+  province      String
+  bankAccount   String // IBAN obligatorio
+  whatsapp      String?
+  message       String?
   // Valores: PENDING | APPROVED | REJECTED
-  status          String   @default("PENDING")
-  reviewedAt      DateTime?
-  reviewedNotes   String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  status        String    @default("PENDING")
+  reviewedAt    DateTime?
+  reviewedNotes String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@index([status])
   @@index([cif])
@@ -119,15 +119,15 @@ model PharmacyApplication {
 // Código de acceso enviado por email
 // ------------------------------------------------------------
 model AccessCode {
-  id           String   @id @default(cuid())
-  customerId   String
-  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  code         String
-  expiresAt    DateTime
-  consumedAt   DateTime?
-  attempts     Int      @default(0)
-  ip           String?
-  createdAt    DateTime @default(now())
+  id         String    @id @default(cuid())
+  customerId String
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  code       String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int       @default(0)
+  ip         String?
+  createdAt  DateTime  @default(now())
 
   @@index([customerId])
   @@index([code])
@@ -137,14 +137,14 @@ model AccessCode {
 // Sesión activa de cliente
 // ------------------------------------------------------------
 model CustomerSession {
-  id           String   @id @default(cuid())
-  customerId   String
-  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  token        String   @unique
-  expiresAt    DateTime
-  ip           String?
-  userAgent    String?
-  createdAt    DateTime @default(now())
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  token      String   @unique
+  expiresAt  DateTime
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
 
   @@index([token])
   @@index([customerId])
@@ -154,78 +154,78 @@ model CustomerSession {
 // Pedido
 // ------------------------------------------------------------
 model Order {
-  id              String   @id @default(cuid())
+  id         String   @id @default(cuid())
   // En PostgreSQL: @default(autoincrement()). SQLite no soporta autoincrement
   // fuera del @id, así que el número se asigna manualmente en placeOrder().
-  number          Int      @unique
-  customerId      String
-  customer        Customer @relation(fields: [customerId], references: [id])
+  number     Int      @unique
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
 
   // Valores: RECEIVED | IN_PREPARATION | SHIPPED | DELIVERED | CANCELLED
-  status          String   @default("RECEIVED")
+  status String @default("RECEIVED")
 
   // Snapshot del cliente al hacer el pedido
-  pharmacyName    String
-  cif             String
-  email           String
-  contactName     String?
-  phone           String?
-  address         String?
-  city            String?
-  postalCode      String?
-  province        String?
+  pharmacyName String
+  cif          String
+  email        String
+  contactName  String?
+  phone        String?
+  address      String?
+  city         String?
+  postalCode   String?
+  province     String?
 
   // Importes (en céntimos)
   subtotalCents       Int
-  discountCents       Int      @default(0)
+  discountCents       Int    @default(0)
   discountPct         Float?
   shippingCents       Int
-  taxableBaseCents    Int      @default(0)
-  vatPct              Float    @default(21)
-  vatCents            Int      @default(0)
-  equivSurchargePct   Float    @default(0)
-  equivSurchargeCents Int      @default(0)
+  taxableBaseCents    Int    @default(0)
+  vatPct              Float  @default(21)
+  vatCents            Int    @default(0)
+  equivSurchargePct   Float  @default(0)
+  equivSurchargeCents Int    @default(0)
   totalCents          Int
 
-  adminNotes      String?
-  customerNote    String?
+  adminNotes   String?
+  customerNote String?
 
   // Origen del pedido: 'WEB' (cliente lo hizo desde /tienda) o
   // 'ADMIN' (creado manualmente desde el admin por pedidos que
   // llegan por otras vías: teléfono, visita comercial, nota escrita…).
-  source          String   @default("WEB")
+  source         String  @default("WEB")
   // Solo se rellena cuando source=ADMIN. Valores sugeridos:
   // 'PHONE' | 'EMAIL' | 'WHATSAPP' | 'VISIT' | 'NOTE' | 'OTHER'.
   // Sirve para estadísticas ("qué canales me traen más pedidos").
-  channel         String?
+  channel        String?
   // Quién creó el pedido manual (email del admin). null si source=WEB.
-  createdByAdmin  String?
+  createdByAdmin String?
   // Pedido de PRUEBA: no descuenta stock y los emails van al admin que
   // lo crea (no al cliente). Sirve para simular el flujo completo sin
   // efectos reales. Se pueden borrar en bloque desde /admin/sistema.
-  isTest          Boolean  @default(false)
+  isTest         Boolean @default(false)
 
   // Momento en que se marcó como GRABADO (láser hecho). Sirve para el
   // flujo guiado: al pulsar «Ya lo he grabado» se rellena esto y el
   // pedido pasa a EN PREPARACIÓN, quedando listo para el paso de envío.
-  engravedAt      DateTime?
+  engravedAt DateTime?
 
   // Tracking de envío (InPost u otros)
-  trackingNumber  String?
-  trackingUrl     String?
-  shippedAt       DateTime?
+  trackingNumber    String?
+  trackingUrl       String?
+  shippedAt         DateTime?
   // Resumen del último evento de tracking (rellenado por el webhook)
-  lastTrackingCode    String?
-  lastTrackingLabel   String?
-  lastTrackingAt      DateTime?
-  deliveredAt         DateTime?
+  lastTrackingCode  String?
+  lastTrackingLabel String?
+  lastTrackingAt    DateTime?
+  deliveredAt       DateTime?
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  items           OrderItem[]
-  trackingEvents  TrackingEvent[]
-  laserFiles      LaserFile[]
+  items          OrderItem[]
+  trackingEvents TrackingEvent[]
+  laserFiles     LaserFile[]
 
   @@index([customerId])
   @@index([status])
@@ -234,21 +234,21 @@ model Order {
 }
 
 model OrderItem {
-  id            String   @id @default(cuid())
-  orderId       String
-  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   // Valores: BLACK | RED
-  color         String
-  quantity      Int
-  line1         String
-  line2         String
-  line3         String   @default("")
+  color    String
+  quantity Int
+  line1    String
+  line2    String
+  line3    String @default("")
 
   unitPriceCents Int
   lineTotalCents Int
 
-  createdAt     DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([orderId])
 }
@@ -259,28 +259,28 @@ model OrderItem {
 // Sirven como audit log + timeline en la página del pedido.
 // ------------------------------------------------------------
 model TrackingEvent {
-  id              String   @id @default(cuid())
-  orderId         String
-  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   // Carrier que originó el evento (inpost, seur, mrw, correos, manual...)
-  carrier         String   @default("inpost")
+  carrier          String   @default("inpost")
   // Identificador único del evento en el sistema del carrier (idempotencia)
-  externalEventId String?  @unique
+  externalEventId  String?  @unique
   // Código original (ej "LMD.1005")
-  eventCode       String
+  eventCode        String
   // Etiqueta humana en español (ej "Listo en el locker para recoger")
-  eventLabel      String
+  eventLabel       String
   // Estado interno mapeado: RECEIVED | IN_PREPARATION | SHIPPED | DELIVERED | INCIDENT | RETURNED
-  mappedStatus    String?
+  mappedStatus     String?
   // Timestamp del propio evento (cuando ocurrió en la red del carrier)
-  eventAt         DateTime
+  eventAt          DateTime
   // Cuándo lo recibimos en nuestro servidor
-  receivedAt      DateTime @default(now())
+  receivedAt       DateTime @default(now())
   // Payload completo serializado para debugging
-  payloadJson     String?
+  payloadJson      String?
   // ¿Notificamos al cliente por email?
-  customerNotified Boolean @default(false)
+  customerNotified Boolean  @default(false)
 
   @@index([orderId])
   @@index([eventCode])
@@ -290,40 +290,40 @@ model TrackingEvent {
 // Ajustes (clave/valor) - precios, portes, etc.
 // ------------------------------------------------------------
 model Setting {
-  key          String   @id
-  value        String
-  updatedAt    DateTime @updatedAt
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
 }
 
 // ------------------------------------------------------------
 // Stock de pulseras por color
 // ------------------------------------------------------------
 model Stock {
-  id              String   @id @default(cuid())
+  id            String    @id @default(cuid())
   // Valores: "BLACK" | "RED"
-  color           String   @unique
-  quantity        Int      @default(0)
-  minAlertLevel   Int      @default(50)  // si baja de aquí, email al admin
-  lastAlertedAt   DateTime?
-  updatedAt       DateTime @updatedAt
+  color         String    @unique
+  quantity      Int       @default(0)
+  minAlertLevel Int       @default(50) // si baja de aquí, email al admin
+  lastAlertedAt DateTime?
+  updatedAt     DateTime  @updatedAt
 
-  movements       StockMovement[]
+  movements StockMovement[]
 }
 
 // ------------------------------------------------------------
 // Movimientos de stock (entrada manual / salida por pedido)
 // ------------------------------------------------------------
 model StockMovement {
-  id          String   @id @default(cuid())
-  stockId     String
-  stock       Stock    @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  stockId   String
+  stock     Stock    @relation(fields: [stockId], references: [id], onDelete: Cascade)
   // Positivo = entrada (compra/devolución), negativo = salida (pedido)
-  delta       Int
-  reason      String   // "PEDIDO", "AJUSTE", "COMPRA", "DEVOLUCION", etc.
-  orderId     String?  // referencia opcional al pedido si es salida
-  note        String?
-  createdBy   String?  // email del admin que lo registró
-  createdAt   DateTime @default(now())
+  delta     Int
+  reason    String // "PEDIDO", "AJUSTE", "COMPRA", "DEVOLUCION", etc.
+  orderId   String? // referencia opcional al pedido si es salida
+  note      String?
+  createdBy String? // email del admin que lo registró
+  createdAt DateTime @default(now())
 
   @@index([stockId])
   @@index([createdAt])
@@ -335,16 +335,16 @@ model StockMovement {
 // sirve el archivo por defecto desde /public/defaults/.
 // ------------------------------------------------------------
 model SiteImage {
-  id          String   @id @default(cuid())
-  slot        String   @unique  // "logo", "hero-bracelet", "case-sofia", ...
-  filename    String
-  mimeType    String
-  data        Bytes
-  size        Int
-  width       Int?
-  height      Int?
-  uploadedBy  String?
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  slot       String   @unique // "logo", "hero-bracelet", "case-sofia", ...
+  filename   String
+  mimeType   String
+  data       Bytes
+  size       Int
+  width      Int?
+  height     Int?
+  uploadedBy String?
+  updatedAt  DateTime @updatedAt
 }
 
 // ------------------------------------------------------------
@@ -353,13 +353,13 @@ model SiteImage {
 // servido en /public/downloads/cartel-lomhifar-default.pdf
 // ------------------------------------------------------------
 model PosterFile {
-  id          String   @id @default(cuid())
-  filename    String
-  mimeType    String
-  data        Bytes
-  size        Int
-  uploadedBy  String?
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  filename   String
+  mimeType   String
+  data       Bytes
+  size       Int
+  uploadedBy String?
+  createdAt  DateTime @default(now())
 }
 
 // ------------------------------------------------------------
@@ -369,9 +369,9 @@ model PosterFile {
 // Se muestran organizados por fecha en /admin/laser/archivo.
 // ------------------------------------------------------------
 model LaserFile {
-  id           String   @id @default(cuid())
-  orderId      String
-  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   // Snapshot del contexto en el momento de la descarga (no depende
   // de que el pedido cambie después).
@@ -380,39 +380,84 @@ model LaserFile {
   cif          String?
 
   // Contenido y metadatos del DXF
-  filename     String   // ej: 2026-08-03_Pedido-00042_FarmaciaLopez_L1_DIABETES.dxf
-  data         Bytes    // el DXF completo
-  size         Int      // bytes
+  filename String // ej: 2026-08-03_Pedido-00042_FarmaciaLopez_L1_DIABETES.dxf
+  data     Bytes // el DXF completo
+  size     Int // bytes
 
   // Texto grabado (línea por línea, para búsqueda rápida sin abrir el DXF)
-  line1        String
-  line2        String?
-  line3        String?
-  linesJoined  String   // "DIABETES TIPO 1 · TFNO 666 123 456" — para GRAY
+  line1       String
+  line2       String?
+  line3       String?
+  linesJoined String // "DIABETES TIPO 1 · TFNO 666 123 456" — para GRAY
 
   // Color y nº de unidades del grabado (info denormalizada)
-  color        String   // BLACK | RED
-  totalUnits   Int      // cuántas pulseras se grabarán con este DXF
+  color      String // BLACK | RED
+  totalUnits Int // cuántas pulseras se grabarán con este DXF
 
   // Fecha en formato YYYY-MM-DD zona Europe/Madrid → carpetas del archivo
-  dateFolder   String   // "2026-08-03"
+  dateFolder String // "2026-08-03"
 
-  createdBy    String?  // email del admin que descargó
-  createdAt    DateTime @default(now())
+  createdBy String? // email del admin que descargó
+  createdAt DateTime @default(now())
 
   // ── Cola de la grabadora ──
   // El puente que controla el láser pregunta por los que estén encolados y
   // sin grabar. Las tres fechas son nulables a propósito: un DXF descargado
   // a mano nunca pasa por aquí, y así el histórico de siempre no cambia.
-  queuedAt     DateTime?  // se pulsó «Enviar a la grabadora»
-  queuedBy     String?    // email del admin que lo mandó
-  takenAt      DateTime?  // el puente se lo ha llevado (evita duplicados)
-  engravedAt   DateTime?  // el puente confirma que está grabado
+  queuedAt   DateTime? // se pulsó «Enviar a la grabadora»
+  queuedBy   String? // email del admin que lo mandó
+  takenAt    DateTime? // el puente se lo ha llevado (evita duplicados)
+  engravedAt DateTime? // el puente confirma que está grabado
 
   @@index([dateFolder])
   @@index([orderId])
   @@index([pharmacyName])
   @@index([queuedAt])
+}
+
+// ------------------------------------------------------------
+// Llaveros metálicos — prueba de taller
+// ------------------------------------------------------------
+//
+// Vive aparte del negocio de las pulseras a propósito: no se vende a
+// farmacias, no tiene pedido, ni cliente, ni stock, ni entra en el control de
+// negocio. Solo comparte la cola de la grabadora, que ya funciona.
+
+model KeyringJob {
+  id String @id @default(cuid())
+
+  nombre   String // cómo lo llama el operario ("logo farmacia", "escudo")
+  material String // GOLD | SILVER
+  unidades Int    @default(1)
+
+  // Zona grabada y cómo se preparó la imagen. Se guarda con el trabajo para
+  // poder repetirlo exactamente igual meses después.
+  anchoMm   Float
+  altoMm    Float
+  umbral    Int     @default(128)
+  invertido Boolean @default(false)
+
+  imagen       Bytes // el PNG/JPG original tal cual se subió
+  imagenTipo   String // image/png, image/jpeg
+  imagenNombre String?
+
+  dxf       Bytes? // el trazado ya vectorizado, listo para la máquina
+  vistaSvg  String? // la previsualización ya dibujada, para no rehacerla en cada carga
+  size      Int     @default(0)
+  contornos Int     @default(0)
+
+  createdBy String
+  createdAt DateTime @default(now())
+
+  // Mismo ciclo que un grabado de pulsera.
+  queuedAt   DateTime?
+  queuedBy   String?
+  takenAt    DateTime?
+  engravedAt DateTime?
+
+  @@index([createdAt])
+  @@index([queuedAt])
+  @@index([engravedAt])
 }
 
 // ============================================================

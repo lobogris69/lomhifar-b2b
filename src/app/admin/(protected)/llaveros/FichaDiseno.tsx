@@ -1,0 +1,234 @@
+'use client';
+
+import { useFormState, useFormStatus } from 'react-dom';
+import { Download, Loader2, Send, Sliders, Trash2, X } from 'lucide-react';
+import { useEstadoGrabadora } from '@/components/laser/estado-grabadora';
+import {
+  ajustarDiseno,
+  borrarDiseno,
+  cancelarLlavero,
+  enviarLlaveroAGrabadora,
+  type LlaveroState,
+} from './actions';
+
+const inicial: LlaveroState = {};
+
+export interface DisenoLite {
+  id: string;
+  nombre: string;
+  material: string;
+  unidades: number;
+  anchoMm: number;
+  altoMm: number;
+  umbral: number;
+  invertido: boolean;
+  contornos: number;
+  size: number;
+  vistaSvg: string | null;
+  creado: string;
+  enCola: boolean;
+  grabado: string | null;
+}
+
+function BotonChico({ icono, texto, cargando }: { icono: React.ReactNode; texto: string; cargando: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <button type="submit" disabled={pending} className="btn-secondary text-xs">
+      {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : icono}
+      {pending ? cargando : texto}
+    </button>
+  );
+}
+
+function BotonEnviar({ lista, yaGrabado }: { lista: boolean; yaGrabado: boolean }) {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className={`${lista ? 'btn-primary' : 'btn-secondary'} text-xs`}
+    >
+      {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+      {pending ? 'Enviando…' : yaGrabado ? 'Grabar otra vez' : 'Enviar a la grabadora'}
+    </button>
+  );
+}
+
+/**
+ * Un diseño: lo que se va a grabar, cómo se ha preparado y qué se puede hacer
+ * con él.
+ *
+ * La vista previa NO es la imagen que se subió: es el trazado que va a
+ * recorrer el láser. Es la diferencia entre creer que va a salir bien y verlo.
+ */
+export function FichaDiseno({ d }: { d: DisenoLite }) {
+  const [ajuste, accionAjustar] = useFormState(ajustarDiseno, inicial);
+  const [envio, accionEnviar] = useFormState(enviarLlaveroAGrabadora, inicial);
+  const [cancela, accionCancelar] = useFormState(cancelarLlavero, inicial);
+  const estado = useEstadoGrabadora();
+  const lista = estado?.conectado === true;
+
+  const dorado = d.material === 'GOLD';
+  const reintentar = Boolean(envio.error && d.grabado);
+
+  return (
+    <div className="rounded-xl border border-ink-200 bg-white overflow-hidden">
+      <div className="p-4 grid lg:grid-cols-[minmax(0,320px)_1fr] gap-4">
+        {/* Lo que va a salir en el metal */}
+        <div>
+          {d.vistaSvg ? (
+            <div
+              className="rounded-lg border border-ink-200 overflow-hidden"
+              // El SVG lo genera el propio servidor a partir del trazado, no
+              // viene de fuera.
+              dangerouslySetInnerHTML={{ __html: d.vistaSvg }}
+            />
+          ) : (
+            <div className="rounded-lg border border-dashed border-ink-300 p-6 text-center text-xs text-ink-500">
+              Sin trazado todavía. Ajusta el umbral aquí abajo.
+            </div>
+          )}
+          <div className="mt-1.5 flex items-center justify-between text-[11px] text-ink-500">
+            <span>
+              {d.contornos} contorno{d.contornos === 1 ? '' : 's'} ·{' '}
+              {d.size > 0 ? `${Math.round(d.size / 1024)} KB` : 'sin DXF'}
+            </span>
+            <span>{d.anchoMm} × {d.altoMm} mm</span>
+          </div>
+          {d.contornos > 60 && (
+            <div className="mt-1 text-[11px] text-amber-700">
+              Muchos contornos: el grabado va a tardar. Sube el umbral para simplificar el dibujo.
+            </div>
+          )}
+        </div>
+
+        <div className="min-w-0 space-y-3">
+          <div className="flex items-start justify-between gap-2 flex-wrap">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm font-semibold text-ink-900 truncate">{d.nombre}</h3>
+                <span
+                  className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white"
+                  style={{ background: dorado ? '#c9a227' : '#9aa0a6' }}
+                >
+                  {dorado ? 'Dorado' : 'Plateado'}
+                </span>
+                <span className="text-[11px] text-ink-500">
+                  {d.unidades} ud{d.unidades === 1 ? '' : 's'}
+                </span>
+              </div>
+              <div className="text-[11px] text-ink-500 mt-0.5">
+                Subido el {d.creado}
+                {d.grabado && ` · grabado el ${d.grabado}`}
+              </div>
+            </div>
+
+            <form action={borrarDiseno}>
+              <input type="hidden" name="id" value={d.id} />
+              <button type="submit" className="btn-ghost text-danger text-xs" title="Borrar diseño">
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </form>
+          </div>
+
+          {/* Preparación del dibujo */}
+          <form action={accionAjustar} className="rounded-lg bg-ink-50/60 border border-ink-100 p-3 space-y-2">
+            <input type="hidden" name="id" value={d.id} />
+            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-ink-700 uppercase tracking-wider">
+              <Sliders className="h-3.5 w-3.5" /> Preparación del dibujo
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              <label className="block">
+                <span className="text-[11px] text-ink-600">
+                  Umbral: dónde se corta entre grabar y no grabar
+                </span>
+                <input
+                  name="umbral"
+                  type="range"
+                  min={20}
+                  max={230}
+                  step={5}
+                  defaultValue={d.umbral}
+                  className="w-full mt-1 accent-brand-700"
+                />
+                <span className="text-[11px] text-ink-500">Ahora en {d.umbral}</span>
+              </label>
+
+              <div className="space-y-2">
+                <label className="block">
+                  <span className="text-[11px] text-ink-600">Material</span>
+                  <select name="material" className="input mt-0.5 text-xs" defaultValue={d.material}>
+                    <option value="SILVER">Plateado</option>
+                    <option value="GOLD">Dorado</option>
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="text-[11px] text-ink-600">Unidades</span>
+                  <input
+                    name="unidades"
+                    type="number"
+                    min={1}
+                    max={999}
+                    defaultValue={d.unidades}
+                    className="input mt-0.5 text-xs"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <label className="flex items-center gap-2 text-[11px] text-ink-600">
+              <input type="checkbox" name="invertido" defaultChecked={d.invertido} />
+              Invertir (el dibujo es claro sobre fondo oscuro)
+            </label>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              <BotonChico
+                icono={<Sliders className="h-3.5 w-3.5" />}
+                texto="Aplicar y ver"
+                cargando="Vectorizando…"
+              />
+              {ajuste.error && <span className="text-[11px] text-danger">{ajuste.error}</span>}
+              {ajuste.mensaje && <span className="text-[11px] text-emerald-700">{ajuste.mensaje}</span>}
+            </div>
+          </form>
+
+          {/* Al taller */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <form action={accionEnviar} className="inline-flex flex-col gap-1">
+              <input type="hidden" name="id" value={d.id} />
+              <input type="hidden" name="confirmado" value={reintentar ? '1' : '0'} />
+              <BotonEnviar lista={lista} yaGrabado={Boolean(d.grabado)} />
+            </form>
+
+            <a href={`/api/admin/llaveros/${d.id}/dxf`} className="btn-secondary text-xs" download>
+              <Download className="h-3.5 w-3.5" /> Descargar DXF
+            </a>
+
+            {d.enCola && (
+              <form action={accionCancelar}>
+                <input type="hidden" name="id" value={d.id} />
+                <BotonChico
+                  icono={<X className="h-3.5 w-3.5" />}
+                  texto="Sacar de la cola"
+                  cargando="Sacando…"
+                />
+              </form>
+            )}
+
+            {d.enCola && (
+              <span className="text-[11px] text-amber-700">Esperando en la grabadora</span>
+            )}
+            {!d.enCola && estado && !estado.conectado && (
+              <span className="text-[11px] text-ink-500">Grabadora apagada · quedará en cola</span>
+            )}
+          </div>
+
+          {envio.error && <div className="text-[11px] text-danger">{envio.error}</div>}
+          {envio.mensaje && <div className="text-[11px] text-emerald-700">{envio.mensaje}</div>}
+          {cancela.mensaje && <div className="text-[11px] text-ink-600">{cancela.mensaje}</div>}
+        </div>
+      </div>
+    </div>
+  );
+}

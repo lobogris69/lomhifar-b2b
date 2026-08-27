@@ -19,3 +19,4 @@ prisma/dev.db-journal
 # Generado por scripts/test-laser.mjs
 scripts/laser-test-out/
 tsconfig.tsbuildinfo
+.tmp/

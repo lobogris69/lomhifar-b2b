@@ -7,6 +7,7 @@ import {
   FileSpreadsheet,
   Globe,
   HelpCircle,
+  KeyRound,
   Images,
   LayoutDashboard,
   Megaphone,
@@ -78,6 +79,7 @@ export const NAV_GRUPOS: NavGroup[] = [
       { href: '/admin/laser', label: 'Grabado láser', icon: Zap, pista: 'Perfiles de material y clave del puente' },
       { href: '/admin/laser/archivo', label: 'Archivo de grabados', icon: Archive },
       { href: '/admin/stock', label: 'Stock', icon: Package, badgeKey: 'lowStock' },
+      { href: '/admin/llaveros', label: 'Llaveros', icon: KeyRound, pista: 'Prueba de grabado en metal' },
     ],
   },
   {
