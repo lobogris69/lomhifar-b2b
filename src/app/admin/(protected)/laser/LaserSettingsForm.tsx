@@ -114,7 +114,7 @@ export function LaserSettingsForm({ initialValues }: { initialValues: LaserIniti
               onChange={setFactor}
               step={0.05}
               err={state.fieldErrors?.lineHeightFactor}
-              hint="1.25 = 25% de aire entre las 2 filas"
+              hint={`${factor} = ${Math.round((factor - 1) * 100)}% de aire entre las filas`}
             />
             <NumField
               label="Resolución curvas"
@@ -206,11 +206,17 @@ export function LaserSettingsForm({ initialValues }: { initialValues: LaserIniti
           </svg>
         </div>
 
+        {/* Esto explicaba el método viejo de EZCAD, que ya no se usa, y además
+            daba a entender que el láser dispara al pulsar una tecla. No es así:
+            la máquina prepara el trabajo y se queda esperando al pedal. */}
         <div className="mt-3 text-[11px] text-ink-500 leading-relaxed">
-          <strong>Cómo se usa en tu día a día:</strong> cuando entre un pedido, ve a{' '}
-          <code className="bg-ink-100 px-1 rounded">/admin/pedidos/[id]</code>, pulsa
-          <strong> «Descargar DXF»</strong> por cada texto único → doble-click en el archivo →
-          se abre EZCAD → pulsa F2 → láser dispara.
+          <strong>Cómo se usa en tu día a día:</strong> cuando entre un pedido, entra en él
+          y pulsa <strong>«Enviar a la grabadora»</strong> por cada texto único. El trabajo
+          viaja solo al PC del taller, la máquina lo prepara y se queda esperando:{' '}
+          <strong>no graba hasta que pisas el pedal</strong>. Ahí mismo verás si la grabadora
+          está encendida y lista.
+          <br />
+          Si prefieres hacerlo a mano, «Descargar DXF» sigue estando.
         </div>
       </div>
     </div>

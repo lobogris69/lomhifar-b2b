@@ -69,16 +69,16 @@ export default async function SistemaPage() {
           de esta página:
         </p>
         <div className="mt-3 grid sm:grid-cols-2 gap-x-6 gap-y-1.5 text-xs text-emerald-900">
-          <div>âœ“ Todos los clientes (farmacias) — {counts.customers}</div>
-          <div>âœ“ Usuarios admin y sus contraseñas</div>
-          <div>âœ“ Precios, IVA, recargo, descuentos por volumen</div>
-          <div>âœ“ Modo de portes y umbral de portes gratis</div>
-          <div>âœ“ Imágenes del sitio (logo, fotos, cartel)</div>
-          <div>âœ“ Textos del sitio (todos los slots editables)</div>
-          <div>âœ“ Personas / casos de uso configurados</div>
-          <div>âœ“ Áreas de impresión del configurador</div>
-          <div>âœ“ PVP recomendado al paciente</div>
-          <div>âœ“ Niveles de stock actuales (se restauran si borras pedidos)</div>
+          <div>✓ Todos los clientes (farmacias) — {counts.customers}</div>
+          <div>✓ Usuarios admin y sus contraseñas</div>
+          <div>✓ Precios, IVA, recargo, descuentos por volumen</div>
+          <div>✓ Modo de portes y umbral de portes gratis</div>
+          <div>✓ Imágenes del sitio (logo, fotos, cartel)</div>
+          <div>✓ Textos del sitio (todos los slots editables)</div>
+          <div>✓ Personas / casos de uso configurados</div>
+          <div>✓ Áreas de impresión del configurador</div>
+          <div>✓ PVP recomendado al paciente</div>
+          <div>✓ Niveles de stock actuales (se restauran si borras pedidos)</div>
         </div>
       </div>
 

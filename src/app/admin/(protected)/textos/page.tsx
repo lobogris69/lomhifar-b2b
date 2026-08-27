@@ -22,79 +22,79 @@ interface GroupMeta {
 
 const GROUP_META: Record<string, GroupMeta> = {
   general: {
-    url: '/', icon: 'ðŸŒ', thumbnail: 'header-footer',
+    url: '/', icon: '🌐', thumbnail: 'header-footer',
     where: 'Cabecera (botones de arriba) y pie de página. Visibles en TODAS las páginas públicas.',
   },
   acceso: {
-    url: '/acceso', icon: 'ðŸ”', thumbnail: 'login',
+    url: '/acceso', icon: '🔐', thumbnail: 'login',
     where: 'Página de inicio de sesión de farmacias (cuando entran con CIF + email).',
   },
   codigo: {
-    url: '/acceso', icon: 'âœ‰ï¸', thumbnail: 'code',
+    url: '/acceso', icon: '✉️', thumbnail: 'code',
     where: 'Pantalla donde se introduce el código de 6 dígitos enviado por email.',
   },
   landing: {
-    url: '/', anchor: 'hero', icon: 'ðŸ ', thumbnail: 'hero',
+    url: '/', anchor: 'hero', icon: '🏠', thumbnail: 'hero',
     where: 'Hero de la portada: primer bloque grande con título, descripción, CTAs y foto de pulsera.',
   },
   casos: {
-    url: '/', anchor: 'casos', icon: 'ðŸ‘¥', thumbnail: 'casos',
+    url: '/', anchor: 'casos', icon: '👥', thumbnail: 'casos',
     where: 'Sección de la portada con 6 tarjetas de casos reales (Sofía, Carmen, Andrés...).',
   },
   stats: {
-    url: '/', anchor: 'stats', icon: 'ðŸ“Š', thumbnail: 'stats',
+    url: '/', anchor: 'stats', icon: '📊', thumbnail: 'stats',
     where: 'Sección oscura de la portada con cifras de mercado (diabéticos, alérgicos...).',
   },
   personas: {
-    url: '/', anchor: 'personas', icon: 'ðŸ§’', thumbnail: 'personas',
+    url: '/', anchor: 'personas', icon: '🧒', thumbnail: 'personas',
     where: 'Sección con las 8 tarjetas de perfiles (Niños, Adolescentes, Embarazadas...).',
   },
   guia: {
-    url: '/', anchor: 'guia', icon: 'ðŸ’¡', thumbnail: 'guia',
+    url: '/', anchor: 'guia', icon: '💡', thumbnail: 'guia',
     where: 'Guía para el farmacéutico — cuándo recomendar la pulsera + frase del mostrador.',
   },
   producto: {
-    url: '/', anchor: 'producto', icon: 'ðŸ“¦', thumbnail: 'producto',
+    url: '/', anchor: 'producto', icon: '📦', thumbnail: 'producto',
     where: 'Sección "El producto" con especificaciones técnicas de la pulsera.',
   },
   pvpr: {
-    url: '/', anchor: 'producto', icon: 'ðŸ’°', thumbnail: 'pvpr',
+    url: '/', anchor: 'producto', icon: '💰', thumbnail: 'pvpr',
     where: 'Tarjeta verde con el precio recomendado al paciente (dentro de "El producto").',
   },
   canal: {
-    url: '/', anchor: 'canal', icon: 'ðŸ¥', thumbnail: 'canal',
+    url: '/', anchor: 'canal', icon: '🏥', thumbnail: 'canal',
     where: 'Sección "Diseñado por y para la oficina de farmacia" — 6 ventajas del canal B2B.',
   },
   cta_final: {
-    url: '/', anchor: 'cta-final', icon: 'ðŸŽ¯', thumbnail: 'cta',
+    url: '/', anchor: 'cta-final', icon: '🎯', thumbnail: 'cta',
     where: 'Banner magenta final con CTA "¿Su farmacia trabaja ya con Lomhifar?"',
   },
   tienda: {
-    url: '/tienda', icon: 'âš™ï¸', thumbnail: 'configurador',
+    url: '/tienda', icon: '⚙️', thumbnail: 'configurador',
     where: 'Configurador de pulseras: pasos 1-4 + texto del checkbox de confirmación.',
   },
   carrito: {
-    url: '/tienda/carrito', icon: 'ðŸ›’', thumbnail: 'carrito',
+    url: '/tienda/carrito', icon: '🛒', thumbnail: 'carrito',
     where: 'Página del carrito: título, descripción, botón final y checkbox legal.',
   },
   mispedidos: {
-    url: '/tienda/pedidos', icon: 'ðŸ“‹', thumbnail: 'mispedidos',
+    url: '/tienda/pedidos', icon: '📋', thumbnail: 'mispedidos',
     where: 'Página de "Mis pedidos" (histórico del cliente).',
   },
   pedido_ok: {
-    url: '/tienda/pedidos', icon: 'âœ…', thumbnail: 'pedidook',
+    url: '/tienda/pedidos', icon: '✅', thumbnail: 'pedidook',
     where: 'Banner verde de "¡Pedido enviado!" tras confirmar un pedido.',
   },
   solicitud: {
-    url: '/solicitud', icon: 'ðŸ“', thumbnail: 'solicitud',
+    url: '/solicitud', icon: '📝', thumbnail: 'solicitud',
     where: 'Formulario de alta de farmacia nueva.',
   },
   solicitud_ok: {
-    url: '/solicitud/enviada', icon: 'âœ‰ï¸', thumbnail: 'solicitudok',
+    url: '/solicitud/enviada', icon: '✉️', thumbnail: 'solicitudok',
     where: 'Confirmación tras enviar el formulario de alta.',
   },
   cartel_callout: {
-    url: '/tienda/pedidos', icon: 'ðŸ“¢', thumbnail: 'cartel',
+    url: '/tienda/pedidos', icon: '📢', thumbnail: 'cartel',
     where: 'Banner magenta con la descarga del cartel para imprimir en el mostrador.',
   },
 };
@@ -150,7 +150,7 @@ export default async function TextsPage() {
                   <div className="flex items-start justify-between gap-2 flex-wrap">
                     <div>
                       <h2 className="text-base font-bold text-ink-900 flex items-center gap-2">
-                        <span className="text-xl">{meta?.icon ?? 'ðŸ“'}</span>
+                        <span className="text-xl">{meta?.icon ?? '📝'}</span>
                         {items[0]?.groupLabel}
                       </h2>
                       <p className="text-xs text-ink-500 mt-0.5">
@@ -177,7 +177,7 @@ export default async function TextsPage() {
                   </div>
                   {meta?.where && (
                     <p className="mt-3 text-sm text-ink-700 leading-relaxed">
-                      <span className="font-semibold text-ink-900">ðŸ“ ¿Dónde aparece?</span>{' '}
+                      <span className="font-semibold text-ink-900">📍 ¿Dónde aparece?</span>{' '}
                       {meta.where}
                     </p>
                   )}
