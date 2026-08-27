@@ -8,7 +8,7 @@ import { ensureStockBase } from '@/lib/stock';
 
 async function ensureAdmin() {
   // Bloquea VIEWER (rol de solo lectura) automáticamente.
-  return await requireAdmin({ write: true });
+  return await requireAdmin({ write: true, permission: 'CONFIG_WRITE' });
 }
 
 const adjustSchema = z.object({

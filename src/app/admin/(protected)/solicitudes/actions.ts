@@ -7,7 +7,7 @@ import { emailLayout, sendEmail } from '@/lib/email';
 
 async function ensureAdmin() {
   // Bloquea VIEWER (rol de solo lectura) automáticamente.
-  await requireAdmin({ write: true });
+  await requireAdmin({ write: true, permission: 'APPLICATIONS_WRITE' });
 }
 
 export async function approveApplication(formData: FormData) {

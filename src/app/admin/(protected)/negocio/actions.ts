@@ -30,7 +30,7 @@ export async function saveBizParams(
   _prev: SaveBizState,
   formData: FormData,
 ): Promise<SaveBizState> {
-  await requireAdmin({ write: true });
+  await requireAdmin({ write: true, permission: 'CONFIG_WRITE' });
 
   const pairs: Array<[SettingKey, string]> = [
     [SETTING_KEYS.BIZ_COST_BRACELET_BLACK_CENTS, String(eurosToCents(formData.get('costBlack')))],

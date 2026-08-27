@@ -68,11 +68,15 @@ export async function decrementStockForOrder(
     const stock = await prisma.stock.findUnique({ where: { color } });
     if (!stock) continue;
 
-    const newQty = stock.quantity - qty;
-    await prisma.$transaction([
+    // `decrement` deja la resta en manos de la base de datos. Leer la
+    // cantidad aquí y volver a escribirla parece igual, pero si entran dos
+    // pedidos a la vez los dos leen el mismo número y el segundo pisa al
+    // primero: se descuenta una vez y se sirven dos. Con `decrement` cada
+    // uno resta lo suyo pase lo que pase.
+    const actualizado = await prisma.$transaction([
       prisma.stock.update({
         where: { id: stock.id },
-        data: { quantity: newQty },
+        data: { quantity: { decrement: qty } },
       }),
       prisma.stockMovement.create({
         data: {
@@ -84,6 +88,7 @@ export async function decrementStockForOrder(
         },
       }),
     ]);
+    const newQty = actualizado[0].quantity;
 
     // Alerta si bajamos del umbral (y no hemos avisado en la última hora)
     if (newQty <= stock.minAlertLevel) {

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { crearPedidoNumerado } from '@/lib/numero-de-pedido';
 import { asegurarClienteMostrador, notaDeTalonario } from '@/lib/mostrador';
 // Los canales viven fuera: un fichero 'use server' sólo puede exportar
 // funciones asíncronas, y exportar de aquí una constante tumba la página.
@@ -191,15 +192,9 @@ export async function createManualOrder(
 
   const { items, totals } = await priceCart(cartInput);
 
-  const last = await prisma.order.findFirst({
-    orderBy: { number: 'desc' },
-    select: { number: true },
-  });
-  const nextNumber = (last?.number ?? 1000) + 1;
-
-  const order = await prisma.order.create({
+  const order = await crearPedidoNumerado((numeroDePedido) => prisma.order.create({
     data: {
-      number: nextNumber,
+      number: numeroDePedido,
       customerId: customer.id,
       pharmacyName: esTalonario ? nombreFarmacia : customer.pharmacyName,
       cif: customer.cif,
@@ -242,7 +237,7 @@ export async function createManualOrder(
       },
     },
     include: { items: true },
-  });
+  }));
 
   // Los pedidos de PRUEBA NO tocan el stock real.
   if (!isTest) {

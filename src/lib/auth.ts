@@ -3,18 +3,36 @@ import { redirect } from 'next/navigation';
 import { sealData, unsealData } from 'iron-session';
 import { prisma } from './prisma';
 import { generateToken } from './utils';
-import { canWrite } from './admin-roles';
+import { canWrite, hasPermission, PERMISSIONS } from './admin-roles';
 
 const ADMIN_COOKIE = 'lomhifar_admin';
 const CUSTOMER_COOKIE = 'lomhifar_session';
 const TRUSTED_DEVICE_COOKIE = 'lomhifar_trusted_device';
 
-const SESSION_SECRET =
-  process.env.SESSION_SECRET ||
-  'INSECURE-DEV-ONLY-SESSION-SECRET-CHANGE-ME-PLEASE-32CHARS';
+/**
+ * Secreto de reserva para trabajar en local. Está escrito aquí, o sea que
+ * está en el repositorio: si se acabara usando en producción, cualquiera que
+ * viese el código podría fabricarse una cookie de administrador. La
+ * comprobación de longitud que había no lo pillaba, porque esta cadena mide
+ * más de 32 caracteres y pasaba el filtro tan tranquila.
+ */
+const SECRETO_DE_DESARROLLO = 'INSECURE-DEV-ONLY-SESSION-SECRET-CHANGE-ME-PLEASE-32CHARS';
+
+const SESSION_SECRET = process.env.SESSION_SECRET || SECRETO_DE_DESARROLLO;
 
 if (SESSION_SECRET.length < 32 && process.env.NODE_ENV === 'production') {
   throw new Error('SESSION_SECRET debe tener al menos 32 caracteres en producción');
+}
+
+/**
+ * ¿Estamos firmando las sesiones con el secreto de mentira?
+ *
+ * Se enseña en Sistema/Reset. No se corta la aplicación aquí a propósito: si
+ * ya estuviera corriendo así, cortar dejaría la web caída sin avisar a nadie.
+ * Mejor decirlo bien grande y que se arregle poniendo la variable.
+ */
+export function usandoSecretoDeDesarrollo(): boolean {
+  return SESSION_SECRET === SECRETO_DE_DESARROLLO;
 }
 
 const ADMIN_TTL = 60 * 60 * 8; // 8 horas
@@ -91,24 +109,38 @@ export function destroyAdminSession() {
 export const READ_ONLY_ERROR =
   'Tu cuenta es de solo lectura (Supervisor). No puedes realizar modificaciones. Si necesitas hacer cambios, contacta con un administrador.';
 
+export const NO_PERMISSION_ERROR =
+  'Tu cuenta no tiene permiso para esta operación. Si necesitas hacerla, contacta con un administrador.';
+
 /**
  * Helper centralizado para usar en TODAS las server actions del admin.
  *
  *  - Si no hay sesión → redirige a /admin/login
  *  - Si `opts.write === true` y el rol es VIEWER → lanza READ_ONLY_ERROR
+ *  - Si `opts.permission` no lo tiene el rol → lanza NO_PERMISSION_ERROR
  *  - Devuelve la sesión para que el caller pueda usar email, role, etc.
+ *
+ * OJO con `write` a secas: solo frena al VIEWER. Un gestor de pedidos pasa
+ * ese filtro, así que en todo lo que no sean pedidos hay que decir TAMBIÉN
+ * qué permiso hace falta. Sin eso, un gestor de pedidos podía borrar
+ * farmacias o cambiar los precios llamando a la acción a mano.
  *
  * Ejemplo:
  *   export async function deleteCustomer(formData: FormData) {
- *     await requireAdmin({ write: true });   // ← bloquea VIEWER
+ *     await requireAdmin({ write: true, permission: 'CUSTOMERS_WRITE' });
  *     ...
  *   }
  */
-export async function requireAdmin(opts: { write?: boolean } = {}) {
+export async function requireAdmin(
+  opts: { write?: boolean; permission?: keyof typeof PERMISSIONS } = {},
+) {
   const session = await getAdminSession();
   if (!session) redirect('/admin/login');
   if (opts.write && !canWrite(session.role)) {
     throw new Error(READ_ONLY_ERROR);
+  }
+  if (opts.permission && !hasPermission(session.role, opts.permission)) {
+    throw new Error(NO_PERMISSION_ERROR);
   }
   return session;
 }

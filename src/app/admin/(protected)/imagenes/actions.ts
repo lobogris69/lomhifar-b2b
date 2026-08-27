@@ -18,7 +18,7 @@ export async function uploadSiteImage(
   formData: FormData,
 ): Promise<UploadImageState> {
   // Bloquea VIEWER (rol de solo lectura) automáticamente.
-  const session = await requireAdmin({ write: true });
+  const session = await requireAdmin({ write: true, permission: 'ASSETS_WRITE' });
 
   const slot = String(formData.get('slot') ?? '');
   if (!SLOT_NAMES.includes(slot)) return { error: 'Slot no válido', slot };
@@ -71,7 +71,7 @@ export async function uploadSiteImage(
 
 export async function deleteSiteImage(formData: FormData) {
   // Bloquea VIEWER (rol de solo lectura) automáticamente.
-  await requireAdmin({ write: true });
+  await requireAdmin({ write: true, permission: 'ASSETS_WRITE' });
   const slot = String(formData.get('slot') ?? '');
   if (!SLOT_NAMES.includes(slot)) return;
   await prisma.siteImage.deleteMany({ where: { slot } });

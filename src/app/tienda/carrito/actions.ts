@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { crearPedidoNumerado } from '@/lib/numero-de-pedido';
 import { getCustomerSession } from '@/lib/auth';
 import { clearCart, readCart, removeCartItem, writeCart } from '@/lib/cart';
 import { priceCart } from '@/lib/pricing';
@@ -72,19 +73,12 @@ export async function placeOrder(
 
   const customer = session.customer;
 
-  // Numerar el pedido manualmente (compatible con SQLite + PostgreSQL)
-  const last = await prisma.order.findFirst({
-    orderBy: { number: 'desc' },
-    select: { number: true },
-  });
-  const nextNumber = (last?.number ?? 1000) + 1;
-
   // Decrementa stock antes del email para que cualquier alerta llegue
   // como parte de la transacción del pedido.
 
-  const order = await prisma.order.create({
+  const order = await crearPedidoNumerado((numeroDePedido) => prisma.order.create({
     data: {
-      number: nextNumber,
+      number: numeroDePedido,
       customerId: customer.id,
       pharmacyName: customer.pharmacyName,
       cif: customer.cif,
@@ -119,7 +113,7 @@ export async function placeOrder(
       },
     },
     include: { items: true },
-  });
+  }));
 
   // Decrementar stock + posible email de alerta al admin
   await decrementStockForOrder(

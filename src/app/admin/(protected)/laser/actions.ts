@@ -26,7 +26,7 @@ export async function saveLaserSettings(
   _prev: SaveLaserState,
   formData: FormData,
 ): Promise<SaveLaserState> {
-  await requireAdmin({ write: true });
+  await requireAdmin({ write: true, permission: 'CONFIG_WRITE' });
 
   const parse = (name: string, min: number, max: number): { ok: true; v: number } | { ok: false; err: string } => {
     const raw = String(formData.get(name) ?? '').replace(',', '.').trim();
@@ -99,7 +99,7 @@ export async function saveLaserProfilesAction(
   _prev: SaveProfilesState,
   formData: FormData,
 ): Promise<SaveProfilesState> {
-  await requireAdmin({ write: true });
+  await requireAdmin({ write: true, permission: 'CONFIG_WRITE' });
 
   const count = Number(formData.get('count') ?? 0);
   if (!Number.isFinite(count) || count < 1) {
@@ -181,7 +181,7 @@ export interface ClaveState {
  * acceso hasta que se le copie la nueva. Se avisa de eso en la pantalla.
  */
 export async function regenerarClaveDelPuente(): Promise<ClaveState> {
-  await requireAdmin({ write: true });
+  await requireAdmin({ write: true, permission: 'CONFIG_WRITE' });
   try {
     const clave = await generarClaveDelPuente();
     revalidatePath('/admin/laser');

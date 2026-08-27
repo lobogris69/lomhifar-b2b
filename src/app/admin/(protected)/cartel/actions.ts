@@ -17,7 +17,7 @@ export async function uploadPoster(
   formData: FormData,
 ): Promise<UploadPosterState> {
   // Bloquea VIEWER (rol de solo lectura) automáticamente.
-  const session = await requireAdmin({ write: true });
+  const session = await requireAdmin({ write: true, permission: 'ASSETS_WRITE' });
 
   const file = formData.get('file') as File | null;
   if (!file || file.size === 0) return { error: 'Adjunte un archivo' };
@@ -53,7 +53,7 @@ export async function uploadPoster(
 
 export async function deletePoster() {
   // Bloquea VIEWER (rol de solo lectura) automáticamente.
-  await requireAdmin({ write: true });
+  await requireAdmin({ write: true, permission: 'ASSETS_WRITE' });
   await prisma.posterFile.deleteMany({});
   revalidatePath('/admin/cartel');
 }

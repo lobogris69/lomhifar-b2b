@@ -14,7 +14,7 @@ export async function savePersonas(
   formData: FormData,
 ): Promise<SavePersonasState> {
   // Bloquea VIEWER (rol de solo lectura) automáticamente.
-  await requireAdmin({ write: true });
+  await requireAdmin({ write: true, permission: 'ASSETS_WRITE' });
 
   try {
     const personas: MarketingPersona[] = [];
@@ -46,7 +46,7 @@ export async function savePersonas(
 /** Restaura los 8 valores por defecto (borra el setting custom). */
 export async function resetPersonasAction() {
   // Bloquea VIEWER (rol de solo lectura) automáticamente.
-  await requireAdmin({ write: true });
+  await requireAdmin({ write: true, permission: 'ASSETS_WRITE' });
   await setSetting(SETTING_KEYS.MARKETING_PERSONAS_JSON, '');
   revalidatePath('/admin/personas');
   revalidatePath('/', 'layout');

@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { addToCart } from '@/lib/cart';
+import { addToCart, CARRITO_LLENO } from '@/lib/cart';
 import { getCustomerSession } from '@/lib/auth';
 
 const addSchema = z.object({
@@ -46,13 +46,14 @@ export async function addBraceletToCart(
     return { fieldErrors: fe };
   }
 
-  addToCart({
+  const cabe = addToCart({
     color: parsed.data.color,
     quantity: parsed.data.quantity,
     line1: parsed.data.line1,
     line2: parsed.data.line2,
     line3: parsed.data.line3,
   });
+  if (!cabe) return { error: CARRITO_LLENO };
 
   revalidatePath('/tienda');
   revalidatePath('/tienda/carrito');

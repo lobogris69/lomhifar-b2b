@@ -3,6 +3,7 @@ import {
   Users, ClipboardList, Building2, FileSpreadsheet, ArrowRight, TrendingUp, Trophy,
 } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
+import { Alert } from '@/components/ui/Alert';
 import { formatDate, formatEuros } from '@/lib/utils';
 import { OrderStatusBadge } from '@/components/shop/OrderStatusBadge';
 import { MonthlyChart } from '@/components/admin/MonthlyChart';
@@ -11,7 +12,11 @@ import { getMonthlyOrderStats, getTopCustomers, getUnitsByColor } from '@/lib/st
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardPage({
+  searchParams,
+}: {
+  searchParams?: { sinpermiso?: string };
+}) {
   const [
     customers,
     pendingApps,
@@ -48,6 +53,14 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-10 space-y-8">
+      {/* Aquí acaba quien intenta entrar en una sección que su rol no tiene.
+          Antes esas páginas se abrían igual escribiendo la URL a mano. */}
+      {searchParams?.sinpermiso && (
+        <Alert variant="warning">
+          Esa sección no está disponible para tu tipo de cuenta. Si necesitas entrar,
+          pídele a un administrador que te cambie el rol.
+        </Alert>
+      )}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="section-title">Resumen</h1>

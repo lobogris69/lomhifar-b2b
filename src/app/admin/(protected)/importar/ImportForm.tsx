@@ -234,6 +234,11 @@ function ResultSummary({ summary }: { summary: NonNullable<ImportState['summary'
           {summary.skipped > 0 && <Stat label="Omitidos" value={summary.skipped} warning />}
         </div>
       </Alert>
+      {/* Se pidió desactivar a los ausentes y no se hizo. Hay que decirlo:
+          en silencio, el admin se queda pensando que sí se hizo. */}
+      {summary.deactivationSkipped && (
+        <Alert variant="warning">{summary.deactivationSkipped}</Alert>
+      )}
       {summary.errors.length > 0 && (
         <div className="card p-5">
           <h3 className="text-sm font-semibold text-ink-900 mb-3">Filas con errores</h3>

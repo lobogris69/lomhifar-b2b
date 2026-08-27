@@ -21,16 +21,25 @@ export async function reorderAction(formData: FormData) {
   });
   if (!order) redirect('/tienda/pedidos');
 
+  // Si el pedido que se repite no cabe entero, se para donde deje de caber
+  // y se dice cuántas líneas han entrado. Antes las de más se perdían sin
+  // que nadie se enterara.
+  let metidas = 0;
   for (const it of order.items) {
-    addToCart({
+    const cabe = addToCart({
       color: it.color,
       quantity: it.quantity,
       line1: it.line1,
       line2: it.line2,
       line3: it.line3 ?? '',
     });
+    if (!cabe) break;
+    metidas += 1;
   }
 
   revalidatePath('/tienda/carrito');
+  if (metidas < order.items.length) {
+    redirect(`/tienda/carrito?reordered=1&parcial=${metidas}&de=${order.items.length}`);
+  }
   redirect('/tienda/carrito?reordered=1');
 }

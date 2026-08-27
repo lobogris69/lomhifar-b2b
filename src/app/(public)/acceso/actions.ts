@@ -11,6 +11,11 @@ import { cookies, headers } from 'next/headers';
 const PENDING_COOKIE = 'lomhifar_pending_access';
 const CODE_TTL_MIN = 15;
 
+// Intentos fallidos que se le consienten a un código antes de quemarlo.
+// Sin esto, un código de 6 dígitos se acaba adivinando probando: son solo
+// un millón de combinaciones y nadie estaba contando los fallos.
+const INTENTOS_MAX = 5;
+
 export interface AccessFormState {
   error?: string;
   fieldErrors?: Record<string, string>;
@@ -82,6 +87,14 @@ export async function requestAccessCode(
   }
   // ------------------------------------------
 
+  // Pedir código empieza de cero: los anteriores dejan de valer, con sus
+  // intentos fallidos. Si no, quien pide un código nuevo se lleva de regalo
+  // el contador gastado del anterior y se queda fuera sin motivo.
+  await prisma.accessCode.updateMany({
+    where: { customerId: customer.id, consumedAt: null },
+    data: { consumedAt: new Date() },
+  });
+
   const code = generateCode(6);
   const expiresAt = new Date(Date.now() + CODE_TTL_MIN * 60 * 1000);
 
@@ -146,6 +159,19 @@ export async function verifyAccessCode(
     return { error: 'La sesión de acceso ha expirado. Vuelva a solicitar el código.' };
   }
 
+  // El campo `attempts` ya existía y se incrementaba, pero no lo leía nadie:
+  // se podía probar un código detrás de otro indefinidamente.
+  const ultimo = await prisma.accessCode.findFirst({
+    where: { customerId },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  if (ultimo && ultimo.attempts >= INTENTOS_MAX) {
+    return {
+      error: 'Demasiados intentos fallidos. Pide un código nuevo desde el principio.',
+    };
+  }
+
   const codeRow = await prisma.accessCode.findFirst({
     where: {
       customerId,
@@ -157,18 +183,18 @@ export async function verifyAccessCode(
   });
 
   if (!codeRow) {
-    // marcar intentos en el código más reciente
-    const last = await prisma.accessCode.findFirst({
-      where: { customerId },
-      orderBy: { createdAt: 'desc' },
-    });
-    if (last) {
+    if (ultimo) {
       await prisma.accessCode.update({
-        where: { id: last.id },
+        where: { id: ultimo.id },
         data: { attempts: { increment: 1 } },
       });
     }
-    return { error: 'Código no válido o expirado.' };
+    const quedan = ultimo ? INTENTOS_MAX - (ultimo.attempts + 1) : INTENTOS_MAX;
+    return {
+      error: quedan > 0
+        ? `Código no válido o expirado. Te quedan ${quedan} ${quedan === 1 ? 'intento' : 'intentos'}.`
+        : 'Código no válido. Se han agotado los intentos: pide un código nuevo.',
+    };
   }
 
   await prisma.accessCode.update({
@@ -193,6 +219,13 @@ export async function resendAccessCode(): Promise<{ ok: boolean; error?: string 
   if (!customerId) return { ok: false, error: 'Sesión expirada' };
   const customer = await prisma.customer.findUnique({ where: { id: customerId } });
   if (!customer) return { ok: false, error: 'Cliente no encontrado' };
+
+  // Un código nuevo invalida los anteriores. Si no, se van acumulando
+  // códigos válidos a la vez y cada reenvío hace más fácil acertar.
+  await prisma.accessCode.updateMany({
+    where: { customerId, consumedAt: null },
+    data: { consumedAt: new Date() },
+  });
 
   const code = generateCode(6);
   const expiresAt = new Date(Date.now() + CODE_TTL_MIN * 60 * 1000);

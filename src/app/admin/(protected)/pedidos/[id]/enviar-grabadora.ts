@@ -14,6 +14,8 @@ export interface EnviarState {
   ok?: boolean;
   error?: string;
   mensaje?: string;
+  /** Este grabado ya se hizo: hay que confirmar antes de repetirlo. */
+  repetir?: boolean;
 }
 
 /**
@@ -69,6 +71,33 @@ export async function enviarAGrabadora(
   });
   if (yaEnCola) {
     return { ok: true, mensaje: 'Ese grabado ya estaba esperando en la grabadora.' };
+  }
+
+  // Repetir un grabado es normal —salió mal, o hacen falta más unidades— y
+  // por eso no se bloquea. Pero tiene que ser a propósito: enviarlo otra vez
+  // sin más gasta una pulsera, y una pulsera grabada no se puede desgrabar.
+  if (String(formData.get('confirmado') ?? '') !== '1') {
+    const yaGrabado = await prisma.laserFile.findFirst({
+      where: {
+        orderId: order.id,
+        linesJoined: eng.lines.join(' · '),
+        color: eng.color,
+        engravedAt: { not: null },
+      },
+      orderBy: { engravedAt: 'desc' },
+      select: { engravedAt: true },
+    });
+    if (yaGrabado?.engravedAt) {
+      const cuando = yaGrabado.engravedAt.toLocaleDateString('es-ES', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid',
+      });
+      return {
+        repetir: true,
+        mensaje: `Este grabado ya se hizo el ${cuando}. Si lo envías otra vez se grabará ` +
+          'otra pulsera.',
+      };
+    }
   }
 
   let dxf: string;

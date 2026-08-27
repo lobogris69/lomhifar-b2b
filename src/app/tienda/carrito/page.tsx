@@ -17,7 +17,7 @@ export const metadata = { title: 'Carrito · Lomhifar' };
 export default async function CartPage({
   searchParams,
 }: {
-  searchParams: { added?: string; reordered?: string };
+  searchParams: { added?: string; reordered?: string; parcial?: string; de?: string };
 }) {
   const cart = readCart();
   const [{ items, totals }, settings, t, photoBlackMeta, photoRedMeta] = await Promise.all([
@@ -72,10 +72,17 @@ export default async function CartPage({
           Pulsera añadida al carrito. Revise los datos antes de confirmar el pedido.
         </Alert>
       )}
-      {searchParams.reordered && (
+      {searchParams.reordered && !searchParams.parcial && (
         <Alert variant="success" className="mb-6">
           Hemos añadido al carrito todas las pulseras de su pedido anterior. Puede modificar
           cantidades o texto antes de confirmar.
+        </Alert>
+      )}
+      {searchParams.parcial && (
+        <Alert variant="warning" className="mb-6">
+          Hemos añadido {searchParams.parcial} de las {searchParams.de} líneas de su pedido
+          anterior: el carrito no admite más. Confirme este pedido y repita la operación para
+          añadir el resto.
         </Alert>
       )}
 

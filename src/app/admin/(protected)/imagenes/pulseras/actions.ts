@@ -14,7 +14,7 @@ export async function saveBraceletAreas(
   formData: FormData,
 ): Promise<SaveAreaState> {
   // Bloquea VIEWER (rol de solo lectura) automáticamente.
-  await requireAdmin({ write: true });
+  await requireAdmin({ write: true, permission: 'ASSETS_WRITE' });
 
   try {
     const black = readArea(formData, 'black');

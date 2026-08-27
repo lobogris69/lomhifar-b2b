@@ -1,6 +1,6 @@
 ﻿import { redirect } from 'next/navigation';
 import { Wrench, Shield, AlertTriangle } from 'lucide-react';
-import { getAdminSession } from '@/lib/auth';
+import { getAdminSession, usandoSecretoDeDesarrollo } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Alert } from '@/components/ui/Alert';
 import { ResetCard } from './ResetCard';
@@ -57,6 +57,29 @@ export default async function SistemaPage() {
           </p>
         </div>
       </div>
+
+      {/* Las sesiones del panel van firmadas con SESSION_SECRET. Si esa
+          variable no está puesta en el servidor, se usa la de desarrollo,
+          que está escrita en el propio código: cualquiera que lo lea puede
+          fabricarse una sesión de administrador. */}
+      {usandoSecretoDeDesarrollo() && (
+        <div className="card p-6 mb-6 border-l-4 border-red-600 bg-red-50/50">
+          <h2 className="text-base font-bold text-red-900 flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            Falta la variable SESSION_SECRET en el servidor
+          </h2>
+          <p className="text-sm text-red-900/85 mt-2 leading-relaxed">
+            Las sesiones de administrador se están firmando con la clave de pruebas que
+            viene escrita en el código. Cualquiera que tenga acceso al código podría
+            entrar en el panel sin contraseña.
+          </p>
+          <p className="text-sm text-red-900/85 mt-2 leading-relaxed">
+            Arréglalo en Railway → Variables: añade <code className="bg-white/70 px-1 rounded">SESSION_SECRET</code>{' '}
+            con un texto largo y aleatorio (40 caracteres o más) y vuelve a desplegar.
+            Al hacerlo se cerrarán las sesiones abiertas y habrá que entrar de nuevo.
+          </p>
+        </div>
+      )}
 
       {/* Aviso muy visible: qué se conserva */}
       <div className="card p-6 mb-6 border-l-4 border-emerald-500 bg-emerald-50/40">

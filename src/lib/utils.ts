@@ -49,12 +49,26 @@ export function normalizeEmail(email: string): string {
 }
 
 export function generateCode(length = 6): string {
-  // Solo dígitos para fácil escritura
-  let out = '';
-  for (let i = 0; i < length; i += 1) {
-    out += Math.floor(Math.random() * 10).toString();
+  // Solo dígitos, para que sea fácil de teclear al dictado por teléfono.
+  //
+  // Con Math.random() la secuencia es predecible a partir de unos cuantos
+  // códigos observados, y esto es lo único que protege la cuenta de una
+  // farmacia. Mismo generador que los tokens de sesión.
+  //
+  // El módulo 10 sobre 0-255 favorecería un poco los dígitos bajos; se
+  // descartan los valores que sobran para que los diez salgan igual.
+  const out: string[] = [];
+  const buf = new Uint8Array(length * 2);
+  while (out.length < length) {
+    crypto.getRandomValues(buf);
+    for (const b of buf) {
+      if (b < 250) {
+        out.push(String(b % 10));
+        if (out.length === length) break;
+      }
+    }
   }
-  return out;
+  return out.join('');
 }
 
 export function generateToken(): string {

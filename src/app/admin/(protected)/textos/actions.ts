@@ -6,7 +6,7 @@ import { resetSiteText, setSiteText, TEXT_SLOTS } from '@/lib/site-texts';
 
 async function ensureAdmin() {
   // Bloquea VIEWER (rol de solo lectura) automáticamente.
-  await requireAdmin({ write: true });
+  await requireAdmin({ write: true, permission: 'ASSETS_WRITE' });
 }
 
 export interface UpdateTextState {

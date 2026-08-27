@@ -13,6 +13,8 @@ export interface ImportState {
     created: number;
     updated: number;
     deactivated: number;
+    /** Por qué no se desactivó a nadie, si se pidió y no se hizo. */
+    deactivationSkipped?: string;
     skipped: number;
     elapsedMs: number;
     errors: { row: number; cif: string; msg: string }[];
@@ -26,7 +28,7 @@ export async function previewImport(
   formData: FormData,
 ): Promise<ImportState> {
   // Bloquea VIEWER (rol de solo lectura) automáticamente.
-  await requireAdmin({ write: true });
+  await requireAdmin({ write: true, permission: 'CUSTOMERS_WRITE' });
 
   const file = formData.get('file') as File | null;
   if (!file || file.size === 0) return { error: 'Adjunte un archivo Excel' };
@@ -58,7 +60,7 @@ export async function commitImport(
 ): Promise<ImportState> {
   const t0 = Date.now();
   // Bloquea VIEWER (rol de solo lectura) automáticamente.
-  await requireAdmin({ write: true });
+  await requireAdmin({ write: true, permission: 'CUSTOMERS_WRITE' });
 
   const file = formData.get('file') as File | null;
   if (!file || file.size === 0) {
@@ -220,17 +222,38 @@ export async function commitImport(
   }
 
   // 7) Desactivar ausentes si se pidió
+  //
+  // «Ausente» tiene que significar «no viene en el fichero», y antes
+  // significaba «no viene entre las filas que pudimos leer». Una farmacia con
+  // el email mal escrito salía de la lista y se quedaba sin acceso a la web
+  // aunque estuviera en el Excel. Aquí se cuenta el CIF de TODAS las filas,
+  // buenas y malas.
+  //
+  // Y si el fichero no trae ninguna fila aprovechable —columnas cambiadas,
+  // fichero equivocado— no se desactiva nada: `notIn: []` casa con todo y
+  // dejaría a la cartera entera sin acceso de una tacada.
   let deactivated = 0;
+  let deactivationSkipped: string | undefined;
   if (deactivateMissing) {
-    const r = await prisma.customer.updateMany({
-      where: {
-        source: 'EXCEL',
-        cif: { notIn: allCifs },
-        active: true,
-      },
-      data: { active: false },
-    });
-    deactivated = r.count;
+    const cifsDelFichero = Array.from(
+      new Set(rows.map((r) => r.cif).filter((c): c is string => Boolean(c))),
+    );
+
+    if (uniqueRows.length === 0) {
+      deactivationSkipped =
+        'No se ha desactivado a nadie: el archivo no traía ninguna fila aprovechable. ' +
+        'Revisa que sea el Excel correcto.';
+    } else {
+      const r = await prisma.customer.updateMany({
+        where: {
+          source: 'EXCEL',
+          cif: { notIn: cifsDelFichero },
+          active: true,
+        },
+        data: { active: false },
+      });
+      deactivated = r.count;
+    }
   }
 
   revalidatePath('/admin/clientes');
@@ -243,6 +266,7 @@ export async function commitImport(
       created,
       updated,
       deactivated,
+      deactivationSkipped,
       skipped,
       elapsedMs: Date.now() - t0,
       errors: errors.slice(0, 100),  // mostrar máx 100 para no saturar la respuesta

@@ -28,7 +28,7 @@ export async function sendTestEmailAction(
   _prev: EmailTestState,
   _formData: FormData,
 ): Promise<EmailTestState> {
-  const session = await requireAdmin({ write: true });
+  const session = await requireAdmin({ write: true, permission: 'CONFIG_WRITE' });
 
   if (!isEmailConfigured()) {
     return {
@@ -57,7 +57,7 @@ export async function saveSettings(
   formData: FormData,
 ): Promise<SaveSettingsState> {
   // Bloquea VIEWER (rol de solo lectura) automáticamente.
-  await requireAdmin({ write: true });
+  await requireAdmin({ write: true, permission: 'CONFIG_WRITE' });
 
   const raw = {
     priceBlackCents: euroToCents(formData.get('priceBlackEuros')),

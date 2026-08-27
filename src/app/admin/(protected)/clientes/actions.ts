@@ -9,7 +9,7 @@ import { isValidSpanishTaxId } from '@/lib/validations';
 
 async function ensureAdmin() {
   // Bloquea VIEWER (rol de solo lectura) automáticamente.
-  await requireAdmin({ write: true });
+  await requireAdmin({ write: true, permission: 'CUSTOMERS_WRITE' });
 }
 
 export async function toggleCustomerActive(formData: FormData) {
