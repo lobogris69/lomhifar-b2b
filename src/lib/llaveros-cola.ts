@@ -1,4 +1,5 @@
 import { prisma } from './prisma';
+import { MAX_INTENTOS } from './laser-cola';
 import {
   esMaterial,
   MATERIALES,
@@ -98,14 +99,28 @@ export async function llaveroLlevado(id: string): Promise<void> {
 export async function llaveroGrabado(id: string): Promise<void> {
   await prisma.keyringJob.update({
     where: { id: idReal(id) },
-    data: { engravedAt: new Date() },
+    data: { engravedAt: new Date(), intentos: 0 },
   });
 }
 
+/**
+ * Vuelve a la cola sin grabar. Al tercer intento fallido sale de la cola, por
+ * lo mismo que en las pulseras: si nadie pisa el pedal tres veces seguidas,
+ * el trabajo se queda dando vueltas para siempre.
+ */
 export async function llaveroDevueltoALaCola(id: string): Promise<void> {
+  const real = idReal(id);
+  const t = await prisma.keyringJob.findUnique({
+    where: { id: real },
+    select: { intentos: true },
+  });
+  const intentos = (t?.intentos ?? 0) + 1;
+
   await prisma.keyringJob.update({
-    where: { id: idReal(id) },
-    data: { takenAt: null },
+    where: { id: real },
+    data: intentos >= MAX_INTENTOS
+      ? { takenAt: null, intentos, queuedAt: null, queuedBy: null }
+      : { takenAt: null, intentos },
   });
 }
 

@@ -200,7 +200,21 @@ export async function enviarLlaveroAGrabadora(
     return { error: 'Ese diseño todavía no tiene trazado. Ajusta el umbral y vuelve a prepararlo.' };
   }
   if (t.queuedAt && !t.engravedAt) {
-    return { ok: true, mensaje: 'Ese llavero ya estaba esperando en la grabadora.' };
+    // Igual que en pulseras: si el puente se lo llevó y no lo confirmó, el
+    // trabajo se quedaba invisible media hora y el botón parecía no hacer
+    // nada. Volver a mandarlo lo suelta.
+    await prisma.keyringJob.update({
+      where: { id },
+      data: { takenAt: null, intentos: 0, queuedAt: new Date(), queuedBy: session.email },
+    });
+    await apagarPuntero();
+    revalidatePath('/admin/llaveros');
+    return {
+      ok: true,
+      mensaje: t.takenAt
+        ? 'Estaba atascado en la grabadora. Lo he soltado: ya puede cogerlo.'
+        : 'Ese llavero ya estaba esperando en la grabadora.',
+    };
   }
 
   // Repetir es normal, pero tiene que ser queriendo: gasta un llavero.
@@ -216,7 +230,10 @@ export async function enviarLlaveroAGrabadora(
 
   await prisma.keyringJob.update({
     where: { id },
-    data: { queuedAt: new Date(), queuedBy: session.email, takenAt: null, engravedAt: null },
+    data: {
+      queuedAt: new Date(), queuedBy: session.email,
+      takenAt: null, engravedAt: null, intentos: 0,
+    },
   });
 
   // El puntero se apaga al mandar el trabajo: el puente no puede pasear la

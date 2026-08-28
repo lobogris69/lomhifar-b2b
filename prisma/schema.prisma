@@ -407,6 +407,7 @@ model LaserFile {
   queuedAt   DateTime? // se pulsó «Enviar a la grabadora»
   queuedBy   String? // email del admin que lo mandó
   takenAt    DateTime? // el puente se lo ha llevado (evita duplicados)
+  intentos   Int       @default(0) // intentos fallidos seguidos; a 3 sale de la cola
   engravedAt DateTime? // el puente confirma que está grabado
 
   @@index([dateFolder])
@@ -454,6 +455,7 @@ model KeyringJob {
   queuedAt   DateTime?
   queuedBy   String?
   takenAt    DateTime?
+  intentos   Int       @default(0) // intentos fallidos seguidos
   engravedAt DateTime?
 
   @@index([createdAt])

@@ -28,7 +28,7 @@ export default async function LlaverosPage() {
         // enseña veinte; metido en el HTML tumbaba el navegador. Se pide
         // aparte, como imagen, desde /api/admin/llaveros/[id]/vista
         contornos: true, size: true,
-        createdAt: true, queuedAt: true, engravedAt: true,
+        createdAt: true, queuedAt: true, engravedAt: true, intentos: true,
       },
     }),
     // El recuento va por unidades, no por diseños: lo que gasta llaveros es
@@ -56,6 +56,7 @@ export default async function LlaverosPage() {
     tieneVista: d.size > 0,
     creado: formatDate(d.createdAt),
     enCola: Boolean(d.queuedAt && !d.engravedAt),
+    intentos: d.intentos,
     grabado: d.engravedAt ? formatDate(d.engravedAt) : null,
   }));
 

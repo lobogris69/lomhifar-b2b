@@ -119,13 +119,41 @@ export async function marcarComoLlevado(id: string): Promise<void> {
 
 /** El puente confirma que está grabado. */
 export async function marcarComoGrabado(id: string): Promise<void> {
-  await prisma.laserFile.update({ where: { id }, data: { engravedAt: new Date() } });
+  await prisma.laserFile.update({
+    where: { id },
+    data: { engravedAt: new Date(), intentos: 0 },
+  });
 }
 
 /**
+ * Cuántas veces se reintenta un trabajo antes de dejarlo en paz.
+ *
+ * Sin tope se montaba un tiovivo: el trabajo se arma, nadie pisa el pedal,
+ * caduca a los diez minutos, vuelve a la cola, se arma otra vez… toda la
+ * noche. Al llegar por la mañana llevaba tres vueltas y la máquina estaba
+ * ocupada con un grabado que ya nadie quería.
+ */
+export const MAX_INTENTOS = 3;
+
+/**
  * Devuelve un trabajo a la cola sin grabar (el puente falló o se canceló).
- * Se limpia `takenAt` para que lo coja el siguiente intento sin esperar.
+ *
+ * Se limpia `takenAt` para que lo coja el siguiente intento sin esperar. Pero
+ * a partir del tercer intento fallido SALE de la cola: si tres veces seguidas
+ * nadie ha pisado el pedal, es que ese grabado no se quiere ahora, y hay que
+ * volver a mandarlo a mano. Queda a la vista en el pedido, con su cuenta.
  */
 export async function devolverALaCola(id: string): Promise<void> {
-  await prisma.laserFile.update({ where: { id }, data: { takenAt: null } });
+  const f = await prisma.laserFile.findUnique({
+    where: { id },
+    select: { intentos: true },
+  });
+  const intentos = (f?.intentos ?? 0) + 1;
+
+  await prisma.laserFile.update({
+    where: { id },
+    data: intentos >= MAX_INTENTOS
+      ? { takenAt: null, intentos, queuedAt: null, queuedBy: null }
+      : { takenAt: null, intentos },
+  });
 }

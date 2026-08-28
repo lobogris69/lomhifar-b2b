@@ -46,9 +46,15 @@ function Boton({ lista, repetir }: { lista: boolean; repetir: boolean }) {
 export function EnviarAGrabadora({
   orderId,
   lineIndex,
+  enCola = false,
+  intentosFallidos = 0,
 }: {
   orderId: string;
   lineIndex: number;
+  /** Está esperando en la grabadora ahora mismo. */
+  enCola?: boolean;
+  /** Salió de la cola tras fallar tantas veces. */
+  intentosFallidos?: number;
 }) {
   const [state, action] = useFormState(enviarAGrabadora, inicial);
   const estado = useEstadoGrabadora();
@@ -71,7 +77,17 @@ export function EnviarAGrabadora({
 
       <Boton lista={lista} repetir={repetir} />
 
-      {estado && !estado.conectado && !repetir && (
+      {enCola && (
+        <span className="text-[11px] text-amber-700">Esperando en la grabadora</span>
+      )}
+      {/* Si nadie pisa el pedal tres veces seguidas el trabajo sale de la
+          cola, en vez de dar vueltas toda la noche. Hay que verlo. */}
+      {!enCola && intentosFallidos > 0 && (
+        <span className="text-[11px] text-danger max-w-[220px]">
+          Salió de la cola tras {intentosFallidos} intentos sin grabarse.
+        </span>
+      )}
+      {estado && !estado.conectado && !repetir && !enCola && (
         <span className="text-[11px] text-ink-500">
           Grabadora apagada · quedará en cola
         </span>

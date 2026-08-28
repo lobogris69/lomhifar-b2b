@@ -68,10 +68,25 @@ export async function enviarAGrabadora(
       queuedAt: { not: null },
       engravedAt: null,
     },
-    select: { id: true },
+    select: { id: true, takenAt: true, intentos: true },
   });
   if (yaEnCola) {
-    return { ok: true, mensaje: 'Ese grabado ya estaba esperando en la grabadora.' };
+    // Estaba encolado. Si además el puente se lo llevó y no lo confirmó, con
+    // no hacer nada el trabajo se quedaba invisible media hora y el botón
+    // parecía roto: pulsabas y no pasaba nada. Volver a mandarlo lo suelta
+    // ahora mismo y pone la cuenta de intentos a cero.
+    await prisma.laserFile.update({
+      where: { id: yaEnCola.id },
+      data: { takenAt: null, intentos: 0, queuedAt: new Date(), queuedBy: session.email },
+    });
+    await apagarPuntero();
+    revalidatePath(`/admin/pedidos/${order.id}`);
+    return {
+      ok: true,
+      mensaje: yaEnCola.takenAt
+        ? 'Ese grabado estaba atascado en la grabadora. Lo he soltado: ya puede cogerlo.'
+        : 'Ese grabado ya estaba esperando en la grabadora.',
+    };
   }
 
   // Repetir un grabado es normal —salió mal, o hacen falta más unidades— y

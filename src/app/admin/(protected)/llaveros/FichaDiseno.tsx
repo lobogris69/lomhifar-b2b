@@ -29,6 +29,7 @@ export interface DisenoLite {
   tieneVista: boolean;
   creado: string;
   enCola: boolean;
+  intentos: number;
   grabado: string | null;
 }
 
@@ -289,7 +290,18 @@ export function FichaDiseno({ d }: { d: DisenoLite }) {
             )}
 
             {d.enCola && (
-              <span className="text-[11px] text-amber-700">Esperando en la grabadora</span>
+              <span className="text-[11px] text-amber-700">
+                Esperando en la grabadora
+                {d.intentos > 0 && ` · intento ${d.intentos + 1}`}
+              </span>
+            )}
+            {/* Si nadie pisa el pedal tres veces seguidas, el trabajo sale de
+                la cola en vez de dar vueltas para siempre. Hay que decirlo. */}
+            {!d.enCola && !d.grabado && d.intentos > 0 && (
+              <span className="text-[11px] text-danger">
+                Salió de la cola tras {d.intentos} intentos sin grabarse. Vuelve a enviarlo
+                cuando estés en la máquina.
+              </span>
             )}
             {!d.enCola && estado && !estado.conectado && (
               <span className="text-[11px] text-ink-500">Grabadora apagada · quedará en cola</span>

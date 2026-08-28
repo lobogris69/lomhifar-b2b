@@ -23,14 +23,29 @@ export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Pedido · Admin Lomhifar' };
 
 export default async function AdminOrderPage({ params }: { params: { id: string } }) {
-  const [order, mrEnabled] = await Promise.all([
+  const [order, mrEnabled, enviados] = await Promise.all([
     prisma.order.findUnique({
       where: { id: params.id },
       include: { items: true, customer: true },
     }),
     isMondialRelayEnabled(),
+    // En qué estado está cada grabado de este pedido dentro de la grabadora.
+    // Sin esto, un grabado que salió de la cola por intentos fallidos no se
+    // distinguía de uno que nunca se mandó.
+    prisma.laserFile.findMany({
+      where: { orderId: params.id },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        linesJoined: true, color: true,
+        queuedAt: true, takenAt: true, engravedAt: true, intentos: true,
+      },
+    }),
   ]);
   if (!order) notFound();
+
+  /** El envío más reciente de un grabado concreto, si lo hubo. */
+  const estadoDelGrabado = (lineas: string[], color: string) =>
+    enviados.find((e) => e.linesJoined === lineas.join(' · ') && e.color === color);
 
   return (
     <div className="p-4 sm:p-6 lg:p-10 max-w-5xl">
@@ -259,7 +274,20 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
                                 {/* Lo habitual: va solo a la máquina y allí
                                     espera al pedal. La descarga manual se
                                     queda como alternativa. */}
-                                <EnviarAGrabadora orderId={order.id} lineIndex={idx} />
+                                <EnviarAGrabadora
+                                  orderId={order.id}
+                                  lineIndex={idx}
+                                  enCola={(() => {
+                                    const st = estadoDelGrabado(e.lines, e.color);
+                                    return Boolean(st?.queuedAt && !st.engravedAt);
+                                  })()}
+                                  intentosFallidos={(() => {
+                                    const st = estadoDelGrabado(e.lines, e.color);
+                                    return st && !st.queuedAt && !st.engravedAt
+                                      ? st.intentos
+                                      : 0;
+                                  })()}
+                                />
                                 <a
                                   href={dxfUrl}
                                   className="btn-secondary text-xs"
