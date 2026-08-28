@@ -92,7 +92,7 @@ export default async function CartPage({
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-4 min-w-0">
           {items.map((it, idx) => {
             const cartItem = cart[idx];
             const isBlack = it.color === 'BLACK';
@@ -173,7 +173,7 @@ export default async function CartPage({
                       )}
                     </dl>
 
-                    <div className="mt-auto pt-4 flex items-end justify-between gap-3">
+                    <div className="mt-auto pt-4 flex items-end justify-between gap-3 flex-wrap">
                       <form action={updateQtyAction} className="flex items-center gap-2">
                         <input type="hidden" name="id" value={cartItem.id} />
                         <label className="text-xs text-ink-500" htmlFor={`qty-${cartItem.id}`}>
@@ -218,7 +218,7 @@ export default async function CartPage({
           </div>
         </div>
 
-        <aside className="lg:col-span-1">
+        <aside className="lg:col-span-1 min-w-0">
           <div className="card p-6 sticky top-32 space-y-4">
             <h2 className="text-base font-semibold text-ink-900">Resumen del pedido</h2>
             <dl className="text-sm space-y-2">
