@@ -1,7 +1,7 @@
 'use client';
 
 import { useFormState, useFormStatus } from 'react-dom';
-import { Crosshair, Loader2, PowerOff } from 'lucide-react';
+import { Crosshair, Loader2, Plus, PowerOff } from 'lucide-react';
 import { useEstadoGrabadora } from './estado-grabadora';
 import { mostrarReferencia, type PunteroState } from './puntero-actions';
 
@@ -70,8 +70,8 @@ export function BotonReferencia({
       />
       <Boton
         modo="centro"
-        texto="Solo el centro"
-        icono={<Crosshair className="h-3.5 w-3.5" />}
+        texto="Cruz del centro"
+        icono={<Plus className="h-3.5 w-3.5" />}
         activo={state.modo === 'centro'}
         desactivado={apagada}
       />

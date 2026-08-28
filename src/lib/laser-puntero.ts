@@ -11,11 +11,18 @@ import { getSetting, setSetting, SETTING_KEYS } from './settings';
  * que se vea dónde va a caer el grabado.
  */
 
+/**
+ * Cada opción enseña UNA cosa y solo una.
+ *
+ * El recuadro del llavero llevaba la cruz dibujada dentro, y el botón decía
+ * «recuadro»: confundía. Ahora el recuadro es el recuadro y la cruz va
+ * aparte, y se elige.
+ */
 export const REFERENCIAS = {
   apagar: { etiqueta: 'Apagar el puntero', fichero: null },
-  centro: { etiqueta: 'Centro del campo', fichero: 'cruz_centro.dxf' },
-  pulsera: { etiqueta: 'Placa de pulsera (24 × 10)', fichero: 'rect24x10.dxf' },
-  llavero: { etiqueta: 'Llavero (30 × 20)', fichero: 'rect30x20.dxf' },
+  centro: { etiqueta: 'Cruz del centro', fichero: 'cruz_centro.dxf' },
+  pulsera: { etiqueta: 'Recuadro de la placa (24 × 10)', fichero: 'rect24x10.dxf' },
+  llavero: { etiqueta: 'Recuadro del llavero (30 × 20)', fichero: 'rect30x20.dxf' },
 } as const;
 
 export type Referencia = keyof typeof REFERENCIAS;
