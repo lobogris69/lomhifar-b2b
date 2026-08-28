@@ -28,6 +28,13 @@ export default function ErrorDeLlaveros({
     console.error('[llaveros]', error);
   }, [error]);
 
+  // Estos errores no son fallos del programa: son el navegador con el codigo
+  // viejo hablando con el servidor nuevo, despues de publicar un cambio. El
+  // mensaje tecnico no ayuda a nadie; lo que hay que hacer es recargar.
+  const mensaje = error.message || '';
+  const esVersionVieja = /is not a function|ChunkLoadError|Loading chunk|Failed to fetch|dynamically imported module/i
+    .test(mensaje);
+
   const detalle = [
     error.message || 'sin mensaje',
     error.digest ? `digest: ${error.digest}` : '',
@@ -43,24 +50,36 @@ export default function ErrorDeLlaveros({
           </span>
           <div>
             <h1 className="text-base font-bold text-ink-900">
-              Se ha roto la pantalla de llaveros
+              {esVersionVieja
+                ? 'Esta pestaña tiene una versión antigua'
+                : 'Se ha roto la pantalla de llaveros'}
             </h1>
             <p className="text-sm text-ink-600 mt-1">
-              Lo que hayas subido está guardado: esto ha fallado al dibujar, no al
-              guardar. Prueba a recargar; si sigue, copia el detalle de aquí abajo.
+              {esVersionVieja
+                ? 'Se ha publicado un cambio mientras la tenías abierta. No se ha '
+                  + 'perdido nada: recarga y sigue donde estabas.'
+                : 'Lo que hayas subido está guardado: esto ha fallado al dibujar, no al '
+                  + 'guardar. Prueba a recargar; si sigue, copia el detalle de aquí abajo.'}
             </p>
           </div>
         </div>
 
-        <pre className="text-[11px] bg-ink-950 text-ink-100 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-words max-h-64">
-          {detalle}
-        </pre>
+        {!esVersionVieja && (
+          <pre className="text-[11px] bg-ink-950 text-ink-100 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap break-words max-h-64">
+            {detalle}
+          </pre>
+        )}
 
         <div className="flex items-center gap-2 flex-wrap">
-          <button type="button" onClick={reset} className="btn-primary text-sm">
-            <RotateCw className="h-4 w-4" /> Volver a intentarlo
-          </button>
           <button
+            type="button"
+            onClick={() => (esVersionVieja ? window.location.reload() : reset())}
+            className="btn-primary text-sm"
+          >
+            <RotateCw className="h-4 w-4" />
+            {esVersionVieja ? 'Recargar' : 'Volver a intentarlo'}
+          </button>
+          {!esVersionVieja && <button
             type="button"
             className="btn-secondary text-sm"
             onClick={async () => {
@@ -74,7 +93,7 @@ export default function ErrorDeLlaveros({
             }}
           >
             <Copy className="h-4 w-4" /> {copiado ? 'Copiado' : 'Copiar el detalle'}
-          </button>
+          </button>}
           <a href="/admin/llaveros" className="btn-ghost text-sm">Recargar la pestaña</a>
         </div>
       </div>

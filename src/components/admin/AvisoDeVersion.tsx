@@ -12,10 +12,12 @@ import { RefreshCw } from 'lucide-react';
  * del servidor. Es de las cosas que más tiempo hacen perder, porque no parece
  * lo que es.
  *
- * Se pregunta cada minuto, y solo cuando la pestaña está a la vista: no tiene
- * sentido consultar en segundo plano una pestaña que nadie mira.
+ * Se pregunta cada 20 segundos, y solo cuando la pestaña está a la vista: no
+ * tiene sentido consultar en segundo plano una pestaña que nadie mira.
+ * Cada minuto se quedaba corto — dio tiempo a pulsar un botón entre dos
+ * consultas y llevarse el error.
  */
-const CADA = 60_000;
+const CADA = 20_000;
 
 export function AvisoDeVersion() {
   const [hayOtra, setHayOtra] = useState(false);
