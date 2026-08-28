@@ -148,11 +148,14 @@ export function AjustesLlavero({
                     />
                     <span>
                       Rellenar el dibujo (no solo el contorno)
-                      {/* Aprendido en metal: con un dibujo con detalle, el
-                          relleno lo convierte en una mancha. */}
-                      <span className="block text-[10px] text-amber-700 leading-tight mt-0.5">
-                        Solo para siluetas macizas. En un dibujo con detalle rellena también
-                        los huecos de dentro y sale una mancha negra.
+                      {/* En metal, sin relleno el laser dibuja el BORDE de cada
+                          trazo —dos rayitas de nada— y en dorado no se ve. Con
+                          relleno pinta el trazo entero, que es el dibujo de
+                          verdad. El 28/08/2026 esto fue la diferencia entre
+                          «apenas graba» y una marca legible. */}
+                      <span className="block text-[10px] text-emerald-700 leading-tight mt-0.5">
+                        Recomendado en metal, y sobre todo en dorado: sin relleno el láser
+                        solo repasa el borde de cada trazo y la marca casi no se ve.
                       </span>
                     </span>
                   </label>

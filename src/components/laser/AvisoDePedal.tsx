@@ -1,7 +1,7 @@
 'use client';
 
 import { useFormState, useFormStatus } from 'react-dom';
-import { Footprints, Loader2, XCircle, Zap } from 'lucide-react';
+import { Footprints, Hand, Loader2, XCircle, Zap } from 'lucide-react';
 import { useEstadoGrabadora } from './estado-grabadora';
 import { cancelarLoEncolado, type CancelarState } from './cancelar-actions';
 
@@ -42,6 +42,11 @@ export function AvisoDePedal() {
 
   const armada = haciendo.startsWith('LISTO');
   const grabando = haciendo.startsWith('Grabando');
+  // Mientras encuadra, el laser dibuja un recuadro rojo MUY parecido al del
+  // boton del puntero, y el pedal todavia no se escucha. Sin avisar, se pisa,
+  // no pasa nada, y parece que la maquina falla. Va en rojo a proposito: es
+  // el unico momento en que pisar no sirve de nada.
+  const encuadrando = haciendo.startsWith('Encuadrando');
 
   // El puente manda «orden · detalle»: la primera parte dice qué hacer.
   const partes = haciendo.split(' · ');
@@ -50,19 +55,24 @@ export function AvisoDePedal() {
 
   const colores = armada
     ? 'border-emerald-500 bg-emerald-50 text-emerald-900'
-    : grabando
-      ? 'border-amber-500 bg-amber-50 text-amber-900'
-      : 'border-ink-300 bg-ink-100 text-ink-800';
+    : encuadrando
+      ? 'border-red-500 bg-red-50 text-red-900'
+      : grabando
+        ? 'border-amber-500 bg-amber-50 text-amber-900'
+        : 'border-ink-300 bg-ink-100 text-ink-800';
 
   return (
     <div className={`sticky top-0 z-30 -mx-4 sm:-mx-6 lg:-mx-10 mb-4 border-b-4 px-4 sm:px-6 lg:px-10 py-3 ${colores}`}>
       <div className="flex items-center gap-3 flex-wrap">
         <span className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white ${
-          armada ? 'bg-emerald-600' : grabando ? 'bg-amber-500' : 'bg-ink-500'
+          armada ? 'bg-emerald-600'
+            : encuadrando ? 'bg-red-600'
+              : grabando ? 'bg-amber-500' : 'bg-ink-500'
         }`}>
           {armada ? <Footprints className="h-5 w-5" />
-            : grabando ? <Zap className="h-5 w-5" />
-              : <Loader2 className="h-5 w-5 animate-spin" />}
+            : encuadrando ? <Hand className="h-5 w-5" />
+              : grabando ? <Zap className="h-5 w-5" />
+                : <Loader2 className="h-5 w-5 animate-spin" />}
         </span>
 
         <div className="min-w-0 flex-1">
@@ -71,7 +81,9 @@ export function AvisoDePedal() {
               ? (orden.includes('ENTER')
                 ? 'Lista: el pedal no responde, pulsa ENTER en la ventana del puente'
                 : 'La máquina está lista: pisa el pedal y mantenlo un segundo')
-              : grabando ? 'Grabando…' : orden}
+              : encuadrando
+                ? 'Colocando el recuadro — NO pises el pedal todavía'
+                : grabando ? 'Grabando…' : orden}
           </div>
           {detalle && <div className="text-[11px] opacity-80 truncate">{detalle}</div>}
           {cancel.mensaje && <div className="text-[11px] font-medium mt-0.5">{cancel.mensaje}</div>}
