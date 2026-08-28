@@ -98,7 +98,7 @@ export function FichaDiseno({ d }: { d: DisenoLite }) {
             // que al reajustar se vuelva a pedir y no salga la de antes.
             <object
               type="image/svg+xml"
-              data={`/api/admin/llaveros/${d.id}/vista?u=${d.umbral}&i=${d.invertido ? 1 : 0}&m=${d.material}`}
+              data={`/api/admin/llaveros/${d.id}/vista?u=${d.umbral}&i=${d.invertido ? 1 : 0}&m=${d.material}&d=${d.detalle}&n=${d.contornos}`}
               className="w-full rounded-lg border border-ink-200 overflow-hidden pointer-events-none"
               aria-label={`Trazado de ${d.nombre}`}
             >
