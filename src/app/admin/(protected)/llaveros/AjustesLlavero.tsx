@@ -61,10 +61,12 @@ export function AjustesLlavero({
   anchoMm,
   altoMm,
   perfiles,
+  encuadre,
 }: {
   anchoMm: number;
   altoMm: number;
   perfiles: PerfilLite[];
+  encuadre: boolean;
 }) {
   const [state, action] = useFormState(guardarAjustesLlavero, inicial);
   const [abierto, setAbierto] = useState(false);
@@ -103,6 +105,24 @@ export function AjustesLlavero({
               cada lado. Cambiarlo no toca los diseños ya preparados hasta que los vuelvas
               a aplicar.
             </p>
+          </section>
+
+          <section>
+            <h3 className="text-xs font-semibold text-ink-900 uppercase tracking-wider mb-2">
+              Antes de grabar
+            </h3>
+            <label className="flex items-start gap-2 text-xs text-ink-700">
+              <input type="checkbox" name="encuadre" defaultChecked={encuadre} className="mt-0.5" />
+              <span>
+                Enseñar el encuadre antes de pedir el pedal
+                <span className="block text-[10px] text-ink-500 leading-tight mt-0.5">
+                  El láser traza en rojo el rectángulo que va a ocupar ESE grabado, para
+                  colocar la pieza mirándolo. Vale tanto para pulseras como para llaveros.
+                  Si notas que el pedal responde peor, quítalo: el puntero deja la máquina
+                  más ocupada.
+                </span>
+              </span>
+            </label>
           </section>
 
           <section>

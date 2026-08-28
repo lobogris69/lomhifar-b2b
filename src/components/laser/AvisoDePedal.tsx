@@ -1,73 +1,89 @@
 'use client';
 
-import { Footprints, Loader2, Zap } from 'lucide-react';
+import { useFormState, useFormStatus } from 'react-dom';
+import { Footprints, Loader2, XCircle, Zap } from 'lucide-react';
 import { useEstadoGrabadora } from './estado-grabadora';
+import { cancelarLoEncolado, type CancelarState } from './cancelar-actions';
+
+const inicial: CancelarState = {};
+
+function BotonCancelar() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="inline-flex items-center gap-1 rounded-lg bg-white/80 px-2.5 py-1 text-xs font-semibold hover:bg-white"
+    >
+      {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <XCircle className="h-3.5 w-3.5" />}
+      {pending ? 'Cancelando…' : 'Cancelar'}
+    </button>
+  );
+}
 
 /**
  * El cartel de «ya puedes pisar el pedal».
  *
- * El puente prepara el trabajo y se queda esperando, pero eso hasta ahora solo
- * se veía en la ventana del programa del taller o en letra pequeña arriba a la
- * derecha. Si estás en el ordenador, mirando la pantalla, tienes que enterarte
- * desde la pantalla.
+ * Va FIJO arriba de la pantalla mientras hay algo entre manos. Antes estaba
+ * al principio de la página y, trabajando con un diseño del final de la
+ * lista, había que subir del todo para verlo.
  *
- * Solo aparece cuando hay algo entre manos: el resto del tiempo no ocupa sitio.
+ * El boton de Cancelar NO es un paro de emergencia y no se presenta como tal:
+ * viaja por internet y el puente pregunta cada pocos segundos. Para parar la
+ * maquina de verdad esta su interruptor. Sirve para lo corriente: diseño
+ * equivocado, o la pieza mal puesta, y no quieres que grabe al rozar el pedal.
  */
 export function AvisoDePedal() {
   const estado = useEstadoGrabadora();
+  const [cancel, accionCancelar] = useFormState(cancelarLoEncolado, inicial);
+
   const haciendo = estado?.conectado ? estado.haciendo : undefined;
   if (!haciendo) return null;
 
   const armada = haciendo.startsWith('LISTO');
   const grabando = haciendo.startsWith('Grabando');
 
-  // Del texto que manda el puente, la primera parte es la orden y el resto
-  // dice de qué trabajo se trata.
+  // El puente manda «orden · detalle»: la primera parte dice qué hacer.
   const partes = haciendo.split(' · ');
   const orden = partes[0];
   const detalle = partes.slice(1).join(' · ');
 
-  if (armada) {
-    return (
-      <div className="rounded-xl border-2 border-emerald-500 bg-emerald-50 p-4 flex items-center gap-4 animate-pulse">
-        <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white">
-          <Footprints className="h-6 w-6" />
-        </span>
-        <div className="min-w-0">
-          <div className="text-base font-bold text-emerald-900">
-            La máquina está lista: pisa el pedal
-          </div>
-          <div className="text-xs text-emerald-800/80 mt-0.5">
-            {orden.includes('ENTER')
-              ? 'El pedal no responde: pulsa ENTER en la ventana del puente.'
-              : 'Mantenlo pisado un segundo. Hasta que no lo pises no graba nada.'}
-          </div>
-          {detalle && (
-            <div className="text-[11px] text-emerald-800/70 mt-0.5 truncate">{detalle}</div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  if (grabando) {
-    return (
-      <div className="rounded-xl border-2 border-amber-500 bg-amber-50 p-4 flex items-center gap-4">
-        <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-500 text-white">
-          <Zap className="h-6 w-6" />
-        </span>
-        <div className="min-w-0">
-          <div className="text-base font-bold text-amber-900">Grabando…</div>
-          <div className="text-[11px] text-amber-800/70 mt-0.5 truncate">{detalle}</div>
-        </div>
-      </div>
-    );
-  }
+  const colores = armada
+    ? 'border-emerald-500 bg-emerald-50 text-emerald-900'
+    : grabando
+      ? 'border-amber-500 bg-amber-50 text-amber-900'
+      : 'border-ink-300 bg-ink-100 text-ink-800';
 
   return (
-    <div className="rounded-xl border border-ink-200 bg-ink-50 p-3 flex items-center gap-3">
-      <Loader2 className="h-4 w-4 animate-spin text-ink-500 shrink-0" />
-      <span className="text-sm text-ink-700 truncate">{haciendo}</span>
+    <div className={`sticky top-0 z-30 -mx-4 sm:-mx-6 lg:-mx-10 mb-4 border-b-4 px-4 sm:px-6 lg:px-10 py-3 ${colores}`}>
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white ${
+          armada ? 'bg-emerald-600' : grabando ? 'bg-amber-500' : 'bg-ink-500'
+        }`}>
+          {armada ? <Footprints className="h-5 w-5" />
+            : grabando ? <Zap className="h-5 w-5" />
+              : <Loader2 className="h-5 w-5 animate-spin" />}
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-bold">
+            {armada
+              ? (orden.includes('ENTER')
+                ? 'Lista: el pedal no responde, pulsa ENTER en la ventana del puente'
+                : 'La máquina está lista: pisa el pedal y mantenlo un segundo')
+              : grabando ? 'Grabando…' : orden}
+          </div>
+          {detalle && <div className="text-[11px] opacity-80 truncate">{detalle}</div>}
+          {cancel.mensaje && <div className="text-[11px] font-medium mt-0.5">{cancel.mensaje}</div>}
+          {cancel.error && <div className="text-[11px] text-danger mt-0.5">{cancel.error}</div>}
+        </div>
+
+        {!grabando && (
+          <form action={accionCancelar}>
+            <BotonCancelar />
+          </form>
+        )}
+      </div>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import { Download, Loader2, Send, Sliders, Trash2, X } from 'lucide-react';
 import { useEstadoGrabadora } from '@/components/laser/estado-grabadora';
+import { BotonReferencia } from '@/components/laser/BotonReferencia';
 import {
   ajustarDiseno,
   borrarDiseno,
@@ -265,6 +266,12 @@ export function FichaDiseno({ d }: { d: DisenoLite }) {
               {ajuste.mensaje && <span className="text-[11px] text-emerald-700">{ajuste.mensaje}</span>}
             </div>
           </form>
+
+          {/* El puntero, aqui al lado del diseno. Estaba arriba del todo y
+              obligaba a subir la pagina cada vez. */}
+          <div className="rounded-lg bg-ink-50/60 border border-ink-100 p-2">
+            <BotonReferencia referencia="llavero" etiqueta="Recuadro del llavero" />
+          </div>
 
           {/* Al taller */}
           <div className="flex items-center gap-2 flex-wrap">

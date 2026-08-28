@@ -3,8 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { formatDate } from '@/lib/utils';
 import { IndicadorGrabadora } from '@/components/laser/IndicadorGrabadora';
 import { AvisoDePedal } from '@/components/laser/AvisoDePedal';
-import { BotonReferencia } from '@/components/laser/BotonReferencia';
 import { getPerfilesLlavero, getVentanaLlavero } from '@/lib/llaveros';
+import { getSetting, SETTING_KEYS } from '@/lib/settings';
 import { SubirDiseno } from './SubirDiseno';
 import { FichaDiseno, type DisenoLite } from './FichaDiseno';
 import { AjustesLlavero } from './AjustesLlavero';
@@ -15,7 +15,7 @@ export const metadata = { title: 'Llaveros · Admin Lomhifar' };
 const ULTIMOS = 20;
 
 export default async function LlaverosPage() {
-  const [ventana, perfiles, disenos, grabados] = await Promise.all([
+  const [ventana, perfiles, disenos, grabados, encuadre] = await Promise.all([
     getVentanaLlavero(),
     getPerfilesLlavero(),
     prisma.keyringJob.findMany({
@@ -39,6 +39,7 @@ export default async function LlaverosPage() {
       _sum: { unidades: true },
       _count: { _all: true },
     }),
+    getSetting(SETTING_KEYS.LASER_ENCUADRE),
   ]);
 
   const lista: DisenoLite[] = disenos.map((d) => ({
@@ -83,10 +84,6 @@ export default async function LlaverosPage() {
         <IndicadorGrabadora />
       </div>
 
-      {/* Colocar el llavero en el util sin bajar a teclear a la maquina. */}
-      <div className="card p-3">
-        <BotonReferencia referencia="llavero" etiqueta="Recuadro del llavero" />
-      </div>
 
       {/* Cuando la máquina está esperando el pedal, que se vea desde aquí. */}
       <AvisoDePedal />
@@ -122,6 +119,7 @@ export default async function LlaverosPage() {
         anchoMm={ventana.anchoMm}
         altoMm={ventana.altoMm}
         perfiles={perfiles.perfiles}
+        encuadre={encuadre !== '0'}
       />
 
       <div className="space-y-4">

@@ -89,9 +89,6 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
               <IndicadorGrabadora />
             </div>
 
-            <div className="mb-4">
-              <BotonReferencia referencia="pulsera" etiqueta="Recuadro de la placa" />
-            </div>
 
             {/* Vista previa visual — crítica para producción */}
             <div className="space-y-5 mb-6">
@@ -211,6 +208,11 @@ export default async function AdminOrderPage({ params }: { params: { id: string 
                     <strong>No graba hasta que pisas el pedal</strong>, y graba tantas pulseras
                     como unidades pedidas.
                   </p>
+                  {/* El puntero, junto a los ficheros que se van a grabar. */}
+                  <div className="rounded-lg bg-ink-50/60 border border-ink-100 p-2 mb-3">
+                    <BotonReferencia referencia="pulsera" etiqueta="Recuadro de la placa" />
+                  </div>
+
                   <div className="space-y-3">
                     {engravings.map((e, idx) => {
                       const linePreview = e.lines.join(' · ');

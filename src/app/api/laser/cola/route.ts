@@ -4,6 +4,7 @@ import { getLaserProfiles } from '@/lib/laser-profiles';
 import { getPerfilesLlavero } from '@/lib/llaveros';
 import { llaverosPendientes } from '@/lib/llaveros-cola';
 import { getPuntero, REFERENCIAS } from '@/lib/laser-puntero';
+import { getSetting, SETTING_KEYS } from '@/lib/settings';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,6 +38,11 @@ export async function GET(req: Request) {
     getPuntero(),
   ]);
 
+  // ¿Enseñar el rectangulo del grabado antes de pedir el pedal? Es opcional
+  // porque el puntero deja la consola mas ocupada y esta maquina contesta
+  // despacio: si se nota que el pedal va peor, se apaga.
+  const encuadre = (await getSetting(SETTING_KEYS.LASER_ENCUADRE)) !== '0';
+
   // Los perfiles van todos en la misma lista, que es lo que el puente sabe
   // leer, y cada material apunta al suyo. Los de las pulseras no se tocan.
   const perfilesTodos = {
@@ -51,6 +57,7 @@ export async function GET(req: Request) {
       trabajos: [...trabajos, ...llaveros],
       perfiles: perfilesTodos,
       puntero: { modo: puntero, fichero: REFERENCIAS[puntero].fichero },
+      encuadre,
     },
     { headers: { 'Cache-Control': 'no-store' } },
   );

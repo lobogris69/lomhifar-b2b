@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { setSetting, SETTING_KEYS } from '@/lib/settings';
 import { apagarPuntero } from '@/lib/laser-puntero';
 import {
   dxfDeLlavero,
@@ -282,6 +283,13 @@ export async function guardarAjustesLlavero(
     anchoMm: formData.get('anchoMm'),
     altoMm: formData.get('altoMm'),
   }));
+
+  // El encuadre es de la maquina entera, no solo de llaveros, pero se
+  // configura aqui porque es donde se ha visto la falta.
+  await setSetting(
+    SETTING_KEYS.LASER_ENCUADRE,
+    formData.get('encuadre') === 'on' ? '1' : '0',
+  );
 
   const actuales = await getPerfilesLlavero();
   const perfiles = actuales.perfiles.map((p, i) => ({

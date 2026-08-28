@@ -82,6 +82,9 @@ export const SETTING_KEYS = {
   // Qué referencia enseña el puntero rojo en el taller. La pone la web y la
   // recoge el puente en la misma consulta que la cola.
   LASER_PUNTERO: 'laser.puntero',
+  // Si la maquina debe trazar el rectangulo del grabado antes de pedir el
+  // pedal, para colocar la pieza mirandolo.
+  LASER_ENCUADRE: 'laser.encuadre',
   // === NEGOCIO (costes parametrizables para el panel de rentabilidad) ===
   // Todos en CÉNTIMOS de € salvo BIZ_MACHINE_LIFE_UNITS (nº de pulseras).
   BIZ_COST_BRACELET_BLACK_CENTS: 'biz.cost_bracelet_black_cents', // coste pulsera negra en blanco
@@ -189,6 +192,7 @@ export const DEFAULT_SETTINGS: Record<SettingKey, string> = {
   [SETTING_KEYS.LLAVERO_PERFILES]: '',
   [SETTING_KEYS.LLAVERO_VENTANA]: '',
   [SETTING_KEYS.LASER_PUNTERO]: 'apagar',
+  [SETTING_KEYS.LASER_ENCUADRE]: '1',
   [SETTING_KEYS.LASER_PROFILES]: JSON.stringify({
     perfiles: [
       { id: 'negra', nombre: 'Pulsera negra', potenciaPct: 70, velocidadMmS: 250, pasadas: 1, frecuenciaKHz: 30, relleno: false, pasoRellenoMm: 0.05, notas: '' },
