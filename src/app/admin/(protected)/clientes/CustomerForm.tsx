@@ -35,6 +35,7 @@ export function CustomerForm({
     bankAccount: string | null;
     notes: string | null;
     active: boolean;
+    isTest?: boolean;
   };
 }) {
   const [state, action] = useFormState(saveCustomer, initial);
@@ -65,6 +66,28 @@ export function CustomerForm({
       <label className="flex items-center gap-3">
         <input type="checkbox" name="active" defaultChecked={customer?.active ?? true} className="h-4 w-4" />
         <span className="text-sm">Cliente activo (puede acceder al portal)</span>
+      </label>
+
+      {/* Para poder recorrer la tienda entera antes de ensenarsela a nadie.
+          Un pedido real NO se puede borrar —no hay boton en ninguna parte— y
+          contaria en las estadisticas para siempre. Marcado como prueba, todo
+          lo que pida esta farmacia se limpia despues de un boton. */}
+      <label className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 p-3">
+        <input
+          type="checkbox"
+          name="isTest"
+          defaultChecked={customer?.isTest ?? false}
+          className="h-4 w-4 mt-0.5"
+        />
+        <span className="text-sm text-amber-900">
+          <span className="font-semibold">Farmacia de prueba</span>
+          <span className="block text-xs mt-0.5 leading-snug">
+            Todo lo que pida se guarda como pedido de prueba: no cuenta en las
+            estadísticas, no descuenta stock, y se borra de golpe desde
+            Sistema → «Borrar pedidos de prueba». Úsalo para probar la tienda
+            sin ensuciar las cifras del negocio.
+          </span>
+        </span>
       </label>
 
       <div className="flex justify-end gap-2">

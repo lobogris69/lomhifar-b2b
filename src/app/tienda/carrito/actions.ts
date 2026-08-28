@@ -73,6 +73,12 @@ export async function placeOrder(
 
   const customer = session.customer;
 
+  // Farmacia de prueba: todo lo que pida nace marcado. Asi se puede recorrer
+  // la tienda entera —carrito, diseno, pedido, correos— sin ensuciar las
+  // estadisticas, y luego se borra de un boton desde Sistema. Un pedido real
+  // no se puede borrar de ninguna manera, de ahi que esto importe.
+  const esPrueba = customer.isTest;
+
   // Decrementa stock antes del email para que cualquier alerta llegue
   // como parte de la transacción del pedido.
 
@@ -100,6 +106,7 @@ export async function placeOrder(
       equivSurchargeCents: totals.equivSurchargeCents,
       totalCents: totals.totalCents,
       customerNote: parsed.data.note || null,
+      isTest: esPrueba,
       items: {
         create: items.map((it) => ({
           color: it.color,
@@ -116,10 +123,15 @@ export async function placeOrder(
   }));
 
   // Decrementar stock + posible email de alerta al admin
-  await decrementStockForOrder(
-    order.id,
-    order.items.map((it) => ({ color: it.color, quantity: it.quantity })),
-  ).catch(() => null);
+  // Un pedido de prueba no toca el stock: si lo descontara, habria que
+  // devolverlo a mano al borrarlo, y el boton de limpiar pruebas no lo hace
+  // precisamente porque cuenta con que nunca se descontó.
+  if (!esPrueba) {
+    await decrementStockForOrder(
+      order.id,
+      order.items.map((it) => ({ color: it.color, quantity: it.quantity })),
+    ).catch(() => null);
+  }
 
   const recipients = parseRecipients(await getSetting(SETTING_KEYS.ORDERS_RECIPIENT_EMAILS));
   const settings = await getSettings();
@@ -173,7 +185,7 @@ export async function placeOrder(
   await sendEmail({
     to: recipients,
     replyTo: customer.email,
-    subject: `Pedido #${order.number} · ${customer.pharmacyName}`,
+    subject: `${esPrueba ? '[PRUEBA] ' : ''}Pedido #${order.number} · ${customer.pharmacyName}`,
     html: emailLayout(`
       <h2 style="margin:0 0 4px;font-size:22px;color:#14503b;">Nuevo pedido #${order.number}</h2>
       <p style="margin:0 0 16px;color:#637787;font-size:13px;">Recibido a través de la plataforma B2B</p>

@@ -11,6 +11,7 @@ interface Customer {
   cif: string;
   email: string;
   pharmacyName: string;
+  isTest?: boolean;
   city: string | null;
   province: string | null;
   source: string;
@@ -212,7 +213,15 @@ export function BulkSelectTable({ customers }: { customers: Customer[] }) {
                     aria-label={`Seleccionar ${c.pharmacyName}`}
                   />
                 </td>
-                <td className="font-medium">{c.pharmacyName}</td>
+                <td className="font-medium">
+                  {c.pharmacyName}
+                  {/* Que no se confunda con una farmacia real de un vistazo. */}
+                  {c.isTest && (
+                    <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800 align-middle">
+                      PRUEBA
+                    </span>
+                  )}
+                </td>
                 <td className="font-mono">{c.cif}</td>
                 <td>{c.email || <span className="text-ink-400 italic">sin email</span>}</td>
                 <td>{[c.city, c.province].filter(Boolean).join(', ') || '—'}</td>

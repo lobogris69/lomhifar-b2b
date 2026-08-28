@@ -139,6 +139,7 @@ export async function saveCustomer(
     bankAccount: String(formData.get('bankAccount') ?? '').trim().toUpperCase().replace(/[\s-]/g, '') || null,
     notes: String(formData.get('notes') ?? '').trim() || null,
     active: formData.get('active') === 'on',
+    isTest: formData.get('isTest') === 'on',
   };
   const fe: Record<string, string> = {};
   if (!isValidSpanishTaxId(data.cif)) fe.cif = 'CIF/NIF/NIE no válido';

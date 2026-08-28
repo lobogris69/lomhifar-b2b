@@ -76,6 +76,12 @@ model Customer {
   active       Boolean  @default(true)
   // Valores: EXCEL | APPLICATION | MANUAL
   source       String   @default("EXCEL")
+  // Farmacia ficticia para probar la tienda de punta a punta. Todo lo que
+  // pida nace ya marcado como pedido de prueba: no cuenta en estadisticas,
+  // no descuenta stock, y se borra de golpe desde Sistema. Sin esto, probar
+  // la tienda ensuciaba las cifras del negocio para siempre, porque no hay
+  // forma de borrar un pedido.
+  isTest       Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -85,6 +91,7 @@ model Customer {
 
   @@index([email])
   @@index([active])
+  @@index([isTest])
 }
 
 // ------------------------------------------------------------
