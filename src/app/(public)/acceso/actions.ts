@@ -68,8 +68,13 @@ export async function requestAccessCode(
 
   // -------- BYPASS PARA PREVIEW LOCAL --------
   // Si PREVIEW_BYPASS_CODE=true, omitimos el código por email y creamos
-  // sesión directamente. NO USAR EN PRODUCCIÓN.
-  if (process.env.PREVIEW_BYPASS_CODE === 'true') {
+  // sesión directamente. Candado de seguridad: SOLO fuera de producción,
+  // aunque la variable esté puesta por error en Railway, en producción se
+  // ignora y siempre se exige el código por email (control de acceso real).
+  if (
+    process.env.PREVIEW_BYPASS_CODE === 'true' &&
+    process.env.NODE_ENV !== 'production'
+  ) {
     await createCustomerSession(customer.id, { ip, userAgent: ua });
     redirect('/tienda');
   }

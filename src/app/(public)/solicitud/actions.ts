@@ -130,7 +130,7 @@ export async function submitApplication(
         <h2 style="margin:0 0 16px;font-size:20px;color:#921a5e;">Solicitud recibida</h2>
         <p style="margin:0 0 12px;line-height:1.6;">
           Gracias por su interés en trabajar con Lomhifar.
-          Hemos recibido la solicitud de alta de <strong>${data.pharmacyName}</strong>.
+          Hemos recibido la solicitud de alta de <strong>${escapeHtml(data.pharmacyName)}</strong>.
         </p>
         <p style="margin:0 0 12px;">Nuestro equipo la revisará y le contactará en horas hábiles.</p>
         <p style="margin:0;color:#54545f;font-size:13px;">Referencia: ${app.id.slice(-8).toUpperCase()}</p>
