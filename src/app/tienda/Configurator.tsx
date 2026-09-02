@@ -80,6 +80,10 @@ export function Configurator({
   const [line3, setLine3] = useState('');
   const [showLine2, setShowLine2] = useState(false);
   const [showLine3, setShowLine3] = useState(false);
+  // La TERCERA línea está DESACTIVADA a propósito: con 3 líneas la letra queda
+  // demasiado pequeña en la placa de 4×1 cm. Solo se permiten líneas 1 y 2.
+  // Poniendo esto a true se reactiva toda la lógica de la 3ª línea (intacta).
+  const PERMITIR_TERCERA_LINEA = false;
   const [confirmed, setConfirmed] = useState(false);
   const [state, action] = useFormState(addBraceletToCart, initial);
 
@@ -412,7 +416,7 @@ export function Configurator({
           <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
             <h3 className="text-sm font-semibold text-ink-900">{texts.paso3}</h3>
             <span className="text-[11px] text-ink-500">
-              Puede grabar hasta <strong>3 líneas</strong> sobre la placa
+              Puede grabar hasta <strong>2 líneas</strong> sobre la placa
             </span>
           </div>
           <div className="space-y-4">
@@ -481,8 +485,8 @@ export function Configurator({
               </div>
             )}
 
-            {/* Línea 3 (opcional) — solo si hay línea 2 */}
-            {line2Visible && !line3Visible && (
+            {/* Línea 3 (opcional) — solo si hay línea 2. DESACTIVADA: ver PERMITIR_TERCERA_LINEA. */}
+            {PERMITIR_TERCERA_LINEA && line2Visible && !line3Visible && (
               <button
                 type="button"
                 onClick={addLine3}
@@ -491,7 +495,7 @@ export function Configurator({
                 <Plus className="h-4 w-4" /> Añadir línea 3 (opcional)
               </button>
             )}
-            {line3Visible && (
+            {PERMITIR_TERCERA_LINEA && line3Visible && (
               <div>
                 <label className="label flex items-center justify-between" htmlFor="line3">
                   <span>Línea 3</span>
