@@ -21,9 +21,11 @@ interface Props {
   canSubmit: boolean;
   ctaLabel?: string;
   confirmLabel?: string;
+  /** Clave de idempotencia (una por carga del carrito) para no duplicar pedidos. */
+  idemKey?: string;
 }
 
-export function CheckoutForm({ canSubmit, ctaLabel, confirmLabel }: Props) {
+export function CheckoutForm({ canSubmit, ctaLabel, confirmLabel, idemKey }: Props) {
   const [state, action] = useFormState(placeOrder, initial);
   const cta = ctaLabel || 'Confirmar y enviar pedido';
   const confirm =
@@ -32,6 +34,7 @@ export function CheckoutForm({ canSubmit, ctaLabel, confirmLabel }: Props) {
 
   return (
     <form action={action} className="space-y-4">
+      {idemKey && <input type="hidden" name="idem" value={idemKey} />}
       {state.error && <Alert variant="danger">{state.error}</Alert>}
 
       <div>

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import Link from 'next/link';
 import { ShoppingBag, Trash2, ChevronRight, ArrowLeft, Plus } from 'lucide-react';
 import { readCart } from '@/lib/cart';
@@ -55,6 +56,10 @@ export default async function CartPage({
       </div>
     );
   }
+
+  // Clave de idempotencia única por carga del carrito: viaja en el formulario
+  // y evita que un doble envío / reintento de red cree pedidos duplicados.
+  const idemKey = randomUUID();
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
@@ -305,6 +310,7 @@ export default async function CartPage({
               canSubmit={totals.meetsMinimum}
               ctaLabel={t['carrito.cta']}
               confirmLabel={t['carrito.checkbox']}
+              idemKey={idemKey}
             />
 
             <Link

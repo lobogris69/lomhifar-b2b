@@ -104,6 +104,51 @@ export async function decrementStockForOrder(
   }
 }
 
+/**
+ * Restaura stock al CANCELAR un pedido: devuelve al inventario las unidades
+ * que se descontaron al crearlo y registra el movimiento por color. Sin esto,
+ * cada pedido real cancelado dejaba el stock contable por debajo del físico y
+ * disparaba con el tiempo falsas alertas de "stock bajo".
+ *
+ * El llamador debe invocarla UNA sola vez por pedido (solo en la transición a
+ * CANCELADO): aquí no se comprueba si ya se restauró.
+ */
+export async function restoreStockForOrder(
+  orderId: string,
+  items: { color: string; quantity: number }[],
+): Promise<void> {
+  const byColor = new Map<string, number>();
+  for (const it of items) {
+    byColor.set(it.color, (byColor.get(it.color) ?? 0) + it.quantity);
+  }
+
+  await ensureStockBase();
+
+  for (const [color, qty] of byColor.entries()) {
+    if (qty <= 0) continue;
+    const stock = await prisma.stock.findUnique({ where: { color } });
+    if (!stock) continue;
+
+    // `increment` deja la suma en manos de la base de datos, igual que el
+    // decremento del pedido, para no pisar cambios concurrentes.
+    await prisma.$transaction([
+      prisma.stock.update({
+        where: { id: stock.id },
+        data: { quantity: { increment: qty } },
+      }),
+      prisma.stockMovement.create({
+        data: {
+          stockId: stock.id,
+          delta: qty,
+          reason: 'CANCELACION',
+          orderId,
+          note: `Devuelto al cancelar el pedido nº ${orderId.slice(-6)}`,
+        },
+      }),
+    ]);
+  }
+}
+
 async function sendLowStockAlert(color: string, qty: number, minLevel: number): Promise<void> {
   const recipients = parseRecipients(
     await getSetting(SETTING_KEYS.ORDERS_RECIPIENT_EMAILS),
