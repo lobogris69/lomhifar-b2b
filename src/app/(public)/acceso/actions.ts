@@ -92,6 +92,24 @@ export async function requestAccessCode(
   }
   // ------------------------------------------
 
+  // -------- ACCESO DEMO PARA COMERCIALES --------
+  // Cuentas de PRUEBA (isTest): si hay una clave demo configurada
+  // (DEMO_ACCESS_CODE), NO se manda código por email —nadie tiene ese buzón—.
+  // Se pasa directamente a la pantalla del código, donde los comerciales meten
+  // la clave fija compartida. SOLO afecta a cuentas isTest; los clientes reales
+  // siguen recibiendo su código por email como siempre.
+  if ((process.env.DEMO_ACCESS_CODE ?? '').trim() && customer.isTest) {
+    cookies().set(PENDING_COOKIE, customer.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: CODE_TTL_MIN * 60,
+    });
+    redirect('/acceso/codigo');
+  }
+  // ----------------------------------------------
+
   // Pedir código empieza de cero: los anteriores dejan de valer, con sus
   // intentos fallidos. Si no, quien pide un código nuevo se lleva de regalo
   // el contador gastado del anterior y se queda fuera sin motivo.
@@ -163,6 +181,28 @@ export async function verifyAccessCode(
   if (!customerId) {
     return { error: 'La sesión de acceso ha expirado. Vuelva a solicitar el código.' };
   }
+
+  // -------- CLAVE DEMO PARA COMERCIALES --------
+  // Si la clave introducida coincide con DEMO_ACCESS_CODE y la cuenta es de
+  // PRUEBA (isTest), se entra directamente. Es reutilizable (no se consume) y
+  // no está sujeta al bloqueo por intentos: es la clave compartida de los
+  // comerciales para trastear. NUNCA aplica a clientes reales (no son isTest).
+  const demoCode = (process.env.DEMO_ACCESS_CODE ?? '').trim();
+  if (demoCode && parsed.data.code === demoCode) {
+    const cust = await prisma.customer.findUnique({
+      where: { id: customerId },
+      select: { isTest: true, active: true },
+    });
+    if (cust?.isTest && cust.active) {
+      const ua = headers().get('user-agent') ?? undefined;
+      const ip = headers().get('x-forwarded-for')?.split(',')[0]?.trim() ?? undefined;
+      await createCustomerSession(customerId, { ip, userAgent: ua });
+      await setTrustedDevice(customerId);
+      cookies().delete(PENDING_COOKIE);
+      redirect('/tienda');
+    }
+  }
+  // ---------------------------------------------
 
   // El campo `attempts` ya existía y se incrementaba, pero no lo leía nadie:
   // se podía probar un código detrás de otro indefinidamente.
