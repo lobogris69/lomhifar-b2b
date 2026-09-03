@@ -13,6 +13,7 @@ import { getSetting, getSettings, parseRecipients, SETTING_KEYS } from '@/lib/se
 import { emailLayout, sendEmail } from '@/lib/email';
 import { formatEuros } from '@/lib/utils';
 import { decrementStockForOrder } from '@/lib/stock';
+import { notifyTelegram, tgEscape } from '@/lib/telegram';
 
 export async function removeItemAction(formData: FormData) {
   const id = String(formData.get('id') ?? '');
@@ -292,6 +293,15 @@ export async function placeOrder(
   } catch (err) {
     console.error('[carrito] Fallo al enviar los emails del pedido (el pedido SÍ se ha guardado correctamente):', err);
   }
+
+  // Aviso por Telegram (respaldo del email). Independiente del bloque de
+  // emails: debe llegar aunque el SMTP falle. Best-effort: nunca rompe el flujo.
+  await notifyTelegram(
+    `🛒 <b>Nuevo pedido #${order.number}</b>${esPrueba ? ' [PRUEBA]' : ''}\n` +
+    `${tgEscape(customer.pharmacyName)}\n` +
+    `${totals.totalUnits} uds · <b>${formatEuros(order.totalCents)}</b>` +
+    (customer.city ? `\n${tgEscape(customer.city)}${customer.province ? ` (${tgEscape(customer.province)})` : ''}` : ''),
+  ).catch(() => null);
 
   clearCart();
   revalidatePath('/tienda/carrito');

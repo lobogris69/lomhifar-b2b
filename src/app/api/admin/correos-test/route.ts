@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { getAdminSession } from '@/lib/auth';
+import { canAccessPath } from '@/lib/admin-roles';
 import { diagnoseCorreos, getCorreosConfig, trackShipment, CorreosError } from '@/lib/correos';
 
 export const dynamic = 'force-dynamic';
@@ -6,22 +8,29 @@ export const runtime = 'nodejs';
 
 /**
  * Diagnóstico de la API de Correos (nueva REST vía Correos ID) SIN crear
- * ningún envío. Protegido por EMERGENCY_RESET_KEY (igual que el de SMTP).
- * Deshabilitado (404) si no hay clave.
+ * ningún envío.
+ *
+ * Acceso: basta con estar logueado en el panel de admin (rol con acceso a
+ * /admin/configuracion). Alternativamente, si EMERGENCY_RESET_KEY está
+ * puesta en Railway, se puede llamar con ?key=<KEY> (para scripts).
  *
  *   Probar credenciales (token + gateway):
- *     /api/admin/correos-test?key=<KEY>
+ *     /api/admin/correos-test
  *
  *   Seguir un envío REAL (cuando ya haya uno):
- *     /api/admin/correos-test?key=<KEY>&track=<codigoEnvio>
+ *     /api/admin/correos-test?track=<codigoEnvio>
  */
 export async function GET(req: Request) {
-  const configuredKey = process.env.EMERGENCY_RESET_KEY;
-  if (!configuredKey) return text('Not found', 404);
-
   const url = new URL(req.url);
-  if ((url.searchParams.get('key') ?? '') !== configuredKey) {
-    return text('Clave incorrecta', 403);
+
+  // Guard: sesión de admin O clave de emergencia (si está configurada).
+  const configuredKey = process.env.EMERGENCY_RESET_KEY;
+  const keyOk = Boolean(configuredKey) && url.searchParams.get('key') === configuredKey;
+  if (!keyOk) {
+    const session = await getAdminSession();
+    if (!session || !canAccessPath(session.role, '/admin/configuracion')) {
+      return text('No autorizado. Inicia sesión en el panel de administración y vuelve a abrir esta URL.', 403);
+    }
   }
 
   const c = getCorreosConfig();

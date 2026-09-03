@@ -6,6 +6,7 @@ import { applicationSchema, normalizeIban } from '@/lib/validations';
 import { normalizeCif, normalizeEmail } from '@/lib/utils';
 import { emailLayout, sendEmail } from '@/lib/email';
 import { getSetting, parseRecipients, SETTING_KEYS } from '@/lib/settings';
+import { notifyTelegram, tgEscape } from '@/lib/telegram';
 
 export interface ApplyState {
   ok?: boolean;
@@ -89,6 +90,16 @@ export async function submitApplication(
       });
 
   const recipients = parseRecipients(await getSetting(SETTING_KEYS.ORDERS_RECIPIENT_EMAILS));
+
+  // Aviso por Telegram (respaldo del email). Best-effort: nunca rompe el alta.
+  await notifyTelegram(
+    `🆕 <b>Nueva alta de farmacia</b>\n` +
+    `${tgEscape(data.pharmacyName)}\n` +
+    `CIF: ${tgEscape(cif)} · ${tgEscape(data.city)} (${tgEscape(data.province)})\n` +
+    `📧 ${tgEscape(email)} · ☎ ${tgEscape(data.phone)}` +
+    (whatsapp ? ` · WA ${tgEscape(whatsapp)}` : '') +
+    `\nRevísala en el panel de administración.`,
+  ).catch(() => null);
 
   // Los emails van dentro de try/catch: si el SMTP falla, la solicitud
   // YA está guardada en BD y el admin la verá igualmente en el panel.
