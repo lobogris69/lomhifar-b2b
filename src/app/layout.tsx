@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter, Cormorant_Garamond } from 'next/font/google';
+import { Inter, Anton } from 'next/font/google';
 import './globals.css';
 
 const inter = Inter({
@@ -8,9 +8,12 @@ const inter = Inter({
   display: 'swap',
 });
 
-const engrave = Cormorant_Garamond({
+// La MISMA fuente con la que graba la máquina (ver src/lib/laser.ts).
+// Antes era Cormorant Garamond, una serif fina: la tienda enseñaba una cosa
+// y llegaba otra. Si se cambia aquí, hay que cambiarla también allí.
+const engrave = Anton({
   subsets: ['latin'],
-  weight: ['500', '600', '700'],
+  weight: ['400'],
   variable: '--font-engrave',
   display: 'swap',
 });

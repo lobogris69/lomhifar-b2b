@@ -88,7 +88,10 @@ body {
 
   /* Tipografía de grabado: gruesa, sin serifa, alta legibilidad */
   .engrave-text {
-    @apply font-engrave font-bold uppercase tracking-[0.06em];
+    /* Sin font-bold: Anton solo tiene un grosor y ya es muy gruesa.
+       Pedirle negrita hace que el navegador la engorde a la fuerza y
+       se emborrona, además de dejar de parecerse a lo que graba. */
+    @apply font-engrave uppercase tracking-[0.06em];
     font-feature-settings: 'tnum' 1;
   }
 }

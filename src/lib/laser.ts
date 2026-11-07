@@ -62,12 +62,23 @@ let cachedFont: opentype.Font | null = null;
 
 async function loadFont(): Promise<opentype.Font> {
   if (cachedFont) return cachedFont;
-  // Roboto Bold: fuente sans-serif universal, compatible al 100% con
-  // opentype.js (a diferencia de Inter que usa lookupType 6 substFormat 2
-  // no soportado por la lib). Visualmente muy similar a Helvetica/Inter,
-  // perfecta para grabado láser.
+  // Anton: condensada y muy gruesa (SIL Open Font License, uso comercial
+  // libre). Se eligió el 07/11/2026 por dos razones:
+  //
+  //  - Al ser CONDENSADA cabe más grande en la placa de 24x10: la letra
+  //    sube de 3,58 a 3,75 mm respecto a Roboto Bold, y el trazo es mucho
+  //    más grueso, que es lo que se ve en metal.
+  //  - Es LA MISMA que usa la previsualización de la tienda. Antes la web
+  //    enseñaba Cormorant Garamond (una serif fina) y se grababa Roboto
+  //    Bold: no se parecían, y una clienta se quejó con razón de que lo
+  //    recibido no era lo que había visto.
+  //
+  // Si se cambia esta fuente, hay que cambiar TAMBIÉN la de la tienda
+  // (`src/app/layout.tsx`, variable --font-engrave) o se vuelve al mismo
+  // problema. Y revisar el factor de separación entre líneas en
+  // Panel -> Láser: cada fuente pide el suyo (Anton: 1.6; Roboto: 1.9).
   const buffer = await fs.readFile(
-    path.join(process.cwd(), 'src', 'lib', 'fonts', 'Roboto-Bold.ttf'),
+    path.join(process.cwd(), 'src', 'lib', 'fonts', 'Anton-Regular.ttf'),
   );
   // opentype.parse necesita un ArrayBuffer no un Buffer/Uint8Array.
   const arrayBuf = buffer.buffer.slice(
