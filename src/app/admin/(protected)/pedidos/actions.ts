@@ -7,6 +7,7 @@ import { requireAdmin } from '@/lib/auth';
 import { emailLayout, sendEmail } from '@/lib/email';
 import { ORDER_STATUS_LABEL } from '@/components/shop/OrderStatusBadge';
 import { buildTrackingUrl, getCarrierLabel } from '@/lib/shipping';
+import { restoreStockForOrder } from '@/lib/stock';
 import {
   createShipment as mrCreateShipment,
   buildPublicTrackingUrl as mrTrackingUrl,
@@ -26,10 +27,28 @@ export async function updateOrderStatus(formData: FormData) {
 
   if (!ORDER_STATUSES.includes(status as (typeof ORDER_STATUSES)[number])) return;
 
+  // Necesitamos el estado ANTERIOR y las líneas para poder devolver el stock
+  // si es una cancelación (update() solo devuelve el estado ya nuevo).
+  const before = await prisma.order.findUnique({
+    where: { id },
+    include: { items: true },
+  });
+  if (!before) return;
+
   const order = await prisma.order.update({
     where: { id },
     data: { status },
   });
+
+  // Al CANCELAR por primera vez un pedido REAL, devolver sus unidades al
+  // stock (los de prueba nunca lo descontaron). Sin esto el stock contable
+  // quedaba por debajo del físico y disparaba falsas alertas de "stock bajo".
+  if (status === 'CANCELLED' && before.status !== 'CANCELLED' && !before.isTest) {
+    await restoreStockForOrder(
+      before.id,
+      before.items.map((it) => ({ color: it.color, quantity: it.quantity })),
+    ).catch(() => null);
+  }
 
   if (notify) {
     try {

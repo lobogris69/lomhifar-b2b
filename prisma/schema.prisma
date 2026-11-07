@@ -168,6 +168,13 @@ model Order {
   customerId String
   customer   Customer @relation(fields: [customerId], references: [id])
 
+  // Clave de idempotencia contra pedidos DUPLICADOS: se genera una por cada
+  // render del carrito y viaja en el formulario. El @unique hace que un
+  // segundo envío con la misma clave (doble clic, reintento de red, botón
+  // atrás) no cree otro pedido: el alta falla y se redirige al ya creado.
+  // Opcional para no romper los pedidos manuales/antiguos (NULL no colisiona).
+  idempotencyKey String? @unique
+
   // Valores: RECEIVED | IN_PREPARATION | SHIPPED | DELIVERED | CANCELLED
   status String @default("RECEIVED")
 

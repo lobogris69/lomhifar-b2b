@@ -99,7 +99,9 @@ export const ROLE_ALLOWED_PATHS: Record<AdminRole, RegExp[]> = {
     /^\/admin\/imagenes/,
     /^\/admin\/textos/,
     /^\/admin\/personas/,
-    /^\/admin\/configuracion/,
+    // /admin/configuracion NO para VIEWER: el formulario renderiza secretos
+    // de envío (HMAC de InPost, clave privada de Mondial Relay) que quedarían
+    // visibles en el HTML para un supervisor. Un auditor/socio no los necesita.
     /^\/admin\/laser/,
     /^\/admin\/llaveros/,
     /^\/admin\/negocio/,     // socio/auditor puede ver el negocio (no editar)

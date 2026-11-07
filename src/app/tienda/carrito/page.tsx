@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import Link from 'next/link';
 import { ShoppingBag, Trash2, ChevronRight, ArrowLeft, Plus } from 'lucide-react';
 import { readCart } from '@/lib/cart';
@@ -56,6 +57,10 @@ export default async function CartPage({
     );
   }
 
+  // Clave de idempotencia única por carga del carrito: viaja en el formulario
+  // y evita que un doble envío / reintento de red cree pedidos duplicados.
+  const idemKey = randomUUID();
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       {/* Botón "Seguir comprando" siempre visible arriba */}
@@ -92,7 +97,7 @@ export default async function CartPage({
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-4 min-w-0">
           {items.map((it, idx) => {
             const cartItem = cart[idx];
             const isBlack = it.color === 'BLACK';
@@ -173,7 +178,7 @@ export default async function CartPage({
                       )}
                     </dl>
 
-                    <div className="mt-auto pt-4 flex items-end justify-between gap-3">
+                    <div className="mt-auto pt-4 flex items-end justify-between gap-3 flex-wrap">
                       <form action={updateQtyAction} className="flex items-center gap-2">
                         <input type="hidden" name="id" value={cartItem.id} />
                         <label className="text-xs text-ink-500" htmlFor={`qty-${cartItem.id}`}>
@@ -218,7 +223,7 @@ export default async function CartPage({
           </div>
         </div>
 
-        <aside className="lg:col-span-1">
+        <aside className="lg:col-span-1 min-w-0">
           <div className="card p-6 sticky top-32 space-y-4">
             <h2 className="text-base font-semibold text-ink-900">Resumen del pedido</h2>
             <dl className="text-sm space-y-2">
@@ -305,6 +310,7 @@ export default async function CartPage({
               canSubmit={totals.meetsMinimum}
               ctaLabel={t['carrito.cta']}
               confirmLabel={t['carrito.checkbox']}
+              idemKey={idemKey}
             />
 
             <Link

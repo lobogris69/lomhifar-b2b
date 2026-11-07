@@ -9,6 +9,23 @@ const nextConfig = {
   },
   poweredByHeader: false,
   output: 'standalone',
+  // Cabeceras de seguridad para todo el sitio: el panel de admin muestra
+  // datos sensibles (IBAN de farmacias), así que evitamos que se pueda
+  // incrustar en un iframe (clickjacking), forzamos HTTPS y bloqueamos el
+  // sniffing de tipos MIME. No se añade CSP para no romper estilos/scripts.
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Strict-Transport-Security', value: 'max-age=31536000' },
+        ],
+      },
+    ];
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',

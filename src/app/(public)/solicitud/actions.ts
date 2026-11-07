@@ -6,6 +6,7 @@ import { applicationSchema, normalizeIban } from '@/lib/validations';
 import { normalizeCif, normalizeEmail } from '@/lib/utils';
 import { emailLayout, sendEmail } from '@/lib/email';
 import { getSetting, parseRecipients, SETTING_KEYS } from '@/lib/settings';
+import { notifyTelegram, tgEscape } from '@/lib/telegram';
 
 export interface ApplyState {
   ok?: boolean;
@@ -90,6 +91,16 @@ export async function submitApplication(
 
   const recipients = parseRecipients(await getSetting(SETTING_KEYS.ORDERS_RECIPIENT_EMAILS));
 
+  // Aviso por Telegram (respaldo del email). Best-effort: nunca rompe el alta.
+  await notifyTelegram(
+    `🆕 <b>Nueva alta de farmacia</b>\n` +
+    `${tgEscape(data.pharmacyName)}\n` +
+    `CIF: ${tgEscape(cif)} · ${tgEscape(data.city)} (${tgEscape(data.province)})\n` +
+    `📧 ${tgEscape(email)} · ☎ ${tgEscape(data.phone)}` +
+    (whatsapp ? ` · WA ${tgEscape(whatsapp)}` : '') +
+    `\nRevísala en el panel de administración.`,
+  ).catch(() => null);
+
   // Los emails van dentro de try/catch: si el SMTP falla, la solicitud
   // YA está guardada en BD y el admin la verá igualmente en el panel.
   // Un problema de correo no debe hacer perder la solicitud al usuario.
@@ -130,7 +141,7 @@ export async function submitApplication(
         <h2 style="margin:0 0 16px;font-size:20px;color:#921a5e;">Solicitud recibida</h2>
         <p style="margin:0 0 12px;line-height:1.6;">
           Gracias por su interés en trabajar con Lomhifar.
-          Hemos recibido la solicitud de alta de <strong>${data.pharmacyName}</strong>.
+          Hemos recibido la solicitud de alta de <strong>${escapeHtml(data.pharmacyName)}</strong>.
         </p>
         <p style="margin:0 0 12px;">Nuestro equipo la revisará y le contactará en horas hábiles.</p>
         <p style="margin:0;color:#54545f;font-size:13px;">Referencia: ${app.id.slice(-8).toUpperCase()}</p>

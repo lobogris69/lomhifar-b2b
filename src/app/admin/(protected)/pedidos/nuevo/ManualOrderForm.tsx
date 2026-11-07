@@ -367,14 +367,9 @@ export function ManualOrderForm({ customers, maxCharsPerLine }: Props) {
                     onChange={(e) => updateItem(idx, { line2: e.target.value })}
                     className="input text-sm tracking-wide"
                   />
-                  <input
-                    type="text"
-                    placeholder="Línea 3 (opcional)"
-                    maxLength={maxCharsPerLine}
-                    value={it.line3}
-                    onChange={(e) => updateItem(idx, { line3: e.target.value })}
-                    className="input text-sm tracking-wide"
-                  />
+                  {/* Línea 3 retirada: con 3 líneas la letra queda demasiado
+                      pequeña en la placa de 4×1 cm. Solo líneas 1 y 2. El dato
+                      it.line3 se mantiene vacío por compatibilidad. */}
                 </div>
                 <button
                   type="button"

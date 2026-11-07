@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { crearPedidoNumerado } from '@/lib/numero-de-pedido';
 import { getCustomerSession } from '@/lib/auth';
@@ -12,6 +13,7 @@ import { getSetting, getSettings, parseRecipients, SETTING_KEYS } from '@/lib/se
 import { emailLayout, sendEmail } from '@/lib/email';
 import { formatEuros } from '@/lib/utils';
 import { decrementStockForOrder } from '@/lib/stock';
+import { notifyTelegram, tgEscape } from '@/lib/telegram';
 
 export async function removeItemAction(formData: FormData) {
   const id = String(formData.get('id') ?? '');
@@ -51,6 +53,23 @@ export async function placeOrder(
   const session = await getCustomerSession();
   if (!session) redirect('/acceso');
 
+  // Clave de idempotencia del formulario: si este mismo envío ya creó un
+  // pedido (doble clic, reintento de red, botón atrás), NO se crea otro; se
+  // lleva al cliente al pedido que ya existe. Se comprueba antes que el
+  // carrito vacío porque, tras confirmar, el carrito ya se ha vaciado.
+  const idem = String(formData.get('idem') ?? '').trim();
+  if (idem) {
+    const yaCreado = await prisma.order.findUnique({
+      where: { idempotencyKey: idem },
+      select: { id: true },
+    });
+    if (yaCreado) {
+      clearCart();
+      revalidatePath('/tienda/carrito');
+      redirect(`/tienda/pedidos/${yaCreado.id}?nuevo=1`);
+    }
+  }
+
   const cart = readCart();
   if (cart.length === 0) return { error: 'El carrito está vacío.' };
 
@@ -82,9 +101,12 @@ export async function placeOrder(
   // Decrementa stock antes del email para que cualquier alerta llegue
   // como parte de la transacción del pedido.
 
-  const order = await crearPedidoNumerado((numeroDePedido) => prisma.order.create({
+  let order: Prisma.OrderGetPayload<{ include: { items: true } }>;
+  try {
+    order = await crearPedidoNumerado((numeroDePedido) => prisma.order.create({
     data: {
       number: numeroDePedido,
+      idempotencyKey: idem || null,
       customerId: customer.id,
       pharmacyName: customer.pharmacyName,
       cif: customer.cif,
@@ -121,6 +143,27 @@ export async function placeOrder(
     },
     include: { items: true },
   }));
+  } catch (e) {
+    // Choque por la clave de idempotencia = doble envío concurrente del mismo
+    // formulario. El pedido ya lo creó la otra petición: se va a ese, sin duplicar.
+    if (
+      idem &&
+      e instanceof Prisma.PrismaClientKnownRequestError &&
+      e.code === 'P2002' &&
+      String(e.meta?.target ?? '').includes('idempotencyKey')
+    ) {
+      const yaCreado = await prisma.order.findUnique({
+        where: { idempotencyKey: idem },
+        select: { id: true },
+      });
+      if (yaCreado) {
+        clearCart();
+        revalidatePath('/tienda/carrito');
+        redirect(`/tienda/pedidos/${yaCreado.id}?nuevo=1`);
+      }
+    }
+    throw e;
+  }
 
   // Decrementar stock + posible email de alerta al admin
   // Un pedido de prueba no toca el stock: si lo descontara, habria que
@@ -250,6 +293,15 @@ export async function placeOrder(
   } catch (err) {
     console.error('[carrito] Fallo al enviar los emails del pedido (el pedido SÍ se ha guardado correctamente):', err);
   }
+
+  // Aviso por Telegram (respaldo del email). Independiente del bloque de
+  // emails: debe llegar aunque el SMTP falle. Best-effort: nunca rompe el flujo.
+  await notifyTelegram(
+    `🛒 <b>Nuevo pedido #${order.number}</b>${esPrueba ? ' [PRUEBA]' : ''}\n` +
+    `${tgEscape(customer.pharmacyName)}\n` +
+    `${totals.totalUnits} uds · <b>${formatEuros(order.totalCents)}</b>` +
+    (customer.city ? `\n${tgEscape(customer.city)}${customer.province ? ` (${tgEscape(customer.province)})` : ''}` : ''),
+  ).catch(() => null);
 
   clearCart();
   revalidatePath('/tienda/carrito');
