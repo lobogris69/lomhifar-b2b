@@ -139,9 +139,10 @@ body {
 }
 
 /* Firma de Estudio Fase (versión eclipse, 9-nov-2026; misma que MARCA PROPIA/firma/firma.css).
-   Fuera de @layer para que Tailwind (preflight: img display:block) no la pise. */
-.ef-firma{position:relative;display:inline-block;font-size:12px;line-height:1.4;opacity:.85}
-.ef-firma summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;color:inherit;white-space:nowrap}
+   Fuera de @layer para que Tailwind (preflight: img display:block) no la pise.
+   La opacidad va en el summary, no en el details: si no, el menú abierto se transparenta. */
+.ef-firma{position:relative;display:inline-block;font-size:12px;line-height:1.4}
+.ef-firma summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;color:inherit;white-space:nowrap;opacity:.85}
 .ef-firma summary::-webkit-details-marker{display:none}
 .ef-firma summary:hover,.ef-firma[open] summary{opacity:1;text-decoration:underline;text-underline-offset:3px}
 .ef-firma summary:focus-visible{outline:2px solid #FFB648;outline-offset:3px;border-radius:4px}
