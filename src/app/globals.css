@@ -137,3 +137,17 @@ body {
   border-radius: 12px;
   animation: hash-highlight-pulse 3.5s ease-in-out;
 }
+
+/* Firma de Estudio Fase (versión eclipse, 9-nov-2026; misma que MARCA PROPIA/firma/firma.css).
+   Fuera de @layer para que Tailwind (preflight: img display:block) no la pise. */
+.ef-firma{position:relative;display:inline-block;font-size:12px;line-height:1.4;opacity:.85}
+.ef-firma summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;color:inherit;white-space:nowrap}
+.ef-firma summary::-webkit-details-marker{display:none}
+.ef-firma summary:hover,.ef-firma[open] summary{opacity:1;text-decoration:underline;text-underline-offset:3px}
+.ef-firma summary:focus-visible{outline:2px solid #FFB648;outline-offset:3px;border-radius:4px}
+.ef-firma img{width:14px;height:14px;display:inline-block;vertical-align:middle}
+.ef-firma b{font-weight:700;letter-spacing:.08em}
+.ef-menu{position:absolute;right:0;bottom:calc(100% + 8px);z-index:50;display:flex;flex-direction:column;min-width:190px;padding:6px;background:#0B0C18;border:1px solid #262944;border-radius:12px;box-shadow:0 14px 40px -10px rgba(0,0,0,.55)}
+.ef-menu a{display:block;padding:9px 12px;border-radius:8px;color:#F3EEE6!important;text-decoration:none!important;font:500 13px/1.3 system-ui,sans-serif;white-space:nowrap}
+.ef-menu a:hover,.ef-menu a:focus-visible{background:#1b1e38;outline:none}
+.ef-menu a:first-child{color:#FFB648!important}
