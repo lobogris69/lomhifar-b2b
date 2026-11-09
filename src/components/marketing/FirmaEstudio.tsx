@@ -1,45 +1,38 @@
-// Firma de Estudio Fase (versión eclipse, 9-nov-2026) para el pie de la parte pública.
-// Misma lógica que D:\MARCA PROPIA\firma\firma.mjs, copiada aquí porque al desplegar esa carpeta no existe.
-// Sin JavaScript: <details> abre y cierra el menú (estudiofase.com y el WhatsApp de Fernando y de Eduardo
-// con el mensaje ya escrito). Server Component sin onClick. Estilos .ef-firma/.ef-menu en globals.css.
+// Firma de Estudio Fase (v2, 9-nov-2026) para el pie de la parte pública.
+// Misma lógica que MARCA PROPIA/firma/firma.mjs (commit 38f0f34), copiada aquí porque al desplegar esa carpeta no existe.
+// «Web creada por» + logo REAL compacto en SVG en línea (letras en currentColor, toman el color del pie).
+// Sin JavaScript: <details> abre y cierra el menú: «Visitar estudiofase.com» y «Contactar por WhatsApp»
+// (sin nombres de personas, decisión de Fernando). Server Component sin onClick. Estilos .ef-* en globals.css.
 // FIRMA_OFF=1 en el servidor la quita.
-const ESTUDIO = {
-  web: 'https://estudiofase.com',
-  whatsapp: [
-    ['Fernando', '34649848900'],
-    ['Eduardo', '34697568989'],
-  ] as const,
-};
+import { LogoEstudioFase } from './LogoEstudioFase';
 
+const ESTUDIO = { web: 'https://estudiofase.com', whatsapp: '34649848900' };
 const PROYECTO = 'Pulseras personalizadas Lomhifar';
 
 export function FirmaEstudio() {
   if (process.env.FIRMA_OFF === '1') return null;
-  const msg = (n: string) => `Hola ${n}, he visto la web de ${PROYECTO} y me interesa una web así.`;
+  const msg = `Hola, he visto la web de ${PROYECTO} y me interesa una web así.`;
   const utm = `${ESTUDIO.web}/?utm_source=pulseras-lomhifar&utm_medium=firma`;
   return (
     <details className="ef-firma">
       <summary>
-        Web creada por{' '}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/estudio-fase.svg" alt="" width={14} height={14} loading="lazy" />
-        <b>ESTUDIO FASE</b>
+        <span className="ef-txt">Web creada por</span>
+        <span className="ef-logo" role="img" aria-label="Estudio Fase">
+          <LogoEstudioFase />
+        </span>
       </summary>
       <div className="ef-menu" role="menu">
         <a role="menuitem" href={utm} target="_blank" rel="noopener">
-          estudiofase.com <span aria-hidden="true">↗</span>
+          Visitar estudiofase.com <span aria-hidden="true">↗</span>
         </a>
-        {ESTUDIO.whatsapp.map(([n, tel]) => (
-          <a
-            key={tel}
-            role="menuitem"
-            href={`https://wa.me/${tel}?text=${encodeURIComponent(msg(n))}`}
-            target="_blank"
-            rel="noopener"
-          >
-            WhatsApp · {n}
-          </a>
-        ))}
+        <a
+          role="menuitem"
+          href={`https://wa.me/${ESTUDIO.whatsapp}?text=${encodeURIComponent(msg)}`}
+          target="_blank"
+          rel="noopener"
+        >
+          Contactar por WhatsApp
+        </a>
       </div>
     </details>
   );
