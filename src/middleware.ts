@@ -21,8 +21,17 @@ const SESSION_SECRET =
   process.env.SESSION_SECRET ||
   'INSECURE-DEV-ONLY-SESSION-SECRET-CHANGE-ME-PLEASE-32CHARS';
 
-/** Rutas del panel abiertas a cualquiera que tenga sesión. */
-const LIBRES = ['/admin/login', '/admin/perfil'];
+/**
+ * Rutas del panel que el portero deja pasar.
+ *
+ * `/admin/recuperar` TIENE que estar aquí: es la pantalla de «he olvidado la
+ * contraseña», y quien la necesita por definición no tiene sesión. Al faltar,
+ * el portero la mandaba de vuelta al login y el enlace parecía no hacer nada
+ * — ni un error, solo volvía a la misma pantalla. Cubre también
+ * `/admin/recuperar/<token>`, el enlace que llega por correo, porque la
+ * comprobación de abajo incluye las subrutas.
+ */
+const LIBRES = ['/admin/login', '/admin/perfil', '/admin/recuperar'];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
