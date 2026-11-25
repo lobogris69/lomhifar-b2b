@@ -116,6 +116,50 @@ interface LayoutResult {
  * descendentes fantasma) es lo que da el MÁXIMO aprovechamiento visual
  * del área diminuta de la placa.
  */
+/**
+ * Separación extra entre letras, en mm.
+ *
+ * Anton es condensada y viene muy apretada de fábrica: en metal los trazos
+ * gruesos de dos letras seguidas tienden a juntarse y cuesta leerlas. Con
+ * 0,25 mm quedan despegadas sin perder apenas tamaño — en un texto corto la
+ * letra baja de 3,28 a 3,23 mm. En textos largos sí cuesta (un 15 %), porque
+ * esos ya iban al límite del ancho de la placa.
+ *
+ * Aprobado en máquina el 25/11/2026.
+ */
+const SEPARACION_LETRAS_MM = 0.25;
+
+/** Ancho de un texto contando la separación extra entre letras. */
+function anchoDeTexto(font: opentype.Font, texto: string, fontSizeMm: number): number {
+  const letras = [...texto].length;
+  return font.getAdvanceWidth(texto, fontSizeMm)
+    + SEPARACION_LETRAS_MM * Math.max(0, letras - 1);
+}
+
+/**
+ * Trazado de un texto, letra a letra, para poder separarlas.
+ *
+ * `font.getPath()` usa el avance natural de la fuente y no deja tocarlo, así
+ * que hay que ir colocando cada glifo a mano.
+ */
+function trazadoDeTexto(
+  font: opentype.Font,
+  texto: string,
+  x: number,
+  y: number,
+  fontSizeMm: number,
+): opentype.Path {
+  const p = new opentype.Path();
+  let cursor = x;
+  for (const ch of [...texto]) {
+    const glifo = font.charToGlyph(ch);
+    p.commands.push(...glifo.getPath(cursor, y, fontSizeMm).commands);
+    const avance = glifo.advanceWidth ?? font.charToGlyph('n').advanceWidth ?? font.unitsPerEm / 2;
+    cursor += (avance / font.unitsPerEm) * fontSizeMm + SEPARACION_LETRAS_MM;
+  }
+  return p;
+}
+
 function getCapRatio(font: opentype.Font): number {
   const unitsPerEm = font.unitsPerEm || 2048;
   // 1) OS/2 sCapHeight si existe (lo más fiable)
@@ -177,7 +221,7 @@ async function layoutLines(
   // TODAS las líneas por el mismo factor (misma altura de letra).
   let maxAdvance = 0;
   for (const line of valid) {
-    const adv = font.getAdvanceWidth(line, fontSizeMm);
+    const adv = anchoDeTexto(font, line, fontSizeMm);
     if (adv > maxAdvance) maxAdvance = adv;
   }
   if (maxAdvance > usableWidth && maxAdvance > 0) {
@@ -208,9 +252,9 @@ async function layoutLines(
     // La baseline queda capHeightMm por debajo (Y mayor)
     const baselineY = lineTopY + capHeightMm;
     // Centrado horizontal exacto
-    const advance = font.getAdvanceWidth(text, fontSizeMm);
+    const advance = anchoDeTexto(font, text, fontSizeMm);
     const x = s.marginLeftMm + (usableWidth - advance) / 2;
-    const path = font.getPath(text, x, baselineY, fontSizeMm);
+    const path = trazadoDeTexto(font, text, x, baselineY, fontSizeMm);
     rendered.push({ text, path, x, y: baselineY });
   }
 
@@ -234,8 +278,8 @@ async function layoutLines(
         const l = rendered[i];
         l.y = topAjustado + i * (capAjustado + gapAjustado) + capAjustado;
         l.x = s.marginLeftMm
-          + (usableWidth - font.getAdvanceWidth(l.text, fontSizeMm)) / 2;
-        l.path = font.getPath(l.text, l.x, l.y, fontSizeMm);
+          + (usableWidth - anchoDeTexto(font, l.text, fontSizeMm)) / 2;
+        l.path = trazadoDeTexto(font, l.text, l.x, l.y, fontSizeMm);
       }
     }
   }
@@ -257,7 +301,7 @@ async function layoutLines(
     if (Math.abs(desplazamiento) > 0.001) {
       for (const l of rendered) {
         l.y += desplazamiento;
-        l.path = font.getPath(l.text, l.x, l.y, fontSizeMm);
+        l.path = trazadoDeTexto(font, l.text, l.x, l.y, fontSizeMm);
       }
     }
   }
@@ -466,8 +510,9 @@ function wrapDxf(entitiesContent: string, s: LaserSettings): string {
     '2', 'HEADER',
     '9', '$ACADVER', '1', 'AC1015',        // AC1015 = R2000
     '9', '$INSUNITS', '70', '4',           // 4 = mm
-    '9', '$EXTMIN', '10', '0.0', '20', '0.0', '30', '0.0',
-    '9', '$EXTMAX', '10', String(s.plateWidthMm), '20', String(s.plateHeightMm), '30', '0.0',
+    // Encuadre acorde con el centrado en el origen (ver generateDxfForLines)
+    '9', '$EXTMIN', '10', String(-s.plateWidthMm / 2), '20', String(-s.plateHeightMm / 2), '30', '0.0',
+    '9', '$EXTMAX', '10', String(s.plateWidthMm / 2), '20', String(s.plateHeightMm / 2), '30', '0.0',
     '0', 'ENDSEC',
     '0', 'SECTION',
     '2', 'ENTITIES',
@@ -499,8 +544,17 @@ export async function generateDxfForLines(
       s.plateHeightMm,
       s.curveSteps,
     );
+    // Se emite CENTRADO EN EL ORIGEN, no desde la esquina.
+    //
+    // EzCad2 tiene su (0,0) en el centro del área de trabajo. Un DXF que
+    // vaya de 0..ancho y 0..alto entra desplazado al cuadrante positivo y
+    // hay que corregir «Position» a mano en cada pedido. Restando medio
+    // ancho y medio alto, el fichero entra ya en 0,0 y no se toca nada.
     for (const pl of polylines) {
-      entities.push(polylineToDxf(pl, nextHandle++));
+      entities.push(polylineToDxf(
+        pl.map((pt) => ({ x: pt.x - s.plateWidthMm / 2, y: pt.y - s.plateHeightMm / 2 })),
+        nextHandle++,
+      ));
     }
   }
   return wrapDxf(entities.join('\n'), s);
