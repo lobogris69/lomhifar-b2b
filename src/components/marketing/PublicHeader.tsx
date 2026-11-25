@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { LogIn } from 'lucide-react';
 import { Logo } from '../brand/Logo';
 import { getAllSiteTexts } from '@/lib/site-texts';
+import { FirmaEstudio } from './FirmaEstudio';
 
 export async function PublicHeader() {
   const t = await getAllSiteTexts();
@@ -38,7 +39,9 @@ export async function PublicHeader() {
   );
 }
 
-export async function PublicFooter() {
+// firma = «Web creada por ESTUDIO FASE». Solo en la parte pública (portada, acceso,
+// solicitud); la tienda con sesión de farmacia pasa firma={false}.
+export async function PublicFooter({ firma = true }: { firma?: boolean } = {}) {
   const t = await getAllSiteTexts();
   return (
     <footer className="border-t border-ink-100 bg-white">
@@ -51,6 +54,11 @@ export async function PublicFooter() {
           <div className="text-xs text-ink-400 mt-0.5">
             {t['footer.extra']}
           </div>
+          {firma && (
+            <div className="mt-2 text-ink-400">
+              <FirmaEstudio />
+            </div>
+          )}
         </div>
       </div>
     </footer>

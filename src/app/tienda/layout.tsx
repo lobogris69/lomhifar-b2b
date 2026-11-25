@@ -30,7 +30,7 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
         </div>
       )}
       <main className="flex-1">{children}</main>
-      <PublicFooter />
+      <PublicFooter firma={false} />
     </div>
   );
 }
